@@ -116,4 +116,13 @@ body {
     display: flex;
     align-items: center;
   }
+   .input-icon-step2 {
+    position: absolute;
+    left: 1rem;
+    top: 2rem; 
+    color: var(--color-input-icon);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+  }
 }

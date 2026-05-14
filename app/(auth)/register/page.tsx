@@ -2,36 +2,66 @@
 
 import { useState } from 'react';
 import RegisterProfileSelection from './_components/ProfileSelection';
-import CollectorInfoForm from './_components/CollectorForm';
+import CollectorForm from './_components/CollectorForm';
+import FournisseurForm from './_components/FournisseurForm';
+import FinalisationForm from './_components/FinalisationForm';
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1);
-  const [profileType, setProfileType] = useState<'fournisseur' | 'collecteur'>('fournisseur');
+  
+  // État pour le rôle global
+  const [role, setRole] = useState<'fournisseur' | 'collecteur'>('fournisseur');
+  
+  // État spécifique pour le fournisseur (à récupérer via ton ProfileSelection si besoin)
+  const [fournisseurType, setFournisseurType] = useState<'particulier' | 'entreprise'>('particulier');
 
-  const handleProfileSelection = (selectedProfile: 'fournisseur' | 'collecteur') => {
-    setProfileType(selectedProfile);
+  const handleProfileSelection = (selectedRole: 'fournisseur' | 'collecteur') => {
+    setRole(selectedRole);
     setStep(2);
+  };
+
+  const handleFinish = (data: any) => {
+    console.log("Données finales du profil :", data);
+    // Logique d'inscription finale ici (Appel API, etc.)
   };
 
   return (
     <div className="min-h-screen w-full bg-neutral-50 flex items-center justify-center p-4">
+      
+      {/* ÉTAPE 1 : Sélection du profil */}
       {step === 1 && (
-        <RegisterProfileSelection onNext={handleProfileSelection} />
-      )}
-
-      {step === 2 && (
-        <CollectorInfoForm 
-          onBack={() => setStep(1)} 
-          onNext={() => setStep(3)} 
+        <RegisterProfileSelection 
+          onNext={(selectedRole) => handleProfileSelection(selectedRole as 'fournisseur' | 'collecteur')} 
         />
       )}
 
-      {step === 3 && (
-        <div className="bg-white p-10 rounded-2xl shadow-sm text-center">
-          <h2 className="text-2xl font-bold">Étape 3 : Finalisation</h2>
-          <p className="text-gray-500 mt-2">Vérification de l'email en cours...</p>
-        </div>
+      {/* ÉTAPE 2 : Informations supplémentaires (Dynamique selon le rôle) */}
+      {step === 2 && (
+        <>
+          {role === 'collecteur' ? (
+            <CollectorForm 
+              onBack={() => setStep(1)} 
+              onNext={() => setStep(3)} 
+            />
+          ) : (
+            <FournisseurForm 
+              type={fournisseurType} // 'particulier' ou 'entreprise'
+              onBack={() => setStep(1)} 
+              onNext={() => setStep(3)} 
+            />
+          )}
+        </>
       )}
+
+      {/* ÉTAPE 3 : Finalisation (Photo & Biographie) */}
+      {step === 3 && (
+        <FinalisationForm 
+          role={role}
+          onBack={() => setStep(2)} 
+          onFinish={handleFinish}
+        />
+      )}
+      
     </div>
   );
 }
