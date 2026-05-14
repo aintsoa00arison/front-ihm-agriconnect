@@ -28,12 +28,15 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
     e.preventDefault();
     
     if (view === 'auth') {
-      if (!isLogin) {
+      if (isLogin) {
+        // Simulation de connexion réussie -> Redirection vers le Dashboard
+        // onSubmit peut toujours servir pour logger les data en console par exemple
+        onSubmit?.({ email, password, mode: 'login' });
+        router.push('/dashboard'); 
+      } else {
         if (!agreedToTerms) return alert("Veuillez accepter les conditions d'utilisation.");
         setView('forgot'); 
-        return;
       }
-      onSubmit?.({ email, password, mode: 'login' });
     } 
     else if (view === 'forgot') {
       if (!isLogin) router.push('/register'); 
@@ -41,10 +44,13 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
     }
     else if (view === 'reset') {
       onSubmit?.({ email, newPassword, mode: 'reset_password' });
+      // Après un reset réussi, on peut aussi rediriger vers le login ou dashboard
+      setIsLogin(true);
+      setView('auth');
     }
   };
 
- // --- VUE 2 & 3 COMPACTÉES (Vérification & Reset) ---
+  // --- VUE 2 & 3 COMPACTÉES (Vérification & Reset) ---
   if (view === 'forgot' || view === 'reset') {
     return (
       <div className="w-full max-w-xl p-6 md:p-8 space-y-6 animate-in fade-in duration-500">
@@ -74,13 +80,8 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
                   required
                 />
               </div>
-              {/* Option Renvoyer le code */}
               <div className="text-right">
-                <button 
-                  type="button" 
-                  className="text-[11px] font-bold text-primary hover:underline transition-all"
-                  onClick={() => {/* Logique pour renvoyer le code */}}
-                >
+                <button type="button" className="text-[11px] font-bold text-primary hover:underline transition-all">
                   Renvoyer le code
                 </button>
               </div>
@@ -104,11 +105,7 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
             {view === 'forgot' ? "Vérifier" : "Mettre à jour"}
           </button>
           
-          <button 
-            type="button" 
-            onClick={() => setView('auth')} 
-            className="text-xs font-bold text-input-element/60 hover:text-primary hover:underline w-full text-center transition-colors"
-          >
+          <button type="button" onClick={() => setView('auth')} className="text-xs font-bold text-input-element/60 hover:text-primary hover:underline w-full text-center transition-colors">
             Retour
           </button>
         </form>
@@ -155,7 +152,6 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
               <input type={showPassword ? "text" : "password"} placeholder="••••••••" className="input-auth h-11 text-sm focus:bg-white" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
             </div>
 
-            {/* Checkbox Conditions d'utilisation */}
             <div className="flex items-start space-x-3 pt-1">
               <label className="flex items-center cursor-pointer group pt-0.5">
                 <div className="relative flex items-center justify-center">

@@ -1,4 +1,3 @@
-// app/(auth)/login/_components/AuthSidebar.tsx
 import Image from 'next/image';
 
 export default function AuthSidebar() {
@@ -18,12 +17,12 @@ export default function AuthSidebar() {
       </div>
 
       {/* 2. Texte en bas à gauche */}
-      <div className="relative z-10 space-y-2 max-w-xs animate-in slide-in-from-bottom-4 duration-700">
+      <div className="relative z-10 space-y-2 max-w-xl animate-in slide-in-from-bottom-4 duration-700">
         <h1 className="text-3xl font-bold text-white leading-tight tracking-tight">
           Cultivez vos connexions
         </h1>
         <p className="text-white/70 text-sm leading-relaxed">
-          Rejoignez un écosystème premium où fournisseurs et collecteurs interagissent avec simplicité et fiabilité.
+          Rejoignez un écosystème premium où fournisseurs et <br/> collecteurs interagissent avec simplicité et fiabilité.
         </p>
       </div>
     </div>
