@@ -1,40 +1,119 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* Font Family */
-  --font-sans: var(--font-manrope), ui-sans-serif, system-ui;
-
-  /* Colors - Palette Primaire */
+  /* Palette AgriConnect */
   --color-primary: #2E7D32;
   --color-secondary: #FFA000;
   --color-tertiary: #795548;
   --color-neutral: #F8F9FA;
   
-  /* Alertes */
-  --color-alert-red: #EF4444;
-
-  /* Couleurs avec Opacité et États spécifiques */
-  --color-separator: #8F9192/45;
-  --color-light-bg: #C8FFBF/38;
-  --color-bg-input: #F0F2F5/36;
-  --color-input-border: #8F9193/30;
+  --color-separator: rgba(143, 145, 146, 0.45);
+  --color-light-bg: rgba(200, 255, 191, 0.38);
+  --color-bg-input: rgba(240, 242, 245, 0.36);
+  --color-input-border: rgba(143, 145, 147, 0.3);
   --color-input-element: #777A7E;
-  --color-input-icon: #777A7E/39;
+  --color-input-icon: rgba(119, 122, 126, 0.39);
   --color-label: #191C1D;
 
-  /* Background/Foreground standards */
-  --color-background: #ffffff;
-  --color-foreground: #191C1D;
-}
-
-:root {
+  /* On définit l'angle de 9px comme une variable de thème */
+  --radius-auth: 9px;
   --font-manrope: "Manrope", sans-serif;
 }
 
+/* Styles de base */
 body {
-  background-color: var(--color-background);
-  color: var(--color-foreground);
-  font-family: var(--font-sans);
+  background-color: #ffffff;
+  color: var(--color-label);
+  font-family: var(--font-manrope), ui-sans-serif, system-ui;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer components {
+  /* BOUTON PRIMAIRE (9px) - CORRIGÉ */
+  .btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Correction ici */
+    font-weight: 700;
+    transition: all 0.2s;
+    background-color: var(--color-primary);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-auth);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 10px 15px -3px rgba(46, 125, 50, 0.2);
+  }
+
+  .btn-primary:hover {
+    opacity: 0.9;
+  }
+
+  .btn-primary:active {
+    transform: scale(0.95);
+  }
+
+  /* INPUT AUTH (9px) */
+  .input-auth {
+    width: 100%;
+    background-color: var(--color-bg-input);
+    border: 2px solid var(--color-input-border);
+    border-radius: var(--radius-auth);
+    padding: 1rem 1.5rem 1rem 3rem; /* Espace pour l'icône à gauche */
+    outline: none;
+    transition: all 0.2s;
+    color: var(--color-label);
+  }
+
+  .input-auth:focus {
+    border-color: rgba(46, 125, 50, 0.5);
+    background-color: white;
+  }
+
+  .input-auth::placeholder {
+    color: var(--color-input-element);
+    opacity: 0.5;
+  }
+
+  /* UTILITAIRES FORMULAIRE */
+  .auth-label {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-label);
+    display: block;
+    margin-left: 0.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+
+
+  .input-icon-container {
+    position: absolute;
+    left: 1rem;
+    top: 3.1rem; 
+    color: var(--color-input-icon);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+  }
+  
+  .input-password-toggle {
+    position: absolute;
+    right: 1rem;
+    top: 3.1rem; 
+    color: var(--color-input-element);
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.6;
+  }
+  .input-icon-no-label {
+    position: absolute;
+    left: 1rem;
+    top: 0.5rem; 
+    color: var(--color-input-icon);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+  }
 }

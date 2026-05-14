@@ -1,3 +1,4 @@
+// components/Navbar.tsx
 "use client";
 
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
@@ -18,17 +19,14 @@ export default function Navbar({ setView }: NavbarProps) {
   ];
 
   useEffect(() => {
-    // On ne lance l'observation que si on est sur la home
     const observerOptions = {
       root: null,
-      // Change l'état quand la section occupe 50% du viewport
       rootMargin: '-50% 0px -50% 0px', 
       threshold: 0,
     };
 
     const observerCallback = (entries: IntersectionObserverEntry[]) => {
       entries.forEach((entry) => {
-        // Si la section entre dans la zone définie par rootMargin
         if (entry.isIntersecting) {
           setActiveSection(entry.target.id);
         }
@@ -37,24 +35,22 @@ export default function Navbar({ setView }: NavbarProps) {
 
     const observer = new IntersectionObserver(observerCallback, observerOptions);
 
-    // On observe chaque section définie dans navLinks
     navLinks.forEach((link) => {
       const section = document.getElementById(link.id);
       if (section) observer.observe(section);
     });
 
     return () => observer.disconnect();
-  }, []); // On peut ajouter [view] ici si nécessaire
+  }, []);
 
   const handleNavClick = (id: string) => {
     setView('home');
     setActiveSection(id);
     
-    // Petit délai pour laisser le temps au flou de disparaître si on change de vue
     setTimeout(() => {
       const element = document.getElementById(id);
       if (element) {
-        const offset = 80; // Hauteur de ta navbar pour ne pas cacher le titre
+        const offset = 80;
         const elementPosition = element.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - offset;
 
@@ -67,7 +63,7 @@ export default function Navbar({ setView }: NavbarProps) {
   };
 
   return (
-    <nav className="w-full bg-white/80 backdrop-blur-md sticky top-0 z-50 font-sans border-b border-neutral">
+    <nav className="w-full bg-white/80 backdrop-blur-md sticky top-0 z-50 font-sans ">
       <div className="max-w-[1440px] mx-auto flex items-center justify-between px-6 lg:px-16 py-5">
         
         {/* Logo */}
@@ -81,7 +77,7 @@ export default function Navbar({ setView }: NavbarProps) {
           </div>
         </div>
 
-        {/* Liens Centraux dynamiques */}
+        {/* Liens Centraux */}
         <div className="hidden lg:flex items-center space-x-12">
           {navLinks.map((link) => {
             const isActive = activeSection === link.id;
@@ -102,14 +98,19 @@ export default function Navbar({ setView }: NavbarProps) {
           })}
         </div>
 
-        {/* Boutons d'action */}
+        {/* Boutons d'action utilisant les classes globales */}
         <div className="flex items-center space-x-8">
-          <Link href="/connexion" className="text-label font-bold text-sm hover:text-primary transition-colors">
+          <Link 
+            href="/login" 
+            className="text-label font-bold text-sm hover:text-primary transition-colors"
+          >
             Se connecter
           </Link>
+          
+          {/* Utilisation de .btn-primary pour l'arrondi de 9px et le style uniforme */}
           <Link 
-            href="/inscription" 
-            className="bg-primary text-white px-7 py-3.5 rounded-full font-bold text-sm hover:shadow-lg hover:scale-105 transition-all active:scale-95"
+            href="/login" 
+            className="btn-primary !py-3 !px-7 text-sm shadow-none"
           >
             Commencer
           </Link>

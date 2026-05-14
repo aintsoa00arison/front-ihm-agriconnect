@@ -7,16 +7,15 @@ const manrope = Manrope({
   variable: '--font-manrope', // On crée une variable CSS
 });
 
+// app/layout.tsx
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
-    <html lang="fr" className={manrope.variable}>
-      <body className="font-sans antialiased">
-        {children}
-      </body>
+    <html lang="fr">
+      <body>{children}</body>
     </html>
-  );
+  )
 }
