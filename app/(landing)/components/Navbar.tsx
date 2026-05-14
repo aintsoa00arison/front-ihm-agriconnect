@@ -99,22 +99,22 @@ export default function Navbar({ setView }: NavbarProps) {
         </div>
 
         {/* Boutons d'action utilisant les classes globales */}
-        <div className="flex items-center space-x-8">
-          <Link 
-            href="/login" 
-            className="text-label font-bold text-sm hover:text-primary transition-colors"
-          >
-            Se connecter
-          </Link>
-          
-          {/* Utilisation de .btn-primary pour l'arrondi de 9px et le style uniforme */}
-          <Link 
-            href="/login" 
-            className="btn-primary !py-3 !px-7 text-sm shadow-none"
-          >
-            Commencer
-          </Link>
-        </div>
+
+          <div className="flex items-center space-x-8">
+            <Link 
+              href="/login" 
+              className="text-label font-bold text-sm hover:text-primary transition-colors"
+            >
+              Se connecter
+            </Link>
+            
+            <Link 
+              href="/login?mode=register" 
+              className="btn-primary !py-3 !px-7 text-sm shadow-none"
+            >
+              Commencer
+            </Link>
+          </div>
       </div>
     </nav>
   );

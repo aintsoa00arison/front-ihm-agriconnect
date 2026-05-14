@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation'; // Importation du router
-import { Mail, Lock, Eye, EyeOff, Key } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Mail, Lock, Eye, EyeOff, Key, Check } from 'lucide-react';
 
 interface AuthFormProps {
   mode: string;
@@ -10,10 +10,11 @@ interface AuthFormProps {
 }
 
 export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps) {
-  const router = useRouter(); // Initialisation du router
+  const router = useRouter();
   const [view, setView] = useState<'auth' | 'forgot' | 'reset'>('auth');
-  const [isLogin, setIsLogin] = useState(initialMode === 'login');
+  const [isLogin, setIsLogin] = useState(initialMode !== 'register');
   const [showPassword, setShowPassword] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // États des champs
   const [email, setEmail] = useState("");
@@ -26,175 +27,159 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 1. ÉCRAN ACCUEIL (LOGIN / INSCRIPTION)
     if (view === 'auth') {
       if (!isLogin) {
-        setView('forgot'); // Bascule vers vérification pour inscription
+        if (!agreedToTerms) return alert("Veuillez accepter les conditions d'utilisation.");
+        setView('forgot'); 
         return;
       }
       onSubmit?.({ email, password, mode: 'login' });
     } 
-    
-    // 2. ÉCRAN VÉRIFICATION CODE
     else if (view === 'forgot') {
-      if (onSubmit) {
-        onSubmit({ email, code: verificationCode, mode: 'verify' });
-      }
-
-      // LOGIQUE DE REDIRECTION
-      if (!isLogin) {
-        // Si on vient de l'inscription -> Direction page de profil (register)
-        router.push('/register'); 
-      } else {
-        // Si on vient de "Mot de passe oublié" -> Direction reset
-        setView('reset');
-      }
+      if (!isLogin) router.push('/register'); 
+      else setView('reset');
     }
-
-    // 3. ÉCRAN RÉINITIALISATION
     else if (view === 'reset') {
       onSubmit?.({ email, newPassword, mode: 'reset_password' });
     }
   };
 
-  // --- VUE 2 : VÉRIFICATION DU CODE ---
-  if (view === 'forgot') {
+ // --- VUE 2 & 3 COMPACTÉES (Vérification & Reset) ---
+  if (view === 'forgot' || view === 'reset') {
     return (
-      <div className="w-full max-w-2xl p-8 md:p-10 ml-0 mr-auto space-y-10">
-        <div className="space-y-3">
-          <h2 className="text-[40px] font-bold text-primary leading-tight">Vérification</h2>
-          <p className="text-label text-base font-medium leading-relaxed">
-            Nous vous avons envoyé un code à l'adresse email <span className="font-bold">{email || "votre email"}</span>. 
-            Veuillez l'insérer dans le champ ci-dessous :
+      <div className="w-full max-w-xl p-6 md:p-8 space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-2">
+          <h2 className="text-3xl font-bold text-primary leading-tight">
+            {view === 'forgot' ? "Vérification" : "Nouveau mot de passe"}
+          </h2>
+          <p className="text-label text-sm font-medium">
+            {view === 'forgot' 
+              ? `Nous vous avons envoyé un code à ${email || "votre email"}. Veuillez l'insérer ci-dessous :`
+              : "Définissez votre nouveau mot de passe sécurisé."}
           </p>
         </div>
 
-        <form className="space-y-8" onSubmit={handleSubmit}>
-          <div className="relative">
-            <div className="input-icon-container input-icon-no-label">
-              <Key size={20} />
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          {view === 'forgot' ? (
+            <div className="space-y-2">
+              <div className="relative">
+                <div className="input-icon-container input-icon-no-label"><Key size={18} /></div>
+                <input 
+                  type="text" 
+                  placeholder="XXXXXXXX" 
+                  className="input-auth text-center tracking-[0.5em] font-mono h-12 uppercase"
+                  value={verificationCode}
+                  maxLength={8}
+                  onChange={(e) => setVerificationCode(e.target.value.toUpperCase())}
+                  required
+                />
+              </div>
+              {/* Option Renvoyer le code */}
+              <div className="text-right">
+                <button 
+                  type="button" 
+                  className="text-[11px] font-bold text-primary hover:underline transition-all"
+                  onClick={() => {/* Logique pour renvoyer le code */}}
+                >
+                  Renvoyer le code
+                </button>
+              </div>
             </div>
-            <input 
-              type="text" 
-              placeholder="XXXXXXXX" 
-              className="input-auth text-center tracking-[0.5em] font-mono focus:bg-white uppercase"
-              value={verificationCode}
-              maxLength={8}
-              onChange={(e) => setVerificationCode(e.target.value.toUpperCase().slice(0, 8))}
-              required
-            />
-            <div className="text-right mt-2">
-              <button type="button" className="text-xs font-bold text-primary hover:underline">
-                renvoyer le code
-              </button>
-            </div>
-          </div>
+          ) : (
+            <>
+              <div className="relative">
+                <label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">Nouveau mot de passe</label>
+                <div className="input-icon-container"><Lock size={18} /></div>
+                <input type="password" className="input-auth h-11 focus:bg-white" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+              </div>
+              <div className="relative">
+                <label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">Confirmer</label>
+                <div className="input-icon-container"><Lock size={18} /></div>
+                <input type="password" className="input-auth h-11 focus:bg-white" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} required />
+              </div>
+            </>
+          )}
 
-          <button type="submit" className="btn-primary w-full mt-4">
-            Vérifier
+          <button type="submit" className="btn-primary w-full h-12 mt-2">
+            {view === 'forgot' ? "Vérifier" : "Mettre à jour"}
           </button>
-
-          <div className="pt-6 border-t border-separator/30">
-            <button 
-              type="button" 
-              onClick={() => setView('auth')}
-              className="text-xs font-bold text-primary hover:underline w-full text-center"
-            >
-              {!isLogin ? "Modifier l'adresse email" : "Retour à la connexion"}
-            </button>
-          </div>
+          
+          <button 
+            type="button" 
+            onClick={() => setView('auth')} 
+            className="text-xs font-bold text-input-element/60 hover:text-primary hover:underline w-full text-center transition-colors"
+          >
+            Retour
+          </button>
         </form>
       </div>
     );
   }
 
-  // --- VUE 3 : RÉINITIALISATION (MDP OUBLIÉ UNIQUEMENT) ---
-  if (view === 'reset') {
-    return (
-      <div className="w-full max-w-2xl p-8 md:p-10 ml-0 mr-auto space-y-10">
-        <div className="space-y-3">
-          <h2 className="text-[40px] font-bold text-primary leading-tight">Nouveau mot de passe</h2>
-          <p className="text-label text-base font-medium">
-            Définissez votre nouveau mot de passe sécurisé.
-          </p>
-        </div>
-
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <div className="relative">
-            <label className="text-sm font-bold text-label block ml-1 mb-2">Mot de passe</label>
-            <div className="input-icon-container"><Lock size={20} /></div>
-            <input 
-              type={showPassword ? "text" : "password"} 
-              className="input-auth focus:bg-white"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-            />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} className="input-password-toggle">
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
-          </div>
-          <div className="relative">
-            <label className="text-sm font-bold text-label block ml-1 mb-2">Confirmer le mot de passe</label>
-            <div className="input-icon-container"><Lock size={20} /></div>
-            <input 
-              type={showPassword ? "text" : "password"} 
-              className="input-auth focus:bg-white"
-              value={confirmNewPassword}
-              onChange={(e) => setConfirmNewPassword(e.target.value)}
-              required
-            />
-          </div>
-          <button type="submit" className="btn-primary w-full">Mettre à jour</button>
-        </form>
-      </div>
-    );
-  }
-
-  // --- VUE 1 : AUTHENTIFICATION ---
+  // --- VUE 1 : AUTHENTIFICATION PRINCIPALE ---
   return (
-    <div className="w-full max-w-2xl p-8 md:p-10 ml-0 mr-auto space-y-10">
-      <div className="space-y-3">
-        <h2 className="text-[40px] font-bold text-primary leading-tight">AgriConnect</h2>
-        <p className="text-label text-base font-medium">
-          {isLogin ? "Bon retour. Veuillez entrer vos identifiants." : "Bienvenue ! Veuillez fournir les informations demandées."}
+    <div className="w-full max-w-xl p-6 md:p-8 space-y-6 animate-in fade-in duration-500">
+      <div className="space-y-1">
+        <h2 className="text-3xl font-bold text-primary leading-tight tracking-tight">AgriConnect</h2>
+        <p className="text-label text-sm font-medium">
+          {isLogin ? "Bon retour. Veuillez entrer vos identifiants de connexion." : "Bienvenue ! Veuillez fournir les informations demandées."}
         </p>
       </div>
 
-      <div className="flex w-full border-b border-separator/30">
-        <button type="button" onClick={() => setIsLogin(true)} className={`flex-1 pb-4 pt-4 text-lg font-bold transition-all border-b-4 rounded-t-[9px] ${isLogin ? 'text-primary border-primary bg-light-bg' : 'text-input-element/40 border-transparent'}`}>Connexion</button>
-        <button type="button" onClick={() => setIsLogin(false)} className={`flex-1 pb-4 pt-4 text-lg font-bold transition-all border-b-4 rounded-t-[9px] ${!isLogin ? 'text-primary border-primary bg-light-bg' : 'text-input-element/40 border-transparent'}`}>Inscription</button>
+      <div className="flex w-full border-b border-separator/20">
+        <button type="button" onClick={() => setIsLogin(true)} className={`flex-1 pb-3 pt-2 text-base font-bold transition-all border-b-2 ${isLogin ? 'text-primary border-primary bg-light-bg/20' : 'text-input-element/40 border-transparent'}`}>Connexion</button>
+        <button type="button" onClick={() => setIsLogin(false)} className={`flex-1 pb-3 pt-2 text-base font-bold transition-all border-b-2 ${!isLogin ? 'text-primary border-primary bg-light-bg/20' : 'text-input-element/40 border-transparent'}`}>Inscription</button>
       </div>
 
-      <form className="space-y-6" onSubmit={handleSubmit}>
+      <form className="space-y-4" onSubmit={handleSubmit}>
         <div className="relative">
-          <label className="text-sm font-bold text-label block ml-1 mb-2">Adresse email</label>
-          <div className="input-icon-container"><Mail size={20} /></div>
-          <input type="email" placeholder="moi@exemple.com" className="input-auth focus:bg-white" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">Adresse email</label>
+          <div className="input-icon-container"><Mail size={18} /></div>
+          <input type="email" placeholder="nom@exemple.com" className="input-auth h-11 text-sm focus:bg-white" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
 
         <div className="relative">
-          <label className="text-sm font-bold text-label block ml-1 mb-2">Mot de passe</label>
-          <div className="input-icon-container"><Lock size={20} /></div>
-          <input type={showPassword ? "text" : "password"} placeholder="••••••••••••" className="input-auth focus:bg-white" value={password} onChange={(e) => setPassword(e.target.value)} required />
-          <button type="button" onClick={() => setShowPassword(!showPassword)} className="input-password-toggle">{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}</button>
+          <label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">Mot de passe</label>
+          <div className="input-icon-container"><Lock size={18} /></div>
+          <input type={showPassword ? "text" : "password"} placeholder="••••••••" className="input-auth h-11 text-sm focus:bg-white" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <button type="button" onClick={() => setShowPassword(!showPassword)} className="input-password-toggle">
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
         </div>
 
         {!isLogin && (
-          <div className="relative">
-            <label className="text-sm font-bold text-label block ml-1 mb-2">Confirmez le mot de passe</label>
-            <div className="input-icon-container"><Lock size={20} /></div>
-            <input type={showPassword ? "text" : "password"} placeholder="••••••••••••" className="input-auth focus:bg-white" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
-          </div>
+          <>
+            <div className="relative animate-in slide-in-from-top-1">
+              <label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">Confirmez le mot de passe</label>
+              <div className="input-icon-container"><Lock size={18} /></div>
+              <input type={showPassword ? "text" : "password"} placeholder="••••••••" className="input-auth h-11 text-sm focus:bg-white" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+            </div>
+
+            {/* Checkbox Conditions d'utilisation */}
+            <div className="flex items-start space-x-3 pt-1">
+              <label className="flex items-center cursor-pointer group pt-0.5">
+                <div className="relative flex items-center justify-center">
+                  <input type="checkbox" className="peer hidden" checked={agreedToTerms} onChange={() => setAgreedToTerms(!agreedToTerms)} />
+                  <div className="w-5 h-5 border border-separator/40 rounded peer-checked:bg-primary peer-checked:border-primary transition-all"></div>
+                  <Check size={12} className="absolute text-white scale-0 peer-checked:scale-100 transition-transform stroke-[3px]" />
+                </div>
+              </label>
+              <span className="text-[11px] text-input-element leading-tight">
+                J'accepte les <span className="text-primary font-bold hover:underline cursor-pointer">Conditions d'Utilisation</span> et la <span className="text-primary font-bold hover:underline cursor-pointer">Politique de Confidentialité</span>.
+              </span>
+            </div>
+          </>
         )}
 
         {isLogin && (
           <div className="text-right">
-            <button type="button" onClick={() => { setIsLogin(true); setView('forgot'); }} className="text-xs font-bold text-primary hover:underline whitespace-nowrap">Mot de passe oublié ?</button>
+            <button type="button" onClick={() => setView('forgot')} className="text-[11px] font-bold text-primary hover:underline">Mot de passe oublié ?</button>
           </div>
         )}
 
-        <button type="submit" className="btn-primary w-full mt-4">{isLogin ? "Se connecter" : "S'inscrire"}</button>
+        <button type="submit" className="btn-primary w-full h-12 mt-2 text-sm shadow-lg shadow-primary/10 transition-transform active:scale-[0.98]">
+          {isLogin ? "Se connecter" : "S'inscrire"}
+        </button>
       </form>
     </div>
   );
