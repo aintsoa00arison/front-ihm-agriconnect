@@ -9,20 +9,30 @@ import FinalisationForm from './_components/FinalisationForm';
 export default function RegisterPage() {
   const [step, setStep] = useState(1);
   
-  // État pour le rôle global
+  // États globaux pour le backend
   const [role, setRole] = useState<'fournisseur' | 'collecteur'>('fournisseur');
-  
-  // État spécifique pour le fournisseur (à récupérer via ton ProfileSelection si besoin)
   const [fournisseurType, setFournisseurType] = useState<'particulier' | 'entreprise'>('particulier');
 
-  const handleProfileSelection = (selectedRole: 'fournisseur' | 'collecteur') => {
+  // Réception des données du Step 1
+  const handleProfileSelection = (
+    selectedRole: 'fournisseur' | 'collecteur', 
+    selectedSubType: 'particulier' | 'entreprise'
+  ) => {
     setRole(selectedRole);
+    setFournisseurType(selectedSubType);
     setStep(2);
   };
 
-  const handleFinish = (data: any) => {
-    console.log("Données finales du profil :", data);
-    // Logique d'inscription finale ici (Appel API, etc.)
+  const handleFinish = (finalData: any) => {
+    // Regroupement de toutes les données collectées pour ton API
+    const completePayload = {
+      role,
+      ...(role === 'fournisseur' && { type_fournisseur: fournisseurType }),
+      ...finalData // Contient la bio, photo, et les champs du step 2
+    };
+
+    console.log("Données finales prêtes pour l'envoi API :", completePayload);
+    // Ton appel Axios/Fetch ici
   };
 
   return (
@@ -31,11 +41,11 @@ export default function RegisterPage() {
       {/* ÉTAPE 1 : Sélection du profil */}
       {step === 1 && (
         <RegisterProfileSelection 
-          onNext={(selectedRole) => handleProfileSelection(selectedRole as 'fournisseur' | 'collecteur')} 
+          onNext={(selectedRole, selectedSubType) => handleProfileSelection(selectedRole, selectedSubType)} 
         />
       )}
 
-      {/* ÉTAPE 2 : Informations supplémentaires (Dynamique selon le rôle) */}
+      {/* ÉTAPE 2 : Informations supplémentaires */}
       {step === 2 && (
         <>
           {role === 'collecteur' ? (
@@ -45,7 +55,7 @@ export default function RegisterPage() {
             />
           ) : (
             <FournisseurForm 
-              type={fournisseurType} // 'particulier' ou 'entreprise'
+              type={fournisseurType} // Transmis dynamiquement ('particulier' ou 'entreprise')
               onBack={() => setStep(1)} 
               onNext={() => setStep(3)} 
             />
@@ -53,7 +63,7 @@ export default function RegisterPage() {
         </>
       )}
 
-      {/* ÉTAPE 3 : Finalisation (Photo & Biographie) */}
+      {/* ÉTAPE 3 : Finalisation */}
       {step === 3 && (
         <FinalisationForm 
           role={role}
