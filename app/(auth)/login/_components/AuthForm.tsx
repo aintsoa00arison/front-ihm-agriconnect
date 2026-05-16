@@ -8,8 +8,8 @@ import { mockLoginService, sendVerificationEmail, verifyCodeService } from '../s
 import { checkEmailAvailability } from '../../register/services/registerService';
 import { useRegisterStore } from '../../register/registerStore';
 
-// Importation de ton fichier de validation centralisé
-import { validateEmail } from '.././../../utils/validation';
+// Importation de la validation et de l'analyse précise des emails
+import { validateEmail, analyzeEmailError } from '.././../../utils/validation';
 
 interface AuthFormProps {
   mode: string;
@@ -57,8 +57,9 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
     // --- VUE 1 : CONNEXION, INSCRIPTION OU DEMANDE DE CODE DE RÉCUPÉRATION ---
     if (view === 'auth') {
       if (isForgotPasswordMode) {
-        if (!cleanEmail) return setErrorNotification("Veuillez entrer votre adresse email.");
-        if (!validateEmail(cleanEmail)) return setErrorNotification("Le format de l'adresse email est invalide.");
+        if (!validateEmail(cleanEmail)) {
+          return setErrorNotification(analyzeEmailError(cleanEmail));
+        }
         
         setIsLoading(true);
         try {
@@ -76,7 +77,9 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
         }
       } 
       else if (isLogin) {
-        if (!cleanEmail || !validateEmail(cleanEmail)) return setErrorNotification("Le format de l'adresse email est invalide.");
+        if (!validateEmail(cleanEmail)) {
+          return setErrorNotification(analyzeEmailError(cleanEmail));
+        }
         
         setIsLoading(true);
         try {
@@ -100,12 +103,15 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
         }
       } else {
         // --- CAS INSCRIPTION ---
-        // Modification ici : Remplacement du alert() par notre notification d'erreur stylisée
         if (!agreedToTerms) {
           return setErrorNotification("Veuillez accepter les conditions d'utilisation et la politique de confidentialité pour continuer.");
         }
-        if (!cleanEmail || !validateEmail(cleanEmail)) return setErrorNotification("Le format de l'adresse email est invalide.");
-        if (password !== confirmPassword) return setErrorNotification("Les mots de passe ne correspondent pas.");
+        if (!validateEmail(cleanEmail)) {
+          return setErrorNotification(analyzeEmailError(cleanEmail));
+        }
+        if (password !== confirmPassword) {
+          return setErrorNotification("Les mots de passe ne correspondent pas.");
+        }
         
         setIsLoading(true);
         try {
@@ -204,7 +210,9 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
     setErrorNotification(null);
     setSuccessNotification(null);
     const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail || !validateEmail(cleanEmail)) return setErrorNotification("Format d'email invalide.");
+    if (!validateEmail(cleanEmail)) {
+      return setErrorNotification(analyzeEmailError(cleanEmail));
+    }
 
     try {
       const response = await sendVerificationEmail(cleanEmail);

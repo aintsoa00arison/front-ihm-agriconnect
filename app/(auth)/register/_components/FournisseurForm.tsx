@@ -10,7 +10,9 @@ import {
   validatePhone, 
   validateNif, 
   validateCin, 
-  validateStat 
+  validateStat,
+  formatPhone,
+  formatCin
 } from '.././../../utils/validation'; 
 
 interface Props {
@@ -85,29 +87,29 @@ export default function FournisseurForm({ type, initialData, onBack, onNext }: P
     e.preventDefault();
     if (hasErrors) return;
 
-    // Regroupement conditionnel des données selon la structure cible
+    // Regroupement conditionnel et nettoyage des espaces avant envoi
     const dataToSubmit = isEntreprise ? {
       type: 'entreprise',
       structure: {
         nom_entite: formData.nomEntite,
         localisation: formData.localisationEntite,
-        contact_exploitation: formData.contactExploitation,
+        contact_exploitation: formData.contactExploitation.replace(/\s/g, ''),
         email_contact: formData.emailContact,
         nif: formData.nif,
         stat: formData.stat,
       },
       responsable: {
         nom_complet: formData.nomResponsable,
-        telephone_direct: formData.telephoneResponsable,
-        cin: formData.cinResponsable,
+        telephone_direct: formData.telephoneResponsable.replace(/\s/g, ''),
+        cin: formData.cinResponsable.replace(/\s/g, ''),
       },
       productions: selectedProductions
     } : {
       type: 'particulier',
       profil: {
         nom_complet: formData.nomParticulier,
-        telephone: formData.telephoneParticulier,
-        cin: formData.cinParticulier,
+        telephone: formData.telephoneParticulier.replace(/\s/g, ''),
+        cin: formData.cinParticulier.replace(/\s/g, ''),
         localisation: formData.localisationParticulier,
       },
       productions: selectedProductions
@@ -191,12 +193,15 @@ export default function FournisseurForm({ type, initialData, onBack, onNext }: P
                     <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Contact exploitation</label>
                     <div className="input-icon-step2"><Phone size={18} /></div>
                     <input 
-                      type="tel" 
+                      type="text" 
                       placeholder="034 xx xxx xx" 
                       className="input-auth focus:bg-white text-xs h-10" 
-                      maxLength={10}
+                      maxLength={13}
                       value={formData.contactExploitation}
-                      onChange={(e) => handleInputChange('contactExploitation', e.target.value)}
+                      onChange={(e) => {
+                        const formatted = formatPhone(e.target.value);
+                        handleInputChange('contactExploitation', formatted);
+                      }}
                       required 
                     />
                     {!isContactExploitationValid && (
@@ -291,12 +296,15 @@ export default function FournisseurForm({ type, initialData, onBack, onNext }: P
                     <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Téléphone direct</label>
                     <div className="input-icon-step2"><Phone size={18}/></div>
                     <input 
-                      type="tel" 
+                      type="text" 
                       placeholder="03x xx xxx xx" 
                       className="input-auth focus:bg-white text-xs h-10" 
-                      maxLength={10}
+                      maxLength={13}
                       value={formData.telephoneResponsable}
-                      onChange={(e) => handleInputChange('telephoneResponsable', e.target.value)}
+                      onChange={(e) => {
+                        const formatted = formatPhone(e.target.value);
+                        handleInputChange('telephoneResponsable', formatted);
+                      }}
                       required 
                     />
                     {!isTelephoneResponsableValid && (
@@ -312,16 +320,19 @@ export default function FournisseurForm({ type, initialData, onBack, onNext }: P
                     <div className="input-icon-step2"><CreditCard size={18}/></div>
                     <input 
                       type="text" 
-                      placeholder="12 chiffres" 
+                      placeholder="101 000 000 000" 
                       className="input-auth focus:bg-white text-xs h-10" 
-                      maxLength={12}
+                      maxLength={15}
                       value={formData.cinResponsable}
-                      onChange={(e) => handleInputChange('cinResponsable', e.target.value)}
+                      onChange={(e) => {
+                        const formatted = formatCin(e.target.value);
+                        handleInputChange('cinResponsable', formatted);
+                      }}
                       required 
                     />
                     {!isCinResponsableValid && (
                       <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
-                        <AlertTriangle size={11} /> Requis : 12 chiffres.
+                        <AlertTriangle size={11} /> Requis : 12 chiffres et doit se terminer par 1 et 2.
                       </p>
                     )}
                   </div>
@@ -356,12 +367,15 @@ export default function FournisseurForm({ type, initialData, onBack, onNext }: P
                   <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Numéro de téléphone</label>
                   <div className="input-icon-step2"><Phone size={18}/></div>
                   <input 
-                    type="tel" 
+                    type="text" 
                     placeholder="03x xx xxx xx" 
                     className="input-auth focus:bg-white text-xs h-11" 
-                    maxLength={10}
+                    maxLength={13}
                     value={formData.telephoneParticulier}
-                    onChange={(e) => handleInputChange('telephoneParticulier', e.target.value)}
+                    onChange={(e) => {
+                      const formatted = formatPhone(e.target.value);
+                      handleInputChange('telephoneParticulier', formatted);
+                    }}
                     required 
                   />
                   {!isTelephoneParticulierValid && (
@@ -377,16 +391,19 @@ export default function FournisseurForm({ type, initialData, onBack, onNext }: P
                   <div className="input-icon-step2"><CreditCard size={18}/></div>
                   <input 
                     type="text" 
-                    placeholder="12 chiffres" 
+                    placeholder="101 000 000 000" 
                     className="input-auth focus:bg-white text-xs h-11" 
-                    maxLength={12}
+                    maxLength={15}
                     value={formData.cinParticulier}
-                    onChange={(e) => handleInputChange('cinParticulier', e.target.value)}
+                    onChange={(e) => {
+                      const formatted = formatCin(e.target.value);
+                      handleInputChange('cinParticulier', formatted);
+                    }}
                     required 
                   />
                   {!isCinParticulierValid && (
                     <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
-                      <AlertTriangle size={11} /> Requis : 12 chiffres.
+                      <AlertTriangle size={11} /> Requis : 12 chiffres et doit se terminer par 1 et 2.
                     </p>
                   )}
                 </div>

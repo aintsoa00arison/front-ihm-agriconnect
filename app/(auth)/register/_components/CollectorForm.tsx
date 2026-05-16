@@ -10,11 +10,13 @@ import {
   validatePhone, 
   validateNif, 
   validateCin, 
-  validateStat 
+  validateStat,
+  formatPhone,
+  formatCin
 } from '.././../../utils/validation';
 
 interface Props {
-  initialData: any; // Ajout de la prop pour la mémoire du formulaire
+  initialData: any; // Mémoire du formulaire pour la réhydratation
   onBack: () => void;
   onNext: (data: any) => void;
 }
@@ -65,19 +67,20 @@ export default function CollectorForm({ initialData, onBack, onNext }: Props) {
     e.preventDefault();
     if (hasErrors) return;
     
+    // Nettoyage des espaces pour envoyer des chaînes de chiffres pures au backend Django
     const dataToSubmit = {
       entreprise: {
         raison_sociale: formData.raisonSociale,
         siege_social: formData.siegeSocial,
-        telephone_pro: formData.telephonePro,
+        telephone_pro: formData.telephonePro.replace(/\s/g, ''),
         email_pro: formData.emailPro,
         nif: formData.nif,
         stat: formData.stat,
       },
       representant_legal: {
         nom_complet: formData.nomComplet,
-        telephone_direct: formData.telephoneDirect,
-        cin: formData.cin,
+        telephone_direct: formData.telephoneDirect.replace(/\s/g, ''),
+        cin: formData.cin.replace(/\s/g, ''),
       },
       besoins: selectedNeeds
     };
@@ -152,12 +155,15 @@ export default function CollectorForm({ initialData, onBack, onNext }: Props) {
                 <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Téléphone pro</label>
                 <div className="input-icon-step2"><Phone size={18} /></div>
                 <input 
-                  type="tel" 
+                  type="text" 
                   placeholder="034 xx xxx xx" 
                   className="input-auth focus:bg-white text-xs h-10" 
                   value={formData.telephonePro}
-                  onChange={(e) => handleInputChange('telephonePro', e.target.value)}
-                  maxLength={10}
+                  onChange={(e) => {
+                    const formatted = formatPhone(e.target.value);
+                    handleInputChange('telephonePro', formatted);
+                  }}
+                  maxLength={13} // 10 chiffres + 3 espaces générés
                   required 
                 />
                 {!isPhoneProValid && (
@@ -252,12 +258,15 @@ export default function CollectorForm({ initialData, onBack, onNext }: Props) {
                 <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Téléphone direct</label>
                 <div className="input-icon-step2"><Phone size={18}/></div>
                 <input 
-                  type="tel" 
+                  type="text" 
                   placeholder="032 xx xxx xx" 
                   className="input-auth focus:bg-white text-xs h-10" 
                   value={formData.telephoneDirect}
-                  onChange={(e) => handleInputChange('telephoneDirect', e.target.value)}
-                  maxLength={10}
+                  onChange={(e) => {
+                    const formatted = formatPhone(e.target.value);
+                    handleInputChange('telephoneDirect', formatted);
+                  }}
+                  maxLength={13} // 10 chiffres + 3 espaces générés
                   required 
                 />
                 {!isPhoneDirectValid && (
@@ -273,16 +282,19 @@ export default function CollectorForm({ initialData, onBack, onNext }: Props) {
                 <div className="input-icon-step2"><CreditCard size={18}/></div>
                 <input 
                   type="text" 
-                  placeholder="CIN ID" 
+                  placeholder="101 000 000 000" 
                   className="input-auth focus:bg-white text-xs h-10" 
                   value={formData.cin}
-                  onChange={(e) => handleInputChange('cin', e.target.value)}
-                  maxLength={12}
+                  onChange={(e) => {
+                    const formatted = formatCin(e.target.value);
+                    handleInputChange('cin', formatted);
+                  }}
+                  maxLength={15} // 12 chiffres et doit se terminer par 1 ou 2 + 3 espaces générés
                   required 
                 />
                 {!isCinValid && (
                   <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
-                    <AlertTriangle size={11} /> Requis : 12 chiffres.
+                    <AlertTriangle size={11} /> Requis : 12 chiffres et doit se terminer par 1 ou 2.
                   </p>
                 )}
               </div>
