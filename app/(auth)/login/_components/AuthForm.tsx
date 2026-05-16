@@ -5,7 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, Key, Check, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
 import { AuthFormData } from '../types/auth';
 import { mockLoginService, sendVerificationEmail, verifyCodeService } from '../services/authService';
-import { useAuthStore } from '../store/authStore';
+import { checkEmailAvailability } from '../../register/services/registerService';
+import { useRegisterStore } from '../../register/registerStore';
+
+// Importation de ton fichier de validation centralisé
+import { validateEmail } from '.././../../utils/validation';
 
 interface AuthFormProps {
   mode: string;
@@ -16,7 +20,7 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
   const router = useRouter();
   
   // Récupération de la fonction de mise à jour du store Zustand
-  const setRegisterDraft = useAuthStore((state) => state.setRegisterDraft);
+  const setRegisterDraft = useRegisterStore((state) => state.setRegisterDraft);
 
   const [view, setView] = useState<'auth' | 'forgot' | 'reset'>('auth');
   const [isLogin, setIsLogin] = useState(initialMode !== 'register');
@@ -48,14 +52,17 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
     setErrorNotification(null);
     setSuccessNotification(null);
     
+    const cleanEmail = email.trim().toLowerCase();
+
     // --- VUE 1 : CONNEXION, INSCRIPTION OU DEMANDE DE CODE DE RÉCUPÉRATION ---
     if (view === 'auth') {
       if (isForgotPasswordMode) {
-        if (!email.trim()) return setErrorNotification("Veuillez entrer votre adresse email.");
+        if (!cleanEmail) return setErrorNotification("Veuillez entrer votre adresse email.");
+        if (!validateEmail(cleanEmail)) return setErrorNotification("Le format de l'adresse email est invalide.");
         
         setIsLoading(true);
         try {
-          const response = await sendVerificationEmail(email.trim());
+          const response = await sendVerificationEmail(cleanEmail);
           if (response.success) {
             setSuccessNotification(response.message);
             setView('forgot');
@@ -69,9 +76,11 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
         }
       } 
       else if (isLogin) {
+        if (!cleanEmail || !validateEmail(cleanEmail)) return setErrorNotification("Le format de l'adresse email est invalide.");
+        
         setIsLoading(true);
         try {
-          const dataToSend: AuthFormData = { email: email.trim(), password };
+          const dataToSend: AuthFormData = { email: cleanEmail, password };
           const response = await mockLoginService(dataToSend);
           
           if (response.success && response.user) {
@@ -90,23 +99,37 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
           setIsLoading(false);
         }
       } else {
-        // CAS INSCRIPTION
-        if (!agreedToTerms) return alert("Veuillez accepter les conditions d'utilisation.");
+        // --- CAS INSCRIPTION ---
+        // Modification ici : Remplacement du alert() par notre notification d'erreur stylisée
+        if (!agreedToTerms) {
+          return setErrorNotification("Veuillez accepter les conditions d'utilisation et la politique de confidentialité pour continuer.");
+        }
+        if (!cleanEmail || !validateEmail(cleanEmail)) return setErrorNotification("Le format de l'adresse email est invalide.");
         if (password !== confirmPassword) return setErrorNotification("Les mots de passe ne correspondent pas.");
         
         setIsLoading(true);
         try {
-          const response = await sendVerificationEmail(email.trim());
+          // ÉTAPE A : Utilisation de ton service pour bloquer les doublons d'emails d'AgriConnect
+          const emailCheck = await checkEmailAvailability(cleanEmail);
+          
+          if (!emailCheck.available) {
+            setErrorNotification(emailCheck.message); 
+            setIsLoading(false);
+            return; 
+          }
+
+          // ÉTAPE B : Envoi du code OTP
+          const response = await sendVerificationEmail(cleanEmail);
           if (response.success) {
             setSuccessNotification("Un code de vérification vous a été envoyé. Veuillez le saisir.");
             
             setRegisterDraft({ 
-              email: email.trim(), 
+              email: cleanEmail, 
               password: password 
             });
 
             onSubmit?.({ 
-              email: email.trim(), 
+              email: cleanEmail, 
               password: password, 
               mode: 'register_draft' 
             });
@@ -127,7 +150,7 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
     else if (view === 'forgot') {
       setIsLoading(true);
       try {
-        const response = await verifyCodeService({ email: email.trim(), code: verificationCode });
+        const response = await verifyCodeService({ email: cleanEmail, code: verificationCode });
         
         if (response.success) {
           setSuccessNotification("Code validé avec succès !");
@@ -137,7 +160,7 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
               setRegisterDraft({ code: verificationCode });
 
               onSubmit?.({ 
-                email: email.trim(), 
+                email: cleanEmail, 
                 code: verificationCode,
                 mode: 'register_verified' 
               });
@@ -163,7 +186,7 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
     else if (view === 'reset') {
       if (newPassword !== confirmNewPassword) return setErrorNotification("Les mots de passe ne correspondent pas.");
       
-      onSubmit?.({ email, newPassword, mode: 'reset_password' });
+      onSubmit?.({ email: cleanEmail, newPassword, mode: 'reset_password' });
       setSuccessNotification("Votre mot de passe a bien été mis à jour.");
       
       setTimeout(() => {
@@ -180,8 +203,11 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
   const handleResendCode = async () => {
     setErrorNotification(null);
     setSuccessNotification(null);
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !validateEmail(cleanEmail)) return setErrorNotification("Format d'email invalide.");
+
     try {
-      const response = await sendVerificationEmail(email.trim());
+      const response = await sendVerificationEmail(cleanEmail);
       if (response.success) setSuccessNotification("Un nouveau code vous a été renvoyé.");
     } catch (error: any) {
       setErrorNotification(error.message || "Impossible de renvoyer le code.");
@@ -198,7 +224,7 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
           </h2>
           <p className="text-label text-sm font-medium">
             {view === 'forgot' 
-              ? `Nous vous avons envoyé un code à ${email}. Veuillez l'insérer ci-dessous :`
+              ? `Nous vous avons envoyé un code à ${email.trim().toLowerCase()}. Veuillez l'insérer ci-dessous :`
               : "Définissez votre nouveau mot de passe sécurisé."}
           </p>
         </div>
@@ -305,14 +331,14 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
       )}
 
       {errorNotification && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold animate-in fade-in slide-in-from-top-2 duration-300">
           <AlertTriangle size={18} className="flex-shrink-0 text-red-500 mt-0.5" />
           <p className="leading-relaxed">{errorNotification}</p>
         </div>
       )}
 
       {successNotification && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 text-xs font-semibold">
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 text-xs font-semibold animate-in fade-in slide-in-from-top-2 duration-300">
           <CheckCircle2 size={18} className="flex-shrink-0 text-green-500 mt-0.5" />
           <p className="leading-relaxed">{successNotification}</p>
         </div>

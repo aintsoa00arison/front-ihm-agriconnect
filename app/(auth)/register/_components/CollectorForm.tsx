@@ -3,31 +3,38 @@
 import { useState } from 'react';
 import { 
   Building2, MapPin, Phone, Mail, FileText, 
-  User, CreditCard, ChevronLeft, ChevronRight, Check 
+  User, CreditCard, ChevronLeft, ChevronRight, Check, AlertTriangle 
 } from 'lucide-react';
+import { 
+  validateEmail, 
+  validatePhone, 
+  validateNif, 
+  validateCin, 
+  validateStat 
+} from '.././../../utils/validation';
 
 interface Props {
+  initialData: any; // Ajout de la prop pour la mémoire du formulaire
   onBack: () => void;
-  // Modification pour passer les données récoltées au composant parent
   onNext: (data: any) => void;
 }
 
-export default function CollectorForm({ onBack, onNext }: Props) {
-  // 1. États pour les inputs textuels
+export default function CollectorForm({ initialData, onBack, onNext }: Props) {
+  // 1. États pour les inputs textuels initialisés avec initialData si disponible
   const [formData, setFormData] = useState({
-    raisonSociale: '',
-    siegeSocial: '',
-    telephonePro: '',
-    emailPro: '',
-    nif: '',
-    stat: '',
-    nomComplet: '',
-    telephoneDirect: '',
-    cin: ''
+    raisonSociale: initialData?.entreprise?.raison_sociale || '',
+    siegeSocial: initialData?.entreprise?.siege_social || '',
+    telephonePro: initialData?.entreprise?.telephone_pro || '',
+    emailPro: initialData?.entreprise?.email_pro || '',
+    nif: initialData?.entreprise?.nif || '',
+    stat: initialData?.entreprise?.stat || '',
+    nomComplet: initialData?.representant_legal?.nom_complet || '',
+    telephoneDirect: initialData?.representant_legal?.telephone_direct || '',
+    cin: initialData?.representant_legal?.cin || ''
   });
 
-  // 2. État pour la liste des besoins cochés
-  const [selectedNeeds, setSelectedNeeds] = useState<string[]>([]);
+  // 2. État pour la liste des besoins cochés réhydraté depuis initialData
+  const [selectedNeeds, setSelectedNeeds] = useState<string[]>(initialData?.besoins || []);
 
   // Gestionnaire des changements textuels
   const handleInputChange = (field: string, value: string) => {
@@ -43,10 +50,21 @@ export default function CollectorForm({ onBack, onNext }: Props) {
     );
   };
 
+  // --- VALIDATIONS EN TEMPS RÉEL (Via fichier utils) ---
+  const isEmailValid = validateEmail(formData.emailPro);
+  const isPhoneProValid = validatePhone(formData.telephonePro);
+  const isPhoneDirectValid = validatePhone(formData.telephoneDirect);
+  const isNifValid = validateNif(formData.nif);
+  const isCinValid = validateCin(formData.cin);
+  const isStatValid = validateStat(formData.stat);
+
+  // Blocage global si une erreur est détectée
+  const hasErrors = !isEmailValid || !isPhoneProValid || !isPhoneDirectValid || !isNifValid || !isCinValid || !isStatValid;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (hasErrors) return;
     
-    // Regroupement propre des données pour le parent / backend
     const dataToSubmit = {
       entreprise: {
         raison_sociale: formData.raisonSociale,
@@ -100,27 +118,113 @@ export default function CollectorForm({ onBack, onNext }: Props) {
           <div className="space-y-3">
             <h3 className="text-[10px] font-bold text-label uppercase tracking-widest border-b border-separator/10 pb-1">Entreprise</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3">
-              {[
-                { label: 'Raison sociale', key: 'raisonSociale', icon: Building2, placeholder: 'Ex: Agritrade', type: 'text' },
-                { label: 'Siège social', key: 'siegeSocial', icon: MapPin, placeholder: 'Ville, Quartier', type: 'text' },
-                { label: 'Téléphone pro', key: 'telephonePro', icon: Phone, placeholder: '034 xx xxx xx', type: 'tel' },
-                { label: 'E-mail pro', key: 'emailPro', icon: Mail, placeholder: 'contact@cie.com', type: 'email' },
-                { label: 'NIF', key: 'nif', icon: FileText, placeholder: '10 chiffres', type: 'text' },
-                { label: 'STAT', key: 'stat', icon: FileText, placeholder: 'Stats ID', type: 'text' },
-              ].map((f) => (
-                <div key={f.key} className="relative">
-                  <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">{f.label}</label>
-                  <div className="input-icon-step2"><f.icon size={18} /></div>
-                  <input 
-                    type={f.type} 
-                    placeholder={f.placeholder} 
-                    className="input-auth focus:bg-white text-xs h-10" 
-                    value={(formData as any)[f.key]}
-                    onChange={(e) => handleInputChange(f.key, e.target.value)}
-                    required 
-                  />
-                </div>
-              ))}
+              
+              {/* Raison Sociale */}
+              <div className="relative">
+                <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Raison sociale</label>
+                <div className="input-icon-step2"><Building2 size={18} /></div>
+                <input 
+                  type="text" 
+                  placeholder="Ex: Agritrade" 
+                  className="input-auth focus:bg-white text-xs h-10" 
+                  value={formData.raisonSociale}
+                  onChange={(e) => handleInputChange('raisonSociale', e.target.value)}
+                  required 
+                />
+              </div>
+
+              {/* Siège Social */}
+              <div className="relative">
+                <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Siège social</label>
+                <div className="input-icon-step2"><MapPin size={18} /></div>
+                <input 
+                  type="text" 
+                  placeholder="Ville, Quartier" 
+                  className="input-auth focus:bg-white text-xs h-10" 
+                  value={formData.siegeSocial}
+                  onChange={(e) => handleInputChange('siegeSocial', e.target.value)}
+                  required 
+                />
+              </div>
+
+              {/* Téléphone Pro */}
+              <div className="relative">
+                <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Téléphone pro</label>
+                <div className="input-icon-step2"><Phone size={18} /></div>
+                <input 
+                  type="tel" 
+                  placeholder="034 xx xxx xx" 
+                  className="input-auth focus:bg-white text-xs h-10" 
+                  value={formData.telephonePro}
+                  onChange={(e) => handleInputChange('telephonePro', e.target.value)}
+                  maxLength={10}
+                  required 
+                />
+                {!isPhoneProValid && (
+                  <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                    <AlertTriangle size={11} /> Requis : 10 chiffres.
+                  </p>
+                )}
+              </div>
+
+              {/* E-mail Pro */}
+              <div className="relative">
+                <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">E-mail pro</label>
+                <div className="input-icon-step2"><Mail size={18} /></div>
+                <input 
+                  type="email" 
+                  placeholder="contact@cie.com" 
+                  className="input-auth focus:bg-white text-xs h-10" 
+                  value={formData.emailPro}
+                  onChange={(e) => handleInputChange('emailPro', e.target.value)}
+                  required 
+                />
+                {!isEmailValid && (
+                  <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                    <AlertTriangle size={11} /> Adresse e-mail invalide.
+                  </p>
+                )}
+              </div>
+
+              {/* NIF */}
+              <div className="relative">
+                <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">NIF</label>
+                <div className="input-icon-step2"><FileText size={18} /></div>
+                <input 
+                  type="text" 
+                  placeholder="10 chiffres" 
+                  className="input-auth focus:bg-white text-xs h-10" 
+                  value={formData.nif}
+                  onChange={(e) => handleInputChange('nif', e.target.value)}
+                  maxLength={10}
+                  required 
+                />
+                {!isNifValid && (
+                  <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                    <AlertTriangle size={11} /> Requis : 10 chiffres.
+                  </p>
+                )}
+              </div>
+
+              {/* STAT */}
+              <div className="relative">
+                <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">STAT</label>
+                <div className="input-icon-step2"><FileText size={18} /></div>
+                <input 
+                  type="text" 
+                  placeholder="Stats ID" 
+                  className="input-auth focus:bg-white text-xs h-10" 
+                  value={formData.stat}
+                  onChange={(e) => handleInputChange('stat', e.target.value)}
+                  required 
+                />
+                {!isStatValid && (
+                  <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                    <AlertTriangle size={11} /> Identifiant trop court (min. 5).
+                  </p>
+                )}
+              </div>
+
             </div>
           </div>
 
@@ -128,6 +232,8 @@ export default function CollectorForm({ onBack, onNext }: Props) {
           <div className="space-y-3">
             <h3 className="text-[10px] font-bold text-label uppercase tracking-widest border-b border-separator/10 pb-1">Représentant légal</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              
+              {/* Nom Complet */}
               <div className="relative">
                 <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Nom complet</label>
                 <div className="input-icon-step2"><User size={18}/></div>
@@ -140,6 +246,8 @@ export default function CollectorForm({ onBack, onNext }: Props) {
                   required 
                 />
               </div>
+
+              {/* Téléphone Direct */}
               <div className="relative">
                 <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Téléphone direct</label>
                 <div className="input-icon-step2"><Phone size={18}/></div>
@@ -149,9 +257,17 @@ export default function CollectorForm({ onBack, onNext }: Props) {
                   className="input-auth focus:bg-white text-xs h-10" 
                   value={formData.telephoneDirect}
                   onChange={(e) => handleInputChange('telephoneDirect', e.target.value)}
+                  maxLength={10}
                   required 
                 />
+                {!isPhoneDirectValid && (
+                  <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                    <AlertTriangle size={11} /> Requis : 10 chiffres.
+                  </p>
+                )}
               </div>
+
+              {/* Numéro CIN */}
               <div className="relative">
                 <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Numéro CIN</label>
                 <div className="input-icon-step2"><CreditCard size={18}/></div>
@@ -161,9 +277,16 @@ export default function CollectorForm({ onBack, onNext }: Props) {
                   className="input-auth focus:bg-white text-xs h-10" 
                   value={formData.cin}
                   onChange={(e) => handleInputChange('cin', e.target.value)}
+                  maxLength={12}
                   required 
                 />
+                {!isCinValid && (
+                  <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                    <AlertTriangle size={11} /> Requis : 12 chiffres.
+                  </p>
+                )}
               </div>
+
             </div>
           </div>
 
@@ -201,7 +324,8 @@ export default function CollectorForm({ onBack, onNext }: Props) {
             </button>
             <button 
               type="submit" 
-              className="btn-primary px-10 py-2.5 text-xs flex items-center space-x-2"
+              disabled={hasErrors}
+              className="btn-primary px-10 py-2.5 text-xs flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span>Suivant</span>
               <ChevronRight size={16} />

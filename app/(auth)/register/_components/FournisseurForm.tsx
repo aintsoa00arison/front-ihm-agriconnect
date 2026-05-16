@@ -1,18 +1,120 @@
 "use client";
 
+import { useState } from 'react';
 import { 
   Building2, MapPin, Phone, Mail, FileText, 
-  User, CreditCard, ChevronLeft, ChevronRight, Check, Tractor 
+  User, CreditCard, ChevronLeft, ChevronRight, Check, Tractor, AlertTriangle 
 } from 'lucide-react';
+import { 
+  validateEmail, 
+  validatePhone, 
+  validateNif, 
+  validateCin, 
+  validateStat 
+} from '.././../../utils/validation'; 
 
 interface Props {
-  type: 'particulier' | 'entreprise'; // Reçoit le type choisi à l'étape 1
+  type: 'particulier' | 'entreprise'; // Choix de l'étape 1
+  initialData: any; // Données pré-remplies pour réhydratation des champs
   onBack: () => void;
-  onNext: () => void;
+  onNext: (data: any) => void; 
 }
 
-export default function FournisseurForm({ type, onBack, onNext }: Props) {
+export default function FournisseurForm({ type, initialData, onBack, onNext }: Props) {
   const isEntreprise = type === 'entreprise';
+
+  // 1. États pour la totalité des champs, réhydratés dynamiquement selon initialData
+  const [formData, setFormData] = useState({
+    // Champs Entreprise
+    nomEntite: initialData?.type === 'entreprise' ? initialData.structure?.nom_entite || '' : '',
+    localisationEntite: initialData?.type === 'entreprise' ? initialData.structure?.localisation || '' : '',
+    contactExploitation: initialData?.type === 'entreprise' ? initialData.structure?.contact_exploitation || '' : '',
+    emailContact: initialData?.type === 'entreprise' ? initialData.structure?.email_contact || '' : '',
+    nif: initialData?.type === 'entreprise' ? initialData.structure?.nif || '' : '',
+    stat: initialData?.type === 'entreprise' ? initialData.structure?.stat || '' : '',
+    nomResponsable: initialData?.type === 'entreprise' ? initialData.responsable?.nom_complet || '' : '',
+    telephoneResponsable: initialData?.type === 'entreprise' ? initialData.responsable?.telephone_direct || '' : '',
+    cinResponsable: initialData?.type === 'entreprise' ? initialData.responsable?.cin || '' : '',
+    
+    // Champs Particulier
+    nomParticulier: initialData?.type === 'particulier' ? initialData.profil?.nom_complet || '' : '',
+    telephoneParticulier: initialData?.type === 'particulier' ? initialData.profil?.telephone || '' : '',
+    cinParticulier: initialData?.type === 'particulier' ? initialData.profil?.cin || '' : '',
+    localisationParticulier: initialData?.type === 'particulier' ? initialData.profil?.localisation || '' : ''
+  });
+
+  // État pour les types de production cochés réhydraté depuis initialData
+  const [selectedProductions, setSelectedProductions] = useState<string[]>(initialData?.productions || []);
+
+  // Gestionnaire des changements textuels
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Gestionnaire des cases à cocher (Productions)
+  const handleCheckboxChange = (prod: string) => {
+    setSelectedProductions(prev => 
+      prev.includes(prod) ? prev.filter(item => item !== prod) : [...prev, prod]
+    );
+  };
+
+  // --- VALIDATIONS DYNAMIQUES EN TEMPS RÉEL ---
+  let hasErrors = false;
+
+  // Calculs individuels des validités
+  const isEmailContactValid = validateEmail(formData.emailContact);
+  const isContactExploitationValid = validatePhone(formData.contactExploitation);
+  const isTelephoneResponsableValid = validatePhone(formData.telephoneResponsable);
+  const isNifValid = validateNif(formData.nif);
+  const isCinResponsableValid = validateCin(formData.cinResponsable);
+  const isStatValid = validateStat(formData.stat);
+
+  const isTelephoneParticulierValid = validatePhone(formData.telephoneParticulier);
+  const isCinParticulierValid = validateCin(formData.cinParticulier);
+
+  // Application de la condition d'erreur selon le type de profil actif
+  if (isEntreprise) {
+    hasErrors = !isEmailContactValid || !isContactExploitationValid || 
+                !isTelephoneResponsableValid || !isNifValid || 
+                !isCinResponsableValid || !isStatValid;
+  } else {
+    hasErrors = !isTelephoneParticulierValid || !isCinParticulierValid;
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (hasErrors) return;
+
+    // Regroupement conditionnel des données selon la structure cible
+    const dataToSubmit = isEntreprise ? {
+      type: 'entreprise',
+      structure: {
+        nom_entite: formData.nomEntite,
+        localisation: formData.localisationEntite,
+        contact_exploitation: formData.contactExploitation,
+        email_contact: formData.emailContact,
+        nif: formData.nif,
+        stat: formData.stat,
+      },
+      responsable: {
+        nom_complet: formData.nomResponsable,
+        telephone_direct: formData.telephoneResponsable,
+        cin: formData.cinResponsable,
+      },
+      productions: selectedProductions
+    } : {
+      type: 'particulier',
+      profil: {
+        nom_complet: formData.nomParticulier,
+        telephone: formData.telephoneParticulier,
+        cin: formData.cinParticulier,
+        localisation: formData.localisationParticulier,
+      },
+      productions: selectedProductions
+    };
+
+    onNext(dataToSubmit);
+  };
 
   return (
     <div className="w-full max-w-4xl mx-auto p-2 space-y-4 h-fit animate-in fade-in duration-500">
@@ -36,6 +138,7 @@ export default function FournisseurForm({ type, onBack, onNext }: Props) {
       </div>
 
       <div className="bg-white rounded-[20px] shadow-sm border border-separator/10 p-6 md:p-8 space-y-6">
+        
         {/* Titre dynamique centré */}
         <div className="text-center space-y-1">
           <h2 className="text-xl font-bold text-label uppercase tracking-wider">Information supplémentaire</h2>
@@ -46,7 +149,7 @@ export default function FournisseurForm({ type, onBack, onNext }: Props) {
           </p>
         </div>
 
-        <form onSubmit={(e) => { e.preventDefault(); onNext(); }} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           
           {/* --- VUE ENTREPRISE (3 Colonnes) --- */}
           {isEntreprise && (
@@ -54,87 +157,275 @@ export default function FournisseurForm({ type, onBack, onNext }: Props) {
               <div className="space-y-3">
                 <h3 className="text-[10px] font-bold text-label uppercase tracking-widest border-b border-separator/10 pb-1">Structure de production</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3">
-                  {[
-                    { label: "Nom de l'entité", icon: Building2, placeholder: 'Ex: Ferme du Sud' },
-                    { label: 'Localisation', icon: MapPin, placeholder: 'Commune, Région' },
-                    { label: 'Contact exploitation', icon: Phone, placeholder: '+261 xx xx xxx xx' },
-                    { label: 'E-mail contact', icon: Mail, placeholder: 'ferme@exemple.mg' },
-                    { label: 'NIF', icon: FileText, placeholder: '10 chiffres' },
-                    { label: 'STAT', icon: FileText, placeholder: 'Stats ID' },
-                  ].map((f) => (
-                    <div key={f.label} className="relative">
-                      <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">{f.label}</label>
-                      <div className="input-icon-step2"><f.icon size={18} /></div>
-                      <input type="text" placeholder={f.placeholder} className="input-auth focus:bg-white text-xs h-10" required />
-                    </div>
-                  ))}
+                  
+                  {/* Nom Entité */}
+                  <div className="relative">
+                    <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Nom de l'entité</label>
+                    <div className="input-icon-step2"><Building2 size={18} /></div>
+                    <input 
+                      type="text" 
+                      placeholder="Ex: Ferme du Sud" 
+                      className="input-auth focus:bg-white text-xs h-10" 
+                      value={formData.nomEntite}
+                      onChange={(e) => handleInputChange('nomEntite', e.target.value)}
+                      required 
+                    />
+                  </div>
+
+                  {/* Localisation Entité */}
+                  <div className="relative">
+                    <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Localisation</label>
+                    <div className="input-icon-step2"><MapPin size={18} /></div>
+                    <input 
+                      type="text" 
+                      placeholder="Commune, Région" 
+                      className="input-auth focus:bg-white text-xs h-10" 
+                      value={formData.localisationEntite}
+                      onChange={(e) => handleInputChange('localisationEntite', e.target.value)}
+                      required 
+                    />
+                  </div>
+
+                  {/* Contact Exploitation */}
+                  <div className="relative">
+                    <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Contact exploitation</label>
+                    <div className="input-icon-step2"><Phone size={18} /></div>
+                    <input 
+                      type="tel" 
+                      placeholder="034 xx xxx xx" 
+                      className="input-auth focus:bg-white text-xs h-10" 
+                      maxLength={10}
+                      value={formData.contactExploitation}
+                      onChange={(e) => handleInputChange('contactExploitation', e.target.value)}
+                      required 
+                    />
+                    {!isContactExploitationValid && (
+                      <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                        <AlertTriangle size={11} /> Requis : 10 chiffres.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Email Contact */}
+                  <div className="relative">
+                    <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">E-mail contact</label>
+                    <div className="input-icon-step2"><Mail size={18} /></div>
+                    <input 
+                      type="email" 
+                      placeholder="ferme@exemple.mg" 
+                      className="input-auth focus:bg-white text-xs h-10" 
+                      value={formData.emailContact}
+                      onChange={(e) => handleInputChange('emailContact', e.target.value)}
+                      required 
+                    />
+                    {!isEmailContactValid && (
+                      <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                        <AlertTriangle size={11} /> E-mail invalide.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* NIF */}
+                  <div className="relative">
+                    <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">NIF</label>
+                    <div className="input-icon-step2"><FileText size={18} /></div>
+                    <input 
+                      type="text" 
+                      placeholder="10 chiffres" 
+                      className="input-auth focus:bg-white text-xs h-10" 
+                      maxLength={10}
+                      value={formData.nif}
+                      onChange={(e) => handleInputChange('nif', e.target.value)}
+                      required 
+                    />
+                    {!isNifValid && (
+                      <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                        <AlertTriangle size={11} /> Requis : 10 chiffres.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* STAT */}
+                  <div className="relative">
+                    <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">STAT</label>
+                    <div className="input-icon-step2"><FileText size={18} /></div>
+                    <input 
+                      type="text" 
+                      placeholder="Stats ID" 
+                      className="input-auth focus:bg-white text-xs h-10" 
+                      value={formData.stat}
+                      onChange={(e) => handleInputChange('stat', e.target.value)}
+                      required 
+                    />
+                    {!isStatValid && (
+                      <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                        <AlertTriangle size={11} /> Identifiant trop court (min. 5).
+                      </p>
+                    )}
+                  </div>
+
                 </div>
               </div>
 
+              {/* SECTION RESPONSABLE ENTREPRISE */}
               <div className="space-y-3">
                 <h3 className="text-[10px] font-bold text-label uppercase tracking-widest border-b border-separator/10 pb-1">Responsable</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  
+                  {/* Nom complet responsable */}
                   <div className="relative">
                     <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Nom complet</label>
                     <div className="input-icon-step2"><User size={18}/></div>
-                    <input type="text" placeholder="Gérant" className="input-auth focus:bg-white text-xs h-10" required />
+                    <input 
+                      type="text" 
+                      placeholder="Gérant" 
+                      className="input-auth focus:bg-white text-xs h-10" 
+                      value={formData.nomResponsable}
+                      onChange={(e) => handleInputChange('nomResponsable', e.target.value)}
+                      required 
+                    />
                   </div>
+
+                  {/* Téléphone direct responsable */}
                   <div className="relative">
                     <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Téléphone direct</label>
                     <div className="input-icon-step2"><Phone size={18}/></div>
-                    <input type="tel" placeholder="+261 3x xx xxx xx" className="input-auth focus:bg-white text-xs h-10" required />
+                    <input 
+                      type="tel" 
+                      placeholder="03x xx xxx xx" 
+                      className="input-auth focus:bg-white text-xs h-10" 
+                      maxLength={10}
+                      value={formData.telephoneResponsable}
+                      onChange={(e) => handleInputChange('telephoneResponsable', e.target.value)}
+                      required 
+                    />
+                    {!isTelephoneResponsableValid && (
+                      <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                        <AlertTriangle size={11} /> Requis : 10 chiffres.
+                      </p>
+                    )}
                   </div>
+
+                  {/* CIN responsable */}
                   <div className="relative">
                     <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Numéro CIN</label>
                     <div className="input-icon-step2"><CreditCard size={18}/></div>
-                    <input type="text" placeholder="CIN ID" className="input-auth focus:bg-white text-xs h-10" required />
+                    <input 
+                      type="text" 
+                      placeholder="12 chiffres" 
+                      className="input-auth focus:bg-white text-xs h-10" 
+                      maxLength={12}
+                      value={formData.cinResponsable}
+                      onChange={(e) => handleInputChange('cinResponsable', e.target.value)}
+                      required 
+                    />
+                    {!isCinResponsableValid && (
+                      <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                        <AlertTriangle size={11} /> Requis : 12 chiffres.
+                      </p>
+                    )}
                   </div>
+
                 </div>
               </div>
             </div>
           )}
 
-          {/* --- VUE PARTICULIER (2 Colonnes - Plus aéré) --- */}
+          {/* --- VUE PARTICULIER (2 Colonnes) --- */}
           {!isEntreprise && (
             <div className="max-w-2xl mx-auto space-y-5 animate-in slide-in-from-bottom-2 duration-300">
+              
+              {/* Nom complet particulier */}
               <div className="relative">
                 <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Nom et prénom(s)</label>
                 <div className="input-icon-step2"><User size={18}/></div>
-                <input type="text" placeholder="Votre nom complet" className="input-auth focus:bg-white text-xs h-11" required />
+                <input 
+                  type="text" 
+                  placeholder="Votre nom complet" 
+                  className="input-auth focus:bg-white text-xs h-11" 
+                  value={formData.nomParticulier}
+                  onChange={(e) => handleInputChange('nomParticulier', e.target.value)}
+                  required 
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                {/* Téléphone particulier */}
                 <div className="relative">
                   <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Numéro de téléphone</label>
                   <div className="input-icon-step2"><Phone size={18}/></div>
-                  <input type="tel" placeholder="+261 xx xx xxx xx" className="input-auth focus:bg-white text-xs h-11" required />
+                  <input 
+                    type="tel" 
+                    placeholder="03x xx xxx xx" 
+                    className="input-auth focus:bg-white text-xs h-11" 
+                    maxLength={10}
+                    value={formData.telephoneParticulier}
+                    onChange={(e) => handleInputChange('telephoneParticulier', e.target.value)}
+                    required 
+                  />
+                  {!isTelephoneParticulierValid && (
+                    <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                      <AlertTriangle size={11} /> Requis : 10 chiffres.
+                    </p>
+                  )}
                 </div>
+
+                {/* CIN particulier */}
                 <div className="relative">
                   <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Numéro CIN</label>
                   <div className="input-icon-step2"><CreditCard size={18}/></div>
-                  <input type="text" placeholder="CIN ID" className="input-auth focus:bg-white text-xs h-11" required />
+                  <input 
+                    type="text" 
+                    placeholder="12 chiffres" 
+                    className="input-auth focus:bg-white text-xs h-11" 
+                    maxLength={12}
+                    value={formData.cinParticulier}
+                    onChange={(e) => handleInputChange('cinParticulier', e.target.value)}
+                    required 
+                  />
+                  {!isCinParticulierValid && (
+                    <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                      <AlertTriangle size={11} /> Requis : 12 chiffres.
+                    </p>
+                  )}
                 </div>
+
               </div>
 
+              {/* Localisation particulier */}
               <div className="relative">
                 <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Adresse postale / Localisation</label>
                 <div className="input-icon-step2"><MapPin size={18}/></div>
-                <input type="text" placeholder="Ville, Quartier, Lot" className="input-auth focus:bg-white text-xs h-11" required />
+                <input 
+                  type="text" 
+                  placeholder="Ville, Quartier, Lot" 
+                  className="input-auth focus:bg-white text-xs h-11" 
+                  value={formData.localisationParticulier}
+                  onChange={(e) => handleInputChange('localisationParticulier', e.target.value)}
+                  required 
+                />
               </div>
+
             </div>
           )}
 
           {/* SECTION PRODUCTION (Commune aux deux) */}
           <div className="flex items-center justify-between bg-neutral-50 p-3 rounded-xl border border-separator/10">
             <div className="flex items-center space-x-2 ml-2">
-                <Tractor size={14} className="text-label" />
-                <span className="text-[10px] font-bold text-label uppercase">Type de production :</span>
+              <Tractor size={14} className="text-label" />
+              <span className="text-[10px] font-bold text-label uppercase">Type de production :</span>
             </div>
             <div className="flex gap-6 mr-2">
               {['Végétale', 'Elevage', 'Rente'].map((item) => (
                 <label key={item} className="flex items-center space-x-2 cursor-pointer group">
                   <div className="relative flex items-center justify-center">
-                    <input type="checkbox" className="peer hidden" />
+                    <input 
+                      type="checkbox" 
+                      className="peer hidden" 
+                      checked={selectedProductions.includes(item)}
+                      onChange={() => handleCheckboxChange(item)}
+                    />
                     <div className="w-5 h-5 border border-separator/40 rounded peer-checked:bg-primary peer-checked:border-primary transition-all"></div>
                     <Check size={12} className="absolute text-white scale-0 peer-checked:scale-100 transition-transform stroke-[3px]" />
                   </div>
@@ -154,7 +445,11 @@ export default function FournisseurForm({ type, onBack, onNext }: Props) {
               <ChevronLeft size={18} />
               <span>Précédent</span>
             </button>
-            <button type="submit" className="btn-primary px-10 py-2.5 text-xs flex items-center space-x-2">
+            <button 
+              type="submit" 
+              disabled={hasErrors}
+              className="btn-primary px-10 py-2.5 text-xs flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <span>Suivant</span>
               <ChevronRight size={16} />
             </button>

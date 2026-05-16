@@ -4,17 +4,34 @@ import { useState } from 'react';
 import { Camera, ChevronLeft, Check, Info } from 'lucide-react';
 
 interface Props {
-  // Changement ici : "collecteur" au lieu de "collectionneur"
   role: 'collecteur' | 'fournisseur'; 
-  onBack: () => void;
-  onFinish: (data: any) => void;
+  initialData: { image: File | null; imageUrl: string | null; bio: string };
+  onBack: (currentData: { image: File | null; imageUrl: string | null; bio: string }) => void;
+  onFinish: (currentData: { image: File | null; imageUrl: string | null; bio: string }) => void;
 }
 
-export default function FinalisationForm({ role, onBack, onFinish }: Props) {
-  const [image, setImage] = useState<string | null>(null);
+export default function FinalisationForm({ role, initialData, onBack, onFinish }: Props) {
+  // Initialisation des états avec les données déjà existantes dans le parent
+  const [imageFile, setImageFile] = useState<File | null>(initialData.image);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(initialData.imageUrl);
+  const [bio, setBio] = useState<string>(initialData.bio);
   
-  // Mise à jour de la vérification
   const isCollecteur = role === 'collecteur'; 
+
+  // Regroupement des données actuelles à chaque action de navigation
+  const getCurrentData = () => ({
+    image: imageFile,
+    imageUrl: previewUrl,
+    bio: isCollecteur ? '' : bio // On nettoie la bio si c'est un collecteur
+  });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
 
   return (
     <div className="w-full max-w-4xl mx-auto p-2 space-y-6 h-fit animate-in fade-in duration-500">
@@ -49,8 +66,8 @@ export default function FinalisationForm({ role, onBack, onFinish }: Props) {
             <div className="flex items-center space-x-6">
               <div className="relative group">
                 <div className="w-24 h-24 rounded-full border-2 border-dashed border-separator/50 bg-neutral-50 flex items-center justify-center overflow-hidden transition-colors group-hover:border-primary/50">
-                  {image ? (
-                    <img src={image} alt="Preview" className="w-full h-full object-cover" />
+                  {previewUrl ? (
+                    <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
                   ) : (
                     <Camera size={28} className="text-input-element/40" />
                   )}
@@ -60,10 +77,7 @@ export default function FinalisationForm({ role, onBack, onFinish }: Props) {
                     type="file" 
                     className="hidden" 
                     accept="image/*" 
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) setImage(URL.createObjectURL(file));
-                    }} 
+                    onChange={handleFileChange} 
                   />
                 </label>
               </div>
@@ -71,14 +85,20 @@ export default function FinalisationForm({ role, onBack, onFinish }: Props) {
               <div className="space-y-1">
                 <p className="font-bold text-sm text-neutral-800">Importer une photo claire</p>
                 <p className="text-[11px] text-input-element italic">JPG, PNG - 5Mo maximum</p>
-                <button type="button" className="text-xs font-bold text-primary hover:underline block pt-1">
+                <label className="text-xs font-bold text-primary hover:underline cursor-pointer block pt-1">
                   Choisir une photo
-                </button>
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*" 
+                    onChange={handleFileChange} 
+                  />
+                </label>
               </div>
             </div>
           </div>
 
-          {/* SECTION BIOGRAPHIE (Masquée pour le collecteur) */}
+          {/* SECTION BIOGRAPHIE */}
           {!isCollecteur ? (
             <div className="space-y-4 animate-in slide-in-from-top-2 duration-400">
               <div className="space-y-1">
@@ -89,11 +109,14 @@ export default function FinalisationForm({ role, onBack, onFinish }: Props) {
               </div>
               <textarea 
                 placeholder="Nous sommes une société qui traite..."
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
                 className="w-full h-32 p-4 rounded-xl border border-separator/20 bg-neutral-50/50 text-sm focus:bg-white focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all outline-none resize-none"
+                required
               ></textarea>
             </div>
           ) : (
-            <div className="flex items-start space-x-3 p-4 bg-light-bg/30 rounded-xl border border-separator/10">
+            <div className="flex items-start space-x-3 p-4 bg-neutral-50 rounded-xl border border-separator/10">
               <Info size={18} className="text-primary mt-0.5" />
               <div className="space-y-1">
                 <p className="text-sm font-bold text-label">Prêt à commencer</p>
@@ -106,14 +129,15 @@ export default function FinalisationForm({ role, onBack, onFinish }: Props) {
           <div className="flex items-center justify-between pt-6 border-t border-separator/10">
             <button 
               type="button" 
-              onClick={onBack} 
+              onClick={() => onBack(getCurrentData())} // Sauvegarde l'état actuel avant de reculer
               className="px-8 py-2.5 rounded-xl border border-separator/30 text-sm font-bold text-label hover:bg-neutral-50 transition-all flex items-center space-x-2"
             >
               <ChevronLeft size={18} />
               <span>Précédent</span>
             </button>
             <button 
-              onClick={() => onFinish({ image })}
+              type="button"
+              onClick={() => onFinish(getCurrentData())}
               className="btn-primary px-10 py-2.5 text-sm flex items-center space-x-2 shadow-lg shadow-primary/20"
             >
               <Check size={18} />
