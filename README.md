@@ -1,7 +1,7 @@
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## 🚀 Avant de commencer (Installation)
+##  Avant de commencer (Installation)
 
 Avant de lancer le serveur de développement, vous devez installer les dépendances du projet, y compris les bibliothèques d'icônes nécessaires et la gestion d'état :
 
