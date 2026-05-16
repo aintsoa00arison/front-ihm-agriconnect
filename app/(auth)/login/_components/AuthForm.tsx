@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, Key, Check, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
 import { AuthFormData } from '../types/auth';
@@ -9,7 +9,7 @@ import { checkEmailAvailability } from '../../register/services/registerService'
 import { useRegisterStore } from '../../register/registerStore';
 
 // Importation de la validation et de l'analyse précise des emails
-import { validateEmail, analyzeEmailError } from '.././../../utils/validation';
+import { validateEmail, analyzeEmailError } from '../../../utils/validation';
 
 interface AuthFormProps {
   mode: string;
@@ -22,12 +22,11 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
   // Récupération de la fonction de mise à jour du store Zustand
   const setRegisterDraft = useRegisterStore((state) => state.setRegisterDraft);
 
+  // --- ÉTATS DU COMPOSANT ---
   const [view, setView] = useState<'auth' | 'forgot' | 'reset'>('auth');
   const [isLogin, setIsLogin] = useState(initialMode !== 'register');
   const [showPassword, setShowPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  
-  // Permet de savoir si on est en train de demander un reset de mot de passe sur la Vue 1
   const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false);
 
   // Gestion des notifications de retour
@@ -42,6 +41,19 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
   const [verificationCode, setVerificationCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
+
+  // --- SYNCHRONISATION AVEC LA PROP INITIALMODE ---
+  useEffect(() => {
+    if (initialMode === 'register') {
+      setIsLogin(false);
+      setIsForgotPasswordMode(false);
+      setView('auth'); 
+    } else if (initialMode === 'login') {
+      setIsLogin(true);
+      setIsForgotPasswordMode(false);
+      setView('auth');
+    }
+  }, [initialMode]);
 
   // Validations en temps réel (Vérification de la correspondance)
   const isRegisterPasswordMismatched = !isLogin && view === 'auth' && confirmPassword.length > 0 && password !== confirmPassword;
@@ -115,7 +127,6 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
         
         setIsLoading(true);
         try {
-          // ÉTAPE A : Utilisation de ton service pour bloquer les doublons d'emails d'AgriConnect
           const emailCheck = await checkEmailAvailability(cleanEmail);
           
           if (!emailCheck.available) {
@@ -124,7 +135,6 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
             return; 
           }
 
-          // ÉTAPE B : Envoi du code OTP
           const response = await sendVerificationEmail(cleanEmail);
           if (response.success) {
             setSuccessNotification("Un code de vérification vous a été envoyé. Veuillez le saisir.");
@@ -284,7 +294,6 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
                 <label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">Confirmer</label>
                 <div className="input-icon-container"><Lock size={18} /></div>
                 <input type="password" className="input-auth h-11 focus:bg-white" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} disabled={isLoading} required />
-                {/* Message d'erreur en temps réel pour le Reset de mot de passe */}
                 {isResetPasswordMismatched && (
                   <p className="text-red-500 text-[10px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in duration-300">
                     <AlertTriangle size={12} /> Les mots de passe ne correspondent pas.
@@ -376,7 +385,6 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
               <label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">Confirmez le mot de passe</label>
               <div className="input-icon-container"><Lock size={18} /></div>
               <input type={showPassword ? "text" : "password"} placeholder="••••••••" className="input-auth h-11 text-sm focus:bg-white" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isLoading} required />
-              {/* Message d'erreur en temps réel pour l'Inscription */}
               {isRegisterPasswordMismatched && (
                 <p className="text-red-500 text-[10px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in duration-300">
                   <AlertTriangle size={12} /> Les mots de passe ne correspondent pas.

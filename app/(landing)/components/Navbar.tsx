@@ -1,16 +1,14 @@
-// components/Navbar.tsx
 "use client";
 
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
-import Link from 'next/link';
-
+import { useRouter } from 'next/navigation';
 interface NavbarProps {
   setView: Dispatch<SetStateAction<string>>;
 }
 
 export default function Navbar({ setView }: NavbarProps) {
   const [activeSection, setActiveSection] = useState('accueil');
-
+  const router = useRouter();
   const navLinks = [
     { name: 'Accueil', id: 'accueil' },
     { name: 'Services', id: 'features' },    
@@ -34,7 +32,6 @@ export default function Navbar({ setView }: NavbarProps) {
     };
 
     const observer = new IntersectionObserver(observerCallback, observerOptions);
-
     navLinks.forEach((link) => {
       const section = document.getElementById(link.id);
       if (section) observer.observe(section);
@@ -53,17 +50,13 @@ export default function Navbar({ setView }: NavbarProps) {
         const offset = 80;
         const elementPosition = element.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - offset;
-
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
+        window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
       }
     }, 50);
   };
 
   return (
-    <nav className="w-full bg-white/80 backdrop-blur-md sticky top-0 z-50 font-sans ">
+    <nav className="w-full bg-white/80 backdrop-blur-md sticky top-0 z-50 font-sans">
       <div className="max-w-[1440px] mx-auto flex items-center justify-between px-6 lg:px-16 py-5">
         
         {/* Logo */}
@@ -81,15 +74,12 @@ export default function Navbar({ setView }: NavbarProps) {
         <div className="hidden lg:flex items-center space-x-12">
           {navLinks.map((link) => {
             const isActive = activeSection === link.id;
-
             return (
               <button 
                 key={link.id}
                 onClick={() => handleNavClick(link.id)}
                 className={`transition-all text-[15px] font-bold pb-1 border-b-2 outline-none ${
-                  isActive 
-                  ? "text-primary border-primary" 
-                  : "text-input-element border-transparent hover:text-primary transition-colors"
+                  isActive ? "text-primary border-primary" : "text-input-element border-transparent hover:text-primary"
                 }`}
               >
                 {link.name}
@@ -98,23 +88,24 @@ export default function Navbar({ setView }: NavbarProps) {
           })}
         </div>
 
-        {/* Boutons d'action utilisant les classes globales */}
+        {/* Boutons d'action forcés avec window.location */}
 
-          <div className="flex items-center space-x-8">
-            <Link 
-              href="/login" 
-              className="text-label font-bold text-sm hover:text-primary transition-colors"
-            >
-              Se connecter
-            </Link>
-            
-            <Link 
-              href="/login?mode=register" 
-              className="btn-primary !py-3 !px-7 text-sm shadow-none"
-            >
-              Commencer
-            </Link>
-          </div>
+
+        <div className="flex items-center space-x-8">
+          <button 
+            onClick={() => router.push('/login?mode=login')}
+            className="text-label font-bold text-sm hover:text-primary transition-colors outline-none"
+          >
+            Se connecter
+          </button>
+          
+          <button 
+            onClick={() => router.push('/login?mode=register')}
+            className="btn-primary !py-3 !px-7 text-sm shadow-none outline-none"
+          >
+            Commencer
+          </button>
+        </div>
       </div>
     </nav>
   );
