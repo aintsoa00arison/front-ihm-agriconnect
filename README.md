@@ -27,35 +27,34 @@ npm run dev
 Ouvrez [http://localhost:3000](https://www.google.com/search?q=http://localhost:3000) dans votre navigateur pour voir le résultat.
 
 ---
-
 ## 📁 Architecture de l'Arborescence
 
-Le projet est structuré selon les conventions modernes de l'App Router de Next.js. Voici une vue d'ensemble de l'arborescence :
+Le projet est structuré selon les conventions modernes de l'App Router de Next.js. Voici une vue d'ensemble détaillée de l'arborescence :
 
+```text
 📁 front-ihm/
 └── 📁 app/
-    ├── 📁 (auth)/
-    │   ├── 📁 login/
-    │   │   ├── 📁 _components/ ( composant de la page  de login ( AuthForm et AuthSide) les  formulaires sont celles de connexion, initialisation d'inscription , de verification d'email , et de renitialisation de mot de passe)
-    │   │   ├── 📁 services/ (service d'authentification )
-    │   │   ├── 📁 types/ ( interfaces de chaque  variables utilisées dans les compoasants)
-    │   │   ├── 📄 layout.tsx
-    │   │   └── 📄 page.tsx( parent)
-    │   └── 📁 register/
-    │       ├── 📁 _components/ ( compsant  pour l'inscription qui sont les 3 étapes)
-    │       ├── 📁 services/ ( gerer l'envoie final des données et le check si emailutilisé)
-    │       ├── 📄 page.tsx ( page parent)
-    │       ├── 📄 registerStore.ts (pour le stocker les donnnées avant l'envoi( zustand))
-    │       └── 📄 types.ts
-    ├── 📁 (landing)/
-    │   ├── 📁 components/ ( composant de la page et des elements affichés par le footer)
-    │   ├── 📄 layout.tsx
-    │   └── 📄 page.tsx
-    ├── 📁 utils/
-    │   └── 📄 validation.ts( fichier pour les expréssions régulières)
-    └── 🔤 favicon.ico
-    └── 📄 global.css( bibliotheque de coleur, input , font)
-
+    ├── 📁 (auth)/                               # Groupe de routes pour l'authentification (sans impact sur l'URL)
+    │   ├── 📁 login/                            # Branche de connexion et gestion de compte
+    │   │   ├── 📁 _components/                  # Éléments de l'IHM (AuthForm, AuthSide) gérant : connexion, init inscription, vérif email et reset MDP
+    │   │   ├── 📁 services/                     # Couche logique et appels d'authentification (Mocks actuels)
+    │   │   ├── 📁 types/                        # Interfaces TypeScript typant chaque variable des composants
+    │   │   ├── 📄 layout.tsx                    # Structure structurelle de la vue de connexion
+    │   │   └── 📄 page.tsx                      # Page parente principale de la route /login
+    │   └── 📁 register/                         # Branche dédiée à la création de compte
+    │       ├── 📁 _components/                  # Composants spécifiques au tunnel d'inscription découpé en 3 étapes
+    │       ├── 📁 services/                     # Logique de validation (check si email déjà utilisé) et envoi final des données
+    │       ├── 📄 registerStore.ts              # Store Zustand gérant l'état temporaire des données entre les étapes avant envoi
+    │       ├── 📄 types.ts                      # Déclarations des types et modèles de données pour l'inscription
+    │       └── 📄 page.tsx                      # Page parente principale de la route /register
+    ├── 📁 (landing)/                            # Groupe de routes pour la vitrine publique du site
+    │   ├── 📁 components/                       # Sections de la Landing Page (Hero, Features...) et pages secondaires gérées par le Footer
+    │   ├── 📄 layout.tsx                        # Layout global gérant l'affichage dynamique (Navbar/Footer conditionnels)
+    │   └── 📄 page.tsx                          # Point d'entrée de la Landing Page
+    ├── 📁 utils/                                # Fonctions d'aide transversales et utilitaires
+    │   └── 📄 validation.ts                     # Centralisation des expressions régulières (Regex) et règles de validation de formulaires
+    ├── 📄 global.css                            # Styles globaux, variables du design system (colors, inputs, fonts)
+    └── 🔤 favicon.ico                           # Icône de l'application affichée dans le navigateur
 ## ⚙️ Couche Services : Architecture centrée sur les Mocks
 
 Le dossier `services/` joue un rôle capital dans l'architecture technique de l'application :
