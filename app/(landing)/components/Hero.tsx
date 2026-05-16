@@ -1,11 +1,14 @@
-// components/Hero.tsx
+"use client";
+
 import Image from 'next/image';
-import { HiArrowRight } from 'react-icons/hi';
+import { useRouter } from 'next/navigation'; // Import du router Next.js
+import { PiArrowRight } from 'react-icons/pi'; // Ajusté ou conservé selon ton pack de r-icons
 import { PiSealCheckFill } from "react-icons/pi"; 
 
 export default function Hero() {
+  const router = useRouter(); // Initialisation du router
+
   return (
-    // Ajout de l'ID "accueil" ici pour l'ancrage
     <section id="accueil" className="w-full bg-neutral pt-16 pb-24 font-sans">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16 flex flex-col lg:flex-row items-center gap-16">
         
@@ -18,18 +21,20 @@ export default function Hero() {
           </h1>
 
           <p className="text-input-element text-lg leading-relaxed max-w-xl">
-            AgriConnect est le premier écosystème numérique conçu pour dynamiser le 
+            OmniAgri est le premier écosystème numérique conçu pour dynamiser le 
             commerce agricole. Nous facilitons des transactions sécurisées, efficaces et 
             transparentes.
           </p>
 
           <div className="flex flex-wrap gap-4">
-            <button className="bg-primary text-white px-8 py-4 rounded-full font-semibold flex items-center gap-2 hover:opacity-90 transition-all shadow-md active:scale-95">
-              Commencer <HiArrowRight className="text-xl" />
+            {/* Bouton Commencer qui effectue la même redirection exacte que le Nav */}
+            <button 
+              onClick={() => router.push('/login?mode=register')}
+              className="btn-primary font-semibold flex items-center gap-2 hover:opacity-90 transition-all shadow-md active:scale-95 outline-none"
+            >
+              Commencer <PiArrowRight className="text-xl" />
             </button>
-            <button className="bg-white border border-input-border text-label px-8 py-4 rounded-full font-semibold hover:bg-gray-50 transition-all">
-              En savoir plus
-            </button>
+            
           </div>
 
           {/* Social Proof */}
@@ -60,10 +65,8 @@ export default function Hero() {
             />
           </div>
 
-          {/* Badge Qualité (Positionné sur l'image) */}
+          {/* Badge Qualité */}
           <div className="absolute -bottom-8 left-6 bg-white p-5 pr-10 rounded-[24px] shadow-2xl flex items-center gap-4 min-w-[320px]">
-            
-            {/* Cercle de fond beige avec l'icône marron (Tertiary) */}
             <div className="w-14 h-14 bg-[#FFEFD7] rounded-full flex items-center justify-center flex-shrink-0">
               <PiSealCheckFill className="text-tertiary text-3xl" />
             </div>
@@ -75,13 +78,8 @@ export default function Hero() {
               <p className="text-2xl font-extrabold text-[#1a1a1a]">
                 99.8% Succès
               </p>
-              
-              {/* Barre de progression marron épaisse (Tertiary) */}
               <div className="mt-3 w-full bg-gray-100 h-[6px] rounded-full overflow-hidden">
-                <div 
-                  className="bg-tertiary h-full rounded-full" 
-                  style={{ width: '90%' }} 
-                ></div>
+                <div className="bg-tertiary h-full rounded-full" style={{ width: '90%' }}></div>
               </div>
             </div>
           </div>
