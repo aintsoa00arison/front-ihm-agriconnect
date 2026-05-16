@@ -1,8 +1,4 @@
-Voici une version entièrement révisée, professionnelle et structurée de ton fichier `README.md`. Elle intègre les instructions d'installation indispensables, détaille l'architecture globale de ton projet Next.js et met en lumière le rôle crucial de tes fichiers de services basés sur les mocks.
 
----
-
-```markdown
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## 🚀 Avant de commencer (Installation)
