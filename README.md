@@ -55,6 +55,8 @@ Le projet est structuré selon les conventions modernes de l'App Router de Next.
     │   └── 📄 validation.ts                     # Centralisation des expressions régulières (Regex) et règles de validation de formulaires
     ├── 📄 global.css                            # Styles globaux, variables du design system (colors, inputs, fonts)
     └── 🔤 favicon.ico                           # Icône de l'application affichée dans le navigateur
+
+```
 ## ⚙️ Couche Services : Architecture centrée sur les Mocks
 
 Le dossier `services/` joue un rôle capital dans l'architecture technique de l'application :
