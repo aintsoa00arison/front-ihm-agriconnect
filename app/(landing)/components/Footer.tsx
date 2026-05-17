@@ -2,6 +2,7 @@
 
 import { Dispatch, SetStateAction } from 'react';
 import { FaTwitter, FaLinkedinIn } from 'react-icons/fa';
+import { Button } from "@/components/ui/button";
 
 interface FooterProps {
   setView: Dispatch<SetStateAction<string>>;
@@ -19,17 +20,17 @@ export default function Footer({ setView }: FooterProps) {
 
   const handleNavigation = (viewName: string) => {
     setView(viewName);
-    // On remonte en haut pour que l'utilisateur voit le début de la page affichée
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <footer className="w-full bg-white py-12 font-sans border-t border-neutral relative z-10">
+    <footer className="w-full bg-white py-12 font-sans border-t border-separator/10 relative z-10 select-none">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           
-          {/* Logo et Copyright */}
+          {/* --- LOGO ET COPYRIGHT --- */}
           <div className="space-y-4 max-w-sm">
+            {/* Les 5 petits points aux couleurs primaires */}
             <div className="flex items-center gap-1">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="w-2 h-2 bg-primary rounded-full" />
@@ -40,27 +41,41 @@ export default function Footer({ setView }: FooterProps) {
             </p>
           </div>
 
-          {/* Liens de navigation avec setView */}
-          <nav className="flex flex-wrap gap-x-8 gap-y-4 text-sm font-bold text-label">
+          {/* --- LIENS DE NAVIGATION (BUTTON SHADCN) --- */}
+          <nav className="flex flex-wrap items-center gap-x-2 gap-y-2">
             {footerLinks.map((link) => (
-              <button 
-                key={link.name} 
+              <Button
+                key={link.name}
+                variant="ghost"
                 onClick={() => handleNavigation(link.view)}
-                className="hover:text-primary transition-colors cursor-pointer outline-none"
+                className="text-label font-bold text-sm hover:text-primary hover:bg-neutral transition-colors cursor-pointer px-3 py-2 rounded-xl h-auto"
               >
                 {link.name}
-              </button>
+              </Button>
             ))}
           </nav>
 
-          {/* Réseaux Sociaux */}
+          {/* --- RÉSEAUX SOCIAUX (ICONES LUCIDE) --- */}
           <div className="flex gap-4">
-            <a href="#" className="w-10 h-10 bg-neutral rounded-full flex items-center justify-center text-label hover:bg-primary hover:text-white transition-all shadow-sm">
-              <FaTwitter size={18} />
-            </a>
-            <a href="#" className="w-10 h-10 bg-neutral rounded-full flex items-center justify-center text-label hover:bg-primary hover:text-white transition-all shadow-sm">
-              <FaLinkedinIn size={18} />
-            </a>
+            <Button
+              asChild
+              variant="ghost"
+              className="w-10 h-10 bg-neutral hover:bg-primary text-label hover:text-white rounded-full flex items-center justify-center p-0 transition-all shadow-sm cursor-pointer"
+            >
+              <a href="#" aria-label="Twitter">
+                <FaTwitter className="w-4 h-4 fill-current" />
+              </a>
+            </Button>
+            
+            <Button
+              asChild
+              variant="ghost"
+              className="w-10 h-10 bg-neutral hover:bg-primary text-label hover:text-white rounded-full flex items-center justify-center p-0 transition-all shadow-sm cursor-pointer"
+            >
+              <a href="#" aria-label="LinkedIn">
+                <FaLinkedinIn className="w-4 h-4 fill-current" />
+              </a>
+            </Button>
           </div>
 
         </div>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { 
   Building2, MapPin, Phone, Mail, FileText, 
-  User, CreditCard, ChevronLeft, ChevronRight, Check, AlertTriangle 
+  User, CreditCard, ChevronLeft, ChevronRight, AlertTriangle 
 } from 'lucide-react';
 import { 
   validateEmail, 
@@ -15,14 +15,18 @@ import {
   formatCin
 } from '.././../../utils/validation';
 
+// Importations des composants racines Shadcn
+import { Stepper } from "@/components/ui/stepper";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+
 interface Props {
-  initialData: any; // Mémoire du formulaire pour la réhydratation
+  initialData: any;
   onBack: () => void;
   onNext: (data: any) => void;
 }
 
 export default function CollectorForm({ initialData, onBack, onNext }: Props) {
-  // 1. États pour les inputs textuels initialisés avec initialData si disponible
   const [formData, setFormData] = useState({
     raisonSociale: initialData?.entreprise?.raison_sociale || '',
     siegeSocial: initialData?.entreprise?.siege_social || '',
@@ -35,39 +39,35 @@ export default function CollectorForm({ initialData, onBack, onNext }: Props) {
     cin: initialData?.representant_legal?.cin || ''
   });
 
-  // 2. État pour la liste des besoins cochés réhydraté depuis initialData
   const [selectedNeeds, setSelectedNeeds] = useState<string[]>(initialData?.besoins || []);
 
-  // Gestionnaire des changements textuels
+  const registerSteps = ["Type de rôle", "Informations supplémentaires", "Finalisation du profil"];
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  // Gestionnaire des cases à cocher (Besoins)
-  const handleCheckboxChange = (need: string) => {
+  const handleCheckboxChange = (need: string, checked: boolean) => {
     setSelectedNeeds(prev => 
-      prev.includes(need) 
-        ? prev.filter(item => item !== need) 
-        : [...prev, need]
+      checked ? [...prev, need] : prev.filter(item => item !== need)
     );
   };
 
-  // --- VALIDATIONS EN TEMPS RÉEL (Via fichier utils) ---
-  const isEmailValid = validateEmail(formData.emailPro);
-  const isPhoneProValid = validatePhone(formData.telephonePro);
-  const isPhoneDirectValid = validatePhone(formData.telephoneDirect);
-  const isNifValid = validateNif(formData.nif);
-  const isCinValid = validateCin(formData.cin);
-  const isStatValid = validateStat(formData.stat);
+  // Validations en temps réel
+  const isEmailValid = formData.emailPro ? validateEmail(formData.emailPro) : true;
+  const isPhoneProValid = formData.telephonePro ? validatePhone(formData.telephonePro) : true;
+  const isPhoneDirectValid = formData.telephoneDirect ? validatePhone(formData.telephoneDirect) : true;
+  const isNifValid = formData.nif ? validateNif(formData.nif) : true;
+  const isCinValid = formData.cin ? validateCin(formData.cin) : true;
+  const isStatValid = formData.stat ? validateStat(formData.stat) : true;
 
-  // Blocage global si une erreur est détectée
-  const hasErrors = !isEmailValid || !isPhoneProValid || !isPhoneDirectValid || !isNifValid || !isCinValid || !isStatValid;
+  const hasErrors = !isEmailValid || !isPhoneProValid || !isPhoneDirectValid || !isNifValid || !isCinValid || !isStatValid ||
+                    !formData.raisonSociale || !formData.siegeSocial || !formData.nomComplet;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (hasErrors) return;
     
-    // Nettoyage des espaces pour envoyer des chaînes de chiffres pures au backend Django
     const dataToSubmit = {
       entreprise: {
         raison_sociale: formData.raisonSociale,
@@ -91,27 +91,12 @@ export default function CollectorForm({ initialData, onBack, onNext }: Props) {
   return (
     <div className="w-full max-w-4xl mx-auto p-2 space-y-4 h-fit animate-in fade-in duration-500">
       
-      {/* Stepper */}
-      <div className="flex items-center justify-between px-6 mb-4">
-        <div className="flex flex-col items-center">
-          <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold shadow-sm">1</div>
-          <span className="text-[10px] font-bold text-primary mt-1">Type de rôle</span>
-        </div>
-        <div className="flex-1 h-[1px] bg-separator/30 mx-4 -mt-4"></div>
-        <div className="flex flex-col items-center">
-          <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold ring-4 ring-primary/10">2</div>
-          <span className="text-[10px] font-bold text-primary mt-1">Informations supplémentaires</span>
-        </div>
-        <div className="flex-1 h-[1px] bg-separator/30 mx-4 -mt-4"></div>
-        <div className="flex flex-col items-center opacity-30">
-          <div className="w-8 h-8 rounded-full bg-separator text-label flex items-center justify-center text-sm font-bold">3</div>
-          <span className="text-[10px] font-medium mt-1">Finalisation du profil</span>
-        </div>
-      </div>
+      {/* Stepper positionné sur l'étape 2 */}
+      <Stepper steps={registerSteps} currentStep={2} />
 
       <div className="bg-white rounded-[20px] shadow-sm border border-separator/10 p-6 md:p-8 space-y-6">
         <div className="text-center space-y-1">
-          <h2 className="text-xl font-bold text-label uppercase tracking-wider">Information supplémentaire</h2>
+          <h2 className="text-xl font-bold text-label uppercase tracking-wider font-manrope">Information supplémentaire</h2>
           <p className="text-[11px] text-input-element italic">Détails professionnels de votre compte collecteur</p>
         </div>
 
@@ -123,49 +108,53 @@ export default function CollectorForm({ initialData, onBack, onNext }: Props) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3">
               
               {/* Raison Sociale */}
-              <div className="relative">
-                <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Raison sociale</label>
-                <div className="input-icon-step2"><Building2 size={18} /></div>
-                <input 
-                  type="text" 
-                  placeholder="Ex: Agritrade" 
-                  className="input-auth focus:bg-white text-xs h-10" 
-                  value={formData.raisonSociale}
-                  onChange={(e) => handleInputChange('raisonSociale', e.target.value)}
-                  required 
-                />
+              <div className="flex flex-col">
+                <label className="text-[11px] font-bold text-label ml-1 mb-1.5">Raison sociale</label>
+                <div className="relative flex items-center">
+                  <Building2 className="absolute left-3.5 text-input-element/60 pointer-events-none" size={18} />
+                  <Input 
+                    type="text" 
+                    placeholder="Ex: Agritrade" 
+                    className="pl-11"
+                    value={formData.raisonSociale}
+                    onChange={(e) => handleInputChange('raisonSociale', e.target.value)}
+                    required 
+                  />
+                </div>
               </div>
 
               {/* Siège Social */}
-              <div className="relative">
-                <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Siège social</label>
-                <div className="input-icon-step2"><MapPin size={18} /></div>
-                <input 
-                  type="text" 
-                  placeholder="Ville, Quartier" 
-                  className="input-auth focus:bg-white text-xs h-10" 
-                  value={formData.siegeSocial}
-                  onChange={(e) => handleInputChange('siegeSocial', e.target.value)}
-                  required 
-                />
+              <div className="flex flex-col">
+                <label className="text-[11px] font-bold text-label ml-1 mb-1.5">Siège social</label>
+                <div className="relative flex items-center">
+                  <MapPin className="absolute left-3.5 text-input-element/60 pointer-events-none" size={18} />
+                  <Input 
+                    type="text" 
+                    placeholder="Ville, Quartier" 
+                    className="pl-11"
+                    value={formData.siegeSocial}
+                    onChange={(e) => handleInputChange('siegeSocial', e.target.value)}
+                    required 
+                  />
+                </div>
               </div>
 
               {/* Téléphone Pro */}
-              <div className="relative">
-                <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Téléphone pro</label>
-                <div className="input-icon-step2"><Phone size={18} /></div>
-                <input 
-                  type="text" 
-                  placeholder="034 xx xxx xx" 
-                  className="input-auth focus:bg-white text-xs h-10" 
-                  value={formData.telephonePro}
-                  onChange={(e) => {
-                    const formatted = formatPhone(e.target.value);
-                    handleInputChange('telephonePro', formatted);
-                  }}
-                  maxLength={13} // 10 chiffres + 3 espaces générés
-                  required 
-                />
+              <div className="flex flex-col">
+                <label className="text-[11px] font-bold text-label ml-1 mb-1.5">Téléphone pro</label>
+                <div className="relative flex items-center">
+                  <Phone className="absolute left-3.5 text-input-element/60 pointer-events-none" size={18} />
+                  <Input 
+                    type="text" 
+                    placeholder="034 xx xxx xx" 
+                    className="pl-11"
+                    aria-invalid={!isPhoneProValid}
+                    value={formData.telephonePro}
+                    onChange={(e) => handleInputChange('telephonePro', formatPhone(e.target.value))}
+                    maxLength={13}
+                    required 
+                  />
+                </div>
                 {!isPhoneProValid && (
                   <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
                     <AlertTriangle size={11} /> Requis : 10 chiffres.
@@ -174,17 +163,20 @@ export default function CollectorForm({ initialData, onBack, onNext }: Props) {
               </div>
 
               {/* E-mail Pro */}
-              <div className="relative">
-                <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">E-mail pro</label>
-                <div className="input-icon-step2"><Mail size={18} /></div>
-                <input 
-                  type="email" 
-                  placeholder="contact@cie.com" 
-                  className="input-auth focus:bg-white text-xs h-10" 
-                  value={formData.emailPro}
-                  onChange={(e) => handleInputChange('emailPro', e.target.value)}
-                  required 
-                />
+              <div className="flex flex-col">
+                <label className="text-[11px] font-bold text-label ml-1 mb-1.5">E-mail pro</label>
+                <div className="relative flex items-center">
+                  <Mail className="absolute left-3.5 text-input-element/60 pointer-events-none" size={18} />
+                  <Input 
+                    type="email" 
+                    placeholder="contact@cie.com" 
+                    className="pl-11"
+                    aria-invalid={!isEmailValid}
+                    value={formData.emailPro}
+                    onChange={(e) => handleInputChange('emailPro', e.target.value)}
+                    required 
+                  />
+                </div>
                 {!isEmailValid && (
                   <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
                     <AlertTriangle size={11} /> Adresse e-mail invalide.
@@ -193,18 +185,21 @@ export default function CollectorForm({ initialData, onBack, onNext }: Props) {
               </div>
 
               {/* NIF */}
-              <div className="relative">
-                <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">NIF</label>
-                <div className="input-icon-step2"><FileText size={18} /></div>
-                <input 
-                  type="text" 
-                  placeholder="10 chiffres" 
-                  className="input-auth focus:bg-white text-xs h-10" 
-                  value={formData.nif}
-                  onChange={(e) => handleInputChange('nif', e.target.value)}
-                  maxLength={10}
-                  required 
-                />
+              <div className="flex flex-col">
+                <label className="text-[11px] font-bold text-label ml-1 mb-1.5">NIF</label>
+                <div className="relative flex items-center">
+                  <FileText className="absolute left-3.5 text-input-element/60 pointer-events-none" size={18} />
+                  <Input 
+                    type="text" 
+                    placeholder="10 chiffres" 
+                    className="pl-11"
+                    aria-invalid={!isNifValid}
+                    value={formData.nif}
+                    onChange={(e) => handleInputChange('nif', e.target.value)}
+                    maxLength={10}
+                    required 
+                  />
+                </div>
                 {!isNifValid && (
                   <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
                     <AlertTriangle size={11} /> Requis : 10 chiffres.
@@ -213,17 +208,20 @@ export default function CollectorForm({ initialData, onBack, onNext }: Props) {
               </div>
 
               {/* STAT */}
-              <div className="relative">
-                <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">STAT</label>
-                <div className="input-icon-step2"><FileText size={18} /></div>
-                <input 
-                  type="text" 
-                  placeholder="Stats ID" 
-                  className="input-auth focus:bg-white text-xs h-10" 
-                  value={formData.stat}
-                  onChange={(e) => handleInputChange('stat', e.target.value)}
-                  required 
-                />
+              <div className="flex flex-col">
+                <label className="text-[11px] font-bold text-label ml-1 mb-1.5">STAT</label>
+                <div className="relative flex items-center">
+                  <FileText className="absolute left-3.5 text-input-element/60 pointer-events-none" size={18} />
+                  <Input 
+                    type="text" 
+                    placeholder="Stats ID" 
+                    className="pl-11"
+                    aria-invalid={!isStatValid}
+                    value={formData.stat}
+                    onChange={(e) => handleInputChange('stat', e.target.value)}
+                    required 
+                  />
+                </div>
                 {!isStatValid && (
                   <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
                     <AlertTriangle size={11} /> Identifiant trop court (min. 5).
@@ -240,35 +238,37 @@ export default function CollectorForm({ initialData, onBack, onNext }: Props) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               
               {/* Nom Complet */}
-              <div className="relative">
-                <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Nom complet</label>
-                <div className="input-icon-step2"><User size={18}/></div>
-                <input 
-                  type="text" 
-                  placeholder="Prénoms & Nom" 
-                  className="input-auth focus:bg-white text-xs h-10" 
-                  value={formData.nomComplet}
-                  onChange={(e) => handleInputChange('nomComplet', e.target.value)}
-                  required 
-                />
+              <div className="flex flex-col">
+                <label className="text-[11px] font-bold text-label ml-1 mb-1.5">Nom complet</label>
+                <div className="relative flex items-center">
+                  <User className="absolute left-3.5 text-input-element/60 pointer-events-none" size={18}/>
+                  <Input 
+                    type="text" 
+                    placeholder="Prénoms & Nom" 
+                    className="pl-11"
+                    value={formData.nomComplet}
+                    onChange={(e) => handleInputChange('nomComplet', e.target.value)}
+                    required 
+                  />
+                </div>
               </div>
 
               {/* Téléphone Direct */}
-              <div className="relative">
-                <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Téléphone direct</label>
-                <div className="input-icon-step2"><Phone size={18}/></div>
-                <input 
-                  type="text" 
-                  placeholder="032 xx xxx xx" 
-                  className="input-auth focus:bg-white text-xs h-10" 
-                  value={formData.telephoneDirect}
-                  onChange={(e) => {
-                    const formatted = formatPhone(e.target.value);
-                    handleInputChange('telephoneDirect', formatted);
-                  }}
-                  maxLength={13} // 10 chiffres + 3 espaces générés
-                  required 
-                />
+              <div className="flex flex-col">
+                <label className="text-[11px] font-bold text-label ml-1 mb-1.5">Téléphone direct</label>
+                <div className="relative flex items-center">
+                  <Phone className="absolute left-3.5 text-input-element/60 pointer-events-none" size={18}/>
+                  <Input 
+                    type="text" 
+                    placeholder="032 xx xxx xx" 
+                    className="pl-11"
+                    aria-invalid={!isPhoneDirectValid}
+                    value={formData.telephoneDirect}
+                    onChange={(e) => handleInputChange('telephoneDirect', formatPhone(e.target.value))}
+                    maxLength={13}
+                    required 
+                  />
+                </div>
                 {!isPhoneDirectValid && (
                   <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
                     <AlertTriangle size={11} /> Requis : 10 chiffres.
@@ -277,24 +277,24 @@ export default function CollectorForm({ initialData, onBack, onNext }: Props) {
               </div>
 
               {/* Numéro CIN */}
-              <div className="relative">
-                <label className="text-[11px] font-bold text-label block ml-1 mb-1.5">Numéro CIN</label>
-                <div className="input-icon-step2"><CreditCard size={18}/></div>
-                <input 
-                  type="text" 
-                  placeholder="101 000 000 000" 
-                  className="input-auth focus:bg-white text-xs h-10" 
-                  value={formData.cin}
-                  onChange={(e) => {
-                    const formatted = formatCin(e.target.value);
-                    handleInputChange('cin', formatted);
-                  }}
-                  maxLength={15} // 12 chiffres et doit se terminer par 1 ou 2 + 3 espaces générés
-                  required 
-                />
+              <div className="flex flex-col">
+                <label className="text-[11px] font-bold text-label ml-1 mb-1.5">Numéro CIN</label>
+                <div className="relative flex items-center">
+                  <CreditCard className="absolute left-3.5 text-input-element/60 pointer-events-none" size={18}/>
+                  <Input 
+                    type="text" 
+                    placeholder="101 000 000 000" 
+                    className="pl-11"
+                    aria-invalid={!isCinValid}
+                    value={formData.cin}
+                    onChange={(e) => handleInputChange('cin', formatCin(e.target.value))}
+                    maxLength={15}
+                    required 
+                  />
+                </div>
                 {!isCinValid && (
                   <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
-                    <AlertTriangle size={11} /> Requis : 12 chiffres et doit se terminer par 1 ou 2.
+                    <AlertTriangle size={11} /> Requis : 12 chiffres (se terminant par 1 ou 2).
                   </p>
                 )}
               </div>
@@ -302,24 +302,24 @@ export default function CollectorForm({ initialData, onBack, onNext }: Props) {
             </div>
           </div>
 
-          {/* BESOINS */}
+          {/* BESOINS AVEC CHECKBOX SHADCN */}
           <div className="flex items-center justify-between bg-neutral-50 p-3 rounded-xl border border-separator/10">
-            <span className="text-[10px] font-bold text-label uppercase ml-2">Besoin :</span>
+            <span className="text-[10px] font-bold text-label uppercase ml-2 select-none">Besoin :</span>
             <div className="flex gap-6 mr-2">
               {['Végétale', 'Elevage', 'Rente'].map((item) => (
-                <label key={item} className="flex items-center space-x-2 cursor-pointer group">
-                  <div className="relative flex items-center justify-center">
-                    <input 
-                      type="checkbox" 
-                      className="peer hidden" 
-                      checked={selectedNeeds.includes(item)}
-                      onChange={() => handleCheckboxChange(item)}
-                    />
-                    <div className="w-5 h-5 border border-separator/40 rounded peer-checked:bg-primary peer-checked:border-primary transition-all"></div>
-                    <Check size={12} className="absolute text-white scale-0 peer-checked:scale-100 transition-transform stroke-[3px]" />
-                  </div>
-                  <span className="text-xs font-bold text-neutral-700 group-hover:text-primary">{item}</span>
-                </label>
+                <div key={item} className="flex items-center space-x-2 group">
+                  <Checkbox 
+                    id={`need-${item}`}
+                    checked={selectedNeeds.includes(item)}
+                    onCheckedChange={(checked) => handleCheckboxChange(item, checked as boolean)}
+                  />
+                  <label 
+                    htmlFor={`need-${item}`} 
+                    className="text-xs font-bold text-neutral-700 cursor-pointer group-hover:text-primary transition-colors select-none"
+                  >
+                    {item}
+                  </label>
+                </div>
               ))}
             </div>
           </div>
@@ -329,7 +329,7 @@ export default function CollectorForm({ initialData, onBack, onNext }: Props) {
             <button 
               type="button" 
               onClick={onBack} 
-              className="px-8 py-2.5 rounded-xl border border-separator/30 text-sm font-bold text-label hover:bg-neutral-50 transition-all flex items-center space-x-2"
+              className="px-8 py-2.5 rounded-xl border border-separator/30 text-sm font-bold text-label hover:bg-neutral-50 transition-all flex items-center space-x-2 cursor-pointer"
             >
               <ChevronLeft size={18} />
               <span>Précédent</span>
@@ -337,7 +337,7 @@ export default function CollectorForm({ initialData, onBack, onNext }: Props) {
             <button 
               type="submit" 
               disabled={hasErrors}
-              className="btn-primary px-10 py-2.5 text-xs flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary px-10 py-2.5 text-xs flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               <span>Suivant</span>
               <ChevronRight size={16} />

@@ -2,11 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, Eye, EyeOff, Key, Check, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Key, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
 import { AuthFormData } from '../types/auth';
 import { mockLoginService, sendVerificationEmail, verifyCodeService } from '../services/authService';
 import { checkEmailAvailability } from '../../register/services/registerService';
 import { useRegisterStore } from '../../register/registerStore';
+
+// Importation des composants Shadcn UI
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // Importation de la validation et de l'analyse précise des emails
 import { validateEmail, analyzeEmailError } from '../../../utils/validation';
@@ -235,7 +242,7 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
   // --- RENDU VUE 2 & 3 COMPACTÉES (Vérification & Reset) ---
   if (view === 'forgot' || view === 'reset') {
     return (
-      <div className="w-full max-w-xl p-6 md:p-8 space-y-6 animate-in fade-in duration-500">
+      <div className="w-full max-w-xl p-6 md:p-8 space-y-6 animate-in fade-in duration-300">
         <div className="space-y-2">
           <h2 className="text-3xl font-bold text-primary leading-tight">
             {view === 'forgot' ? "Vérification" : "Nouveau mot de passe"}
@@ -265,11 +272,11 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
           {view === 'forgot' ? (
             <div className="space-y-2">
               <div className="relative">
-                <div className="input-icon-container input-icon-no-label"><Key size={18} /></div>
-                <input 
+                <div className="input-icon-no-label"><Key size={18} /></div>
+                <Input 
                   type="text" 
                   placeholder="XXXXXXXX" 
-                  className="input-auth text-center tracking-[0.5em] font-mono h-12 uppercase focus:bg-white"
+                  className="input-auth text-center tracking-[0.5em] font-mono h-12 uppercase focus-visible:bg-white"
                   value={verificationCode}
                   maxLength={8}
                   onChange={(e) => setVerificationCode(e.target.value.toUpperCase())}
@@ -278,22 +285,29 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
                 />
               </div>
               <div className="text-right">
-                <button type="button" onClick={handleResendCode} className="text-[11px] font-bold text-primary hover:underline transition-all" disabled={isLoading}>
+                <Button 
+                  type="button" 
+                  variant="link" 
+                  onClick={handleResendCode} 
+                  className="text-[11px] font-bold text-primary p-0 h-auto hover:underline transition-all" 
+                  disabled={isLoading}
+                >
                   Renvoyer le code
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
             <>
               <div className="relative">
-                <label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">Nouveau mot de passe</label>
+                <Label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">Nouveau mot de passe</Label>
                 <div className="input-icon-container"><Lock size={18} /></div>
-                <input type="password" className="input-auth h-11 focus:bg-white" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} disabled={isLoading} required />
+                <Input type="password" className="input-auth h-11 focus-visible:bg-white" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} disabled={isLoading} required />
               </div>
+              
               <div className="relative">
-                <label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">Confirmer</label>
+                <Label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">Confirmer</Label>
                 <div className="input-icon-container"><Lock size={18} /></div>
-                <input type="password" className="input-auth h-11 focus:bg-white" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} disabled={isLoading} required />
+                <Input type="password" className="input-auth h-11 focus-visible:bg-white" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} disabled={isLoading} required />
                 {isResetPasswordMismatched && (
                   <p className="text-red-500 text-[10px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in duration-300">
                     <AlertTriangle size={12} /> Les mots de passe ne correspondent pas.
@@ -303,26 +317,27 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
             </>
           )}
 
-          <button 
+          <Button 
             type="submit" 
             disabled={isLoading || isResetPasswordMismatched} 
-            className="btn-primary w-full h-12 mt-2 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary w-full h-12 mt-2"
           >
             {isLoading ? <Loader2 size={16} className="animate-spin" /> : (view === 'forgot' ? "Vérifier" : "Mettre à jour")}
-          </button>
+          </Button>
           
-          <button 
+          <Button 
             type="button" 
+            variant="ghost"
             onClick={() => { 
               setView('auth'); 
               setErrorNotification(null); 
               setSuccessNotification(null);
             }} 
-            className="text-xs font-bold text-input-element/60 hover:text-primary hover:underline w-full text-center transition-colors" 
+            className="text-xs font-bold text-input-element/60 hover:text-primary hover:underline w-full text-center transition-colors h-10" 
             disabled={isLoading}
           >
             Retour
-          </button>
+          </Button>
         </form>
       </div>
     );
@@ -330,7 +345,7 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
 
   // --- RENDU VUE 1 : AUTHENTIFICATION PRINCIPALE ---
   return (
-    <div className="w-full max-w-xl p-6 md:p-8 space-y-6 animate-in fade-in duration-500">
+    <div className="w-full max-w-xl p-6 md:p-8 space-y-6 animate-in fade-in duration-300">
       <div className="space-y-1">
         <h2 className="text-3xl font-bold text-primary leading-tight tracking-tight">AgriConnect</h2>
         <p className="text-label text-sm font-medium">
@@ -341,21 +356,42 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
       </div>
 
       {!isForgotPasswordMode && (
-        <div className="flex w-full border-b border-separator/20">
-          <button type="button" onClick={() => { setIsLogin(true); setErrorNotification(null); setSuccessNotification(null); }} className={`flex-1 pb-3 pt-2 text-base font-bold transition-all border-b-2 ${isLogin ? 'text-primary border-primary bg-light-bg/20' : 'text-input-element/40 border-transparent'}`}>Connexion</button>
-          <button type="button" onClick={() => { setIsLogin(false); setErrorNotification(null); setSuccessNotification(null); }} className={`flex-1 pb-3 pt-2 text-base font-bold transition-all border-b-2 ${!isLogin ? 'text-primary border-primary bg-light-bg/20' : 'text-input-element/40 border-transparent'}`}>Inscription</button>
-        </div>
+        /* Tabs natifs synchronisés avec ton ancien design (border-b-2, light-bg/20) */
+        <Tabs 
+          value={isLogin ? "login" : "register"} 
+          className="w-full"
+          onValueChange={(val) => {
+            setIsLogin(val === "login");
+            setErrorNotification(null);
+            setSuccessNotification(null);
+          }}
+        >
+          <TabsList className="flex w-full bg-transparent border-b border-separator/20 h-auto p-0 rounded-none">
+            <TabsTrigger 
+              value="login" 
+              className="flex-1 pb-3 pt-2 text-base font-bold transition-all border-b-2 rounded-none data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-light-bg/20 data-[state=inactive]:text-input-element/40 data-[state=inactive]:border-transparent bg-transparent"
+            >
+              Connexion
+            </TabsTrigger>
+            <TabsTrigger 
+              value="register" 
+              className="flex-1 pb-3 pt-2 text-base font-bold transition-all border-b-2 rounded-none data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-light-bg/20 data-[state=inactive]:text-input-element/40 data-[state=inactive]:border-transparent bg-transparent"
+            >
+              Inscription
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       )}
 
       {errorNotification && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold animate-in fade-in duration-300">
           <AlertTriangle size={18} className="flex-shrink-0 text-red-500 mt-0.5" />
           <p className="leading-relaxed">{errorNotification}</p>
         </div>
       )}
 
       {successNotification && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 text-xs font-semibold animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 text-xs font-semibold animate-in fade-in duration-300">
           <CheckCircle2 size={18} className="flex-shrink-0 text-green-500 mt-0.5" />
           <p className="leading-relaxed">{successNotification}</p>
         </div>
@@ -363,28 +399,34 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
 
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div className="relative">
-          <label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">Adresse email</label>
+          <Label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">Adresse email</Label>
           <div className="input-icon-container"><Mail size={18} /></div>
-          <input type="email" placeholder="nom@exemple.com" className="input-auth h-11 text-sm focus:bg-white" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} required />
+          <Input type="email" placeholder="nom@exemple.com" className="input-auth h-11 text-sm focus-visible:bg-white" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} required />
         </div>
 
         {!isForgotPasswordMode && (
           <div className="relative">
-            <label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">Mot de passe</label>
+            <Label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">Mot de passe</Label>
             <div className="input-icon-container"><Lock size={18} /></div>
-            <input type={showPassword ? "text" : "password"} placeholder="••••••••" className="input-auth h-11 text-sm focus:bg-white" value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} required />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} className="input-password-toggle" disabled={isLoading}>
+            <Input type={showPassword ? "text" : "password"} placeholder="••••••••" className="input-auth h-11 text-sm focus-visible:bg-white" value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} required />
+            <Button 
+              type="button" 
+              variant="ghost"
+              onClick={() => setShowPassword(!showPassword)} 
+              className="input-password-toggle h-auto w-auto p-0 hover:bg-transparent"
+              disabled={isLoading}
+            >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
+            </Button>
           </div>
         )}
 
         {!isLogin && !isForgotPasswordMode && (
           <>
-            <div className="relative animate-in slide-in-from-top-1">
-              <label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">Confirmez le mot de passe</label>
+            <div className="relative animate-in fade-in duration-300">
+              <Label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">Confirmez le mot de passe</Label>
               <div className="input-icon-container"><Lock size={18} /></div>
-              <input type={showPassword ? "text" : "password"} placeholder="••••••••" className="input-auth h-11 text-sm focus:bg-white" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isLoading} required />
+              <Input type={showPassword ? "text" : "password"} placeholder="••••••••" className="input-auth h-11 text-sm focus-visible:bg-white" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isLoading} required />
               {isRegisterPasswordMismatched && (
                 <p className="text-red-500 text-[10px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in duration-300">
                   <AlertTriangle size={12} /> Les mots de passe ne correspondent pas.
@@ -393,30 +435,38 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
             </div>
 
             <div className="flex items-start space-x-3 pt-1">
-              <label className="flex items-center cursor-pointer group pt-0.5">
-                <div className="relative flex items-center justify-center">
-                  <input type="checkbox" className="peer hidden" checked={agreedToTerms} onChange={() => setAgreedToTerms(!agreedToTerms)} disabled={isLoading} />
-                  <div className="w-5 h-5 border border-separator/40 rounded peer-checked:bg-primary peer-checked:border-primary transition-all"></div>
-                  <Check size={12} className="absolute text-white scale-0 peer-checked:scale-100 transition-transform stroke-[3px]" />
-                </div>
-              </label>
-              <span className="text-[11px] text-input-element toggle-label-terms leading-tight">
-                J'accepte les <span className="text-primary font-bold hover:underline cursor-pointer">Conditions d'Utilisation</span> et la <span className="text-primary font-bold hover:underline cursor-pointer">Politique de Confidentialité</span>.
-              </span>
+              <Checkbox 
+                id="terms" 
+                checked={agreedToTerms} 
+                onCheckedChange={(checked) => setAgreedToTerms(!!checked)}
+                disabled={isLoading}
+                className="mt-0.5 border-separator/40 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+              />
+              <Label htmlFor="terms" className="text-[11px] text-input-element font-medium leading-tight cursor-pointer select-none">
+                J'accepte les <span className="text-primary font-bold hover:underline">Conditions d'Utilisation</span> et la <span className="text-primary font-bold hover:underline">Politique de Confidentialité</span>.
+              </Label>
             </div>
           </>
         )}
 
         {isLogin && !isForgotPasswordMode && (
           <div className="text-right">
-            <button type="button" onClick={() => { setIsForgotPasswordMode(true); setErrorNotification(null); }} className="text-[11px] font-bold text-primary hover:underline" disabled={isLoading}>Mot de passe oublié ?</button>
+            <Button 
+              type="button" 
+              variant="link"
+              onClick={() => { setIsForgotPasswordMode(true); setErrorNotification(null); }} 
+              className="text-[11px] font-bold text-primary p-0 h-auto hover:underline" 
+              disabled={isLoading}
+            >
+              Mot de passe oublié ?
+            </Button>
           </div>
         )}
 
-        <button 
+        <Button 
           type="submit" 
           disabled={isLoading || isRegisterPasswordMismatched}
-          className="btn-primary w-full h-12 mt-2 text-sm shadow-lg shadow-primary/10 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn-primary w-full h-12 mt-2"
         >
           {isLoading ? (
             <Loader2 size={16} className="animate-spin" />
@@ -427,21 +477,22 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
           ) : (
             "S'inscrire"
           )}
-        </button>
+        </Button>
 
         {isForgotPasswordMode && (
-          <button 
+          <Button 
             type="button" 
+            variant="ghost"
             onClick={() => { 
               setIsForgotPasswordMode(false); 
               setErrorNotification(null); 
               setSuccessNotification(null); 
             }} 
-            className="text-xs font-bold text-input-element/60 hover:text-primary hover:underline w-full text-center transition-colors block pt-2"
+            className="text-xs font-bold text-input-element/60 hover:text-primary hover:underline w-full text-center transition-colors block pt-2 h-10"
             disabled={isLoading}
           >
             Annuler et retourner à la connexion
-          </button>
+          </Button>
         )}
       </form>
     </div>

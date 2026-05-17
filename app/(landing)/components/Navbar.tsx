@@ -2,6 +2,8 @@
 
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from "@/components/ui/button";
+
 interface NavbarProps {
   setView: Dispatch<SetStateAction<string>>;
 }
@@ -9,6 +11,7 @@ interface NavbarProps {
 export default function Navbar({ setView }: NavbarProps) {
   const [activeSection, setActiveSection] = useState('accueil');
   const router = useRouter();
+
   const navLinks = [
     { name: 'Accueil', id: 'accueil' },
     { name: 'Services', id: 'features' },    
@@ -49,17 +52,17 @@ export default function Navbar({ setView }: NavbarProps) {
       if (element) {
         const offset = 80;
         const elementPosition = element.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - offset;
+        const offsetPosition = elementPosition + window.scrollY - offset;
         window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
       }
     }, 50);
   };
 
   return (
-    <nav className="w-full bg-white/80 backdrop-blur-md sticky top-0 z-50 font-sans">
-      <div className="max-w-[1440px] mx-auto flex items-center justify-between px-6 lg:px-16 py-5">
+    <nav className="w-full bg-white/80 backdrop-blur-md sticky top-0 z-50 font-sans border-b border-separator/10 select-none">
+      <div className="max-w-[1440px] mx-auto flex items-center justify-between px-6 lg:px-16 py-4">
         
-        {/* Logo */}
+        {/* --- LOGO --- */}
         <div 
           onClick={() => { setView('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
           className="flex items-center cursor-pointer group"
@@ -70,7 +73,7 @@ export default function Navbar({ setView }: NavbarProps) {
           </div>
         </div>
 
-        {/* Liens Centraux */}
+        {/* --- LIENS CENTRAUX (ANCHORS) --- */}
         <div className="hidden lg:flex items-center space-x-12">
           {navLinks.map((link) => {
             const isActive = activeSection === link.id;
@@ -78,8 +81,10 @@ export default function Navbar({ setView }: NavbarProps) {
               <button 
                 key={link.id}
                 onClick={() => handleNavClick(link.id)}
-                className={`transition-all text-[15px] font-bold pb-1 border-b-2 outline-none ${
-                  isActive ? "text-primary border-primary" : "text-input-element border-transparent hover:text-primary"
+                className={`transition-all text-[15px] font-bold pb-1 border-b-2 outline-none cursor-pointer ${
+                  isActive 
+                    ? "text-primary border-primary" 
+                    : "text-input-element border-transparent hover:text-primary"
                 }`}
               >
                 {link.name}
@@ -88,24 +93,24 @@ export default function Navbar({ setView }: NavbarProps) {
           })}
         </div>
 
-        {/* Boutons d'action forcés avec window.location */}
-
-
-        <div className="flex items-center space-x-8">
-          <button 
+        {/* --- ACTIONS DROITE : BUTTONS SHADCN --- */}
+        <div className="flex items-center space-x-6">
+          <Button
+            variant="ghost"
             onClick={() => router.push('/login?mode=login')}
-            className="text-label font-bold text-sm hover:text-primary transition-colors outline-none"
+            className="text-label font-bold text-sm hover:text-primary hover:bg-neutral transition-colors outline-none cursor-pointer px-4 py-2 rounded-xl"
           >
             Se connecter
-          </button>
+          </Button>
           
-          <button 
+          <Button 
             onClick={() => router.push('/login?mode=register')}
-            className="btn-primary !py-3 !px-7 text-sm shadow-none outline-none"
+            className="btn-primary py-3 px-7 text-sm font-bold shadow-none outline-none cursor-pointer h-auto"
           >
             Commencer
-          </button>
+          </Button>
         </div>
+
       </div>
     </nav>
   );

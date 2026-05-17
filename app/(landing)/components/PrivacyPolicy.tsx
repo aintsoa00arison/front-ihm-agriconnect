@@ -5,8 +5,6 @@ import {
   Download, 
   User, 
   Sprout, 
-  RefreshCw, 
-  BarChart3, 
   Wrench, 
   CheckCircle2, 
   ShieldCheck, 
@@ -18,6 +16,8 @@ import {
   MessageSquare,
   Star
 } from 'lucide-react';
+
+import { Button } from "@/components/ui/button";
 
 export default function PrivacyPolicy() {
   const [activeSection, setActiveSection] = useState('intro');
@@ -67,14 +67,12 @@ export default function PrivacyPolicy() {
   };
 
   return (
-    <div className="w-full bg-[#F8F9FA] font-sans text-input-element antialiased selection:bg-primary/10">
+    <div className="w-full bg-[#F8F9FA] font-sans text-input-element antialiased selection:bg-primary/10 select-none">
       
       {/* --- EN-TÊTE DE LA PAGE --- */}
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16 pt-16 pb-12 border-b border-separator/20 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-          <div className="text-[13px] font-bold text-input-element/60 mb-6 flex items-center gap-2 uppercase tracking-wider">
-            <span>Accueil</span> <span>&gt;</span> <span className="text-primary">Politique de Confidentialité</span>
-          </div>
+        
           <h1 className="text-4xl lg:text-5xl font-black text-label tracking-tight mb-4">
             Politique de Confidentialité
           </h1>
@@ -83,17 +81,21 @@ export default function PrivacyPolicy() {
           </p>
         </div>
         
-        <button className="bg-primary text-white hover:bg-[#154329] px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-sm shrink-0 outline-none">
+        <Button 
+          className="bg-primary text-white hover:bg-[#154329] px-6 py-3 h-auto rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-sm shrink-0 cursor-pointer border-0"
+        >
           <Download size={16} />
           Télécharger en PDF
-        </button>
+        </Button>
       </div>
 
       {/* --- STRUCTURE PRINCIPALE --- */}
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-16 grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+      {/* items-start empêche l'aside de s'étirer sur toute la hauteur du grid */}
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-16 grid grid-cols-1 lg:grid-cols-12 gap-16 items-start relative">
         
         {/* Colonne Gauche : Sommaire Sticky & Boîte d'aide orange */}
-        <aside className="hidden lg:block lg:col-span-3 sticky top-10 space-y-8">
+        {/* h-fit redonne sa vraie hauteur à l'aside pour permettre le glissement sticky */}
+        <aside className="hidden lg:block lg:col-span-3 sticky top-24 h-fit space-y-8">
           <div className="space-y-4">
             <p className="text-[11px] font-black uppercase text-input-element/50 tracking-widest pl-3">
               Sommaire
@@ -105,7 +107,7 @@ export default function PrivacyPolicy() {
                   <button
                     key={sec.id}
                     onClick={() => scrollToSection(sec.id)}
-                    className={`text-left text-xs font-bold py-2.5 px-4 rounded-r-xl transition-all border-l-2 -ml-[1px] outline-none ${
+                    className={`text-left text-xs font-bold py-2.5 px-4 rounded-r-xl transition-all border-l-2 -ml-[1px] outline-none cursor-pointer ${
                       isActive
                         ? "text-primary border-primary bg-primary/5 font-extrabold"
                         : "text-input-element/70 border-transparent hover:text-primary hover:bg-light-bg/30"
@@ -136,7 +138,7 @@ export default function PrivacyPolicy() {
           </div>
         </aside>
 
-        {/* Colonne Droite : Le Flux de Contenu */}
+        {/* Colonne Droite : Le Flux de Contenu (Seul bloc qui scrolle) */}
         <main className="col-span-1 lg:col-span-9 space-y-16 max-w-[850px] bg-white rounded-[32px] p-8 md:p-12 border border-separator/10 shadow-sm">
           
           {/* 1. Introduction */}
@@ -154,7 +156,6 @@ export default function PrivacyPolicy() {
           <section id="collecte" className="space-y-6 scroll-mt-10">
             <h2 className="text-2xl font-black text-label tracking-tight">Collecte des données</h2>
             
-            {/* Grille Données Personnelles / Données d'exploitation */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Carte Données Personnelles */}
               <div className="border border-separator/40 rounded-2xl p-6 bg-white space-y-4">
@@ -195,7 +196,6 @@ export default function PrivacyPolicy() {
             <h2 className="text-2xl font-black text-label tracking-tight">Utilisation des données</h2>
             <p className="text-sm">Vos données sont traitées exclusivement pour les finalités suivantes :</p>
 
-            {/* Liste des finalités de traitement */}
             <div className="space-y-6">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center shrink-0">
@@ -265,9 +265,8 @@ export default function PrivacyPolicy() {
           <section id="securite" className="space-y-6 scroll-mt-10">
             <h2 className="text-2xl font-black text-label tracking-tight">Sécurité et Chiffrement</h2>
             
-            {/* Bannière Technologique Verte */}
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0F311D] to-primary p-8 text-white flex flex-col justify-end min-h-[160px] shadow-inner">
-              <div className="absolute top-0 right-0 left-0 bottom-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
+              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
               <div className="relative z-10 space-y-2">
                 <div className="flex items-center gap-3 font-black text-base tracking-wide">
                   <ShieldCheck size={24} className="text-white" />
@@ -292,7 +291,6 @@ export default function PrivacyPolicy() {
             <h2 className="text-2xl font-black text-label tracking-tight">Droits des utilisateurs</h2>
             <p className="text-sm">Conformément aux réglementations sur la protection des données (RGPD), vous gardez le contrôle total sur votre compte :</p>
 
-            {/* Grille des 4 droits RGPD */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-[#F8F9FA] border border-separator/30 rounded-xl p-4 flex gap-3 items-start">
                 <Eye className="text-primary shrink-0 mt-0.5" size={18} />
@@ -327,7 +325,6 @@ export default function PrivacyPolicy() {
               </div>
             </div>
 
-            {/* Boîte grise de conclusion */}
             <div className="bg-[#F8F9FA] border border-separator/30 rounded-xl p-5 text-xs leading-relaxed text-input-element/90">
               Pour exercer vos droits, veuillez nous envoyer une demande signée à <a href="mailto:privacy@AgriConnect.com" className="font-bold text-label hover:underline">privacy@AgriConnect.com</a> avec une copie d'une pièce d'identité en cours de validité.
             </div>

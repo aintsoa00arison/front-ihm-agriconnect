@@ -13,6 +13,8 @@ import {
   Star
 } from 'lucide-react';
 
+import { Button } from "@/components/ui/button";
+
 export default function TermsOfService() {
   const [activeSection, setActiveSection] = useState('intro');
 
@@ -62,18 +64,15 @@ export default function TermsOfService() {
   };
 
   return (
-    <div className="w-full bg-white font-sans text-input-element antialiased selection:bg-primary/10">
+    <div className="w-full bg-white font-sans text-input-element antialiased selection:bg-primary/10 select-none">
       
       {/* --- EN-TÊTE PRINCIPAL --- */}
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16 pt-16 pb-12 border-b border-separator/30">
-        <div className="text-[13px] font-bold text-input-element/60 mb-6 flex items-center gap-2 uppercase tracking-wider">
-          <span>Accueil</span> <span>&gt;</span> <span className="text-primary">Conditions Générales d'Utilisation</span>
-        </div>
         <h1 className="text-4xl lg:text-5xl font-black text-label tracking-tight mb-4">
           Conditions Générales d'Utilisation
         </h1>
         <p className="text-input-element/80 text-sm font-medium">
-          Dernière mise à jour : <span className="font-bold">24 Mai 2024</span>. Ces conditions régissent votre utilisation de la plateforme AgriConnect et définissent nos engagements mutuels.
+          Dernière mise à jour : <span className="font-bold">14 Mai 2026</span>. Ces conditions régissent votre utilisation de la plateforme AgriConnect et définissent nos engagements mutuels.
         </p>
       </div>
 
@@ -92,7 +91,7 @@ export default function TermsOfService() {
                 <button
                   key={sec.id}
                   onClick={() => scrollToSection(sec.id)}
-                  className={`text-left text-sm font-bold py-2.5 px-4 rounded-r-xl transition-all border-l-2 -ml-[1px] outline-none ${
+                  className={`text-left text-sm font-bold py-2.5 px-4 rounded-r-xl transition-all border-l-2 -ml-[1px] outline-none cursor-pointer ${
                     isActive
                       ? "text-primary border-primary bg-primary/5 font-extrabold"
                       : "text-input-element/70 border-transparent hover:text-primary hover:bg-light-bg/30"
@@ -148,7 +147,7 @@ export default function TermsOfService() {
                   <span>Respect de la communauté</span>
                 </div>
                 <p className="text-xs text-input-element/80 leading-relaxed">
-                  Chaque membre est tenu de respecter les autres utilisateurs. Tout comportement insultant, agressif ou abusif entraînera un bannissement immédiat.
+                  Each membre est tenu de respecter les autres utilisateurs. Tout comportement insultant, agressif ou abusif entraînera un bannissement immédiat.
                 </p>
               </div>
               <div className="border border-separator/40 rounded-2xl p-6 bg-white shadow-sm space-y-2">
@@ -306,10 +305,14 @@ export default function TermsOfService() {
               </div>
             </div>
             
-            <button className="border-2 border-amber-800/80 text-amber-900/90 hover:bg-amber-500/5 px-6 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition-colors outline-none">
+            {/* Intégration du Bouton Shadcn Outline personnalisé */}
+            <Button 
+              variant="outline"
+              className="border-2 border-amber-800/80 text-amber-900/90 hover:bg-amber-500/5 px-6 py-2.5 h-auto rounded-xl font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer"
+            >
               <Download size={14} />
               Télécharger en PDF
-            </button>
+            </Button>
           </div>
 
         </main>

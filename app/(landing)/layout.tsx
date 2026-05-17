@@ -33,21 +33,21 @@ export default function LandingLayout({
         
         {/* Affichage de la Landing Page principale */}
         {isHome && (
-          <div className="animate-in fade-in duration-500">
+          <div className="animate-in fade-in duration-300">
             {children}
           </div>
         )}
 
-        {/* Affichage des pages secondaires avec bouton Retour en haut à gauche */}
+        {/* Affichage des pages secondaires avec bouton Retour */}
         {!isHome && (
-          <div className="animate-in slide-in-from-bottom-4 duration-500 pt-10 pb-20">
+          <div className="pt-10 pb-20 animate-in fade-in duration-200">
             <div className="max-w-[1440px] mx-auto px-6 lg:px-16 space-y-6">
               
               {/* Bouton Retour en haut à gauche */}
               <div className="flex justify-start">
                 <button 
                   onClick={backToHome}
-                  className="flex items-center gap-2 text-input-element/70 hover:text-primary font-bold text-xs bg-white border border-separator/10 px-4 py-2.5 rounded-xl transition-all shadow-sm outline-none"
+                  className="flex items-center gap-2 text-input-element/70 hover:text-primary font-bold text-xs bg-white border border-separator/10 px-4 py-2.5 rounded-xl transition-all shadow-sm outline-none cursor-pointer"
                   title="Revenir à l'accueil"
                 >
                   <ArrowLeft size={16} />
@@ -60,7 +60,8 @@ export default function LandingLayout({
                 {view === 'privacy' && <PrivacyPolicy />}
                 {view === 'terms' && <TermsOfService />}
                 {view === 'contact' && <ContactForm />}
-                {view === 'help' && <HelpCenter />}
+                {/* Injection de setView pour permettre la redirection */}
+                {view === 'help' && <HelpCenter setView={setView} />}
               </div>
 
             </div>

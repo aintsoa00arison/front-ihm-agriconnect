@@ -21,16 +21,16 @@ export default function RegisterPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   
-  // Récupération des données de l'étape 1 (Zustand) et de la fonction de reset
+  // Récupération des données du premier écran (Zustand) et du reset
   const { registerDraft, resetRegisterDraft } = useRegisterStore();
   
   // 1. États de configuration du profil
   const [role, setRole] = useState<'fournisseur' | 'collecteur'>('fournisseur');
   const [fournisseurType, setFournisseurType] = useState<'particulier' | 'entreprise'>('particulier');
 
-  // 2. États de mémoire pour l'Étape 2 (Sauvegarde des formulaires)
-  const [collectorData, setCollectorData] = useState<any>(null);
-  const [fournisseurData, setFournisseurData] = useState<any>(null);
+  // 2. États de mémoire pour l'Étape 2 (Sauvegarde typée des formulaires)
+  const [collectorData, setCollectorData] = useState<Record<string, any> | null>(null);
+  const [fournisseurData, setFournisseurData] = useState<Record<string, any> | null>(null);
 
   // 3. État de mémoire pour l'Étape 3 (Sauvegarde de la finalisation)
   const [finalizationData, setFinalizationData] = useState<{
@@ -48,14 +48,15 @@ export default function RegisterPage() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [apiMessage, setApiMessage] = useState('');
   
-  // Sauvegarde locale de l'email pour l'afficher sur l'écran de succès après le vidage du store
+  // Sauvegarde locale de l'email pour l'affichage final
   const [registeredEmail, setRegisteredEmail] = useState('');
 
-  // Réception des données du Step 1
+  // Réception et sécurité des changements de rôles au Step 1
   const handleProfileSelection = (
     selectedRole: 'fournisseur' | 'collecteur', 
     selectedSubType: 'particulier' | 'entreprise'
   ) => {
+    // Si l'utilisateur change radicalement d'avis sur le type de compte, on wipe les steps suivants
     if (selectedRole !== role || selectedSubType !== fournisseurType) {
       setCollectorData(null);
       setFournisseurData(null);
@@ -66,15 +67,15 @@ export default function RegisterPage() {
     setStep(2);
   };
 
-  // Traitement et envoi final
-  const handleFinish = async (step3Data: any) => {
+  // Traitement et envoi final au backend
+  const handleFinish = async (step3Data: typeof finalizationData) => {
     setFinalizationData(step3Data);
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
     const step2Fields = role === 'collecteur' ? collectorData : fournisseurData;
 
-    // Construction du payload plat calqué sur l'interface globale RegisterStoreData
+    // Construction du payload global conforme à ton interface de données
     const completePayload: RegisterStoreData = {
       email: registerDraft.email,
       password: registerDraft.password,
@@ -86,20 +87,18 @@ export default function RegisterPage() {
       photo: step3Data.image 
     };
 
-    // Mémorisation locale de l'email pour l'écran de confirmation
     setRegisteredEmail(registerDraft.email || '');
 
     try {
-      // Appel du service isolé
       const response = await registerAccountService(completePayload);
       
       if (response.success) {
         setSubmitStatus('success');
         setApiMessage(response.message);
-        resetRegisterDraft(); // Inscription réussie : on vide proprement le store Zustand
+        resetRegisterDraft(); // Clear du store Zustand uniquement si succès complet
       } else {
         setSubmitStatus('error');
-        setApiMessage(response.message);
+        setApiMessage(response.message || "Une erreur est survenue lors de la validation.");
       }
     } catch (error) {
       setSubmitStatus('error');
@@ -109,7 +108,7 @@ export default function RegisterPage() {
     }
   };
 
-  // --- RENDU DE L'ÉCRAN DE CHARGEMENT OU DE FEEDBACK FINAL ---
+  // --- RENDU : CHARGEMENT OU FEEDBACKS INTERMÉDIAIRES ---
   if (isSubmitting || submitStatus !== 'idle') {
     return (
       <div className="min-h-screen w-full bg-neutral-50 flex items-center justify-center p-4">
@@ -120,15 +119,13 @@ export default function RegisterPage() {
             <div className="space-y-4 py-8 flex flex-col items-center">
               <Loader2 size={50} className="text-primary animate-spin" />
               <h3 className="text-lg font-bold text-label">Création de votre compte en cours...</h3>
-              <p className="text-xs text-input-element">Veuillez patienter pendant la configuration de votre profil AgriConnect.</p>
+              <p className="text-xs text-input-element">Veuillez patienter pendant la configuration de votre profil OmniAgri.</p>
             </div>
           )}
 
-          {/* ÉCRAN B : SUCCÈS (RETOUR AU MESSAGE SIMPLE) */}
+          {/* ÉCRAN B : INCRIPTION RÉUSSIE */}
           {submitStatus === 'success' && (
             <div className="space-y-6 py-4 flex flex-col items-center">
-              
-              {/* Icône SVG avec animation de tracé linéaire épurée */}
               <div className="flex items-center justify-center w-20 h-20 bg-green-50 rounded-full border border-green-100">
                 <svg 
                   className="w-12 h-12 text-green-500" 
@@ -144,40 +141,31 @@ export default function RegisterPage() {
                     cy="12" 
                     r="10" 
                     className="animate-[draw_0.4s_ease-out_forwards]"
-                    style={{
-                      strokeDasharray: 63,
-                      strokeDashoffset: 63,
-                    }}
+                    style={{ strokeDasharray: 63, strokeDashoffset: 63 }}
                   />
                   <path 
                     d="m9 12 2 2 4-4" 
                     className="animate-[draw_0.3s_ease-out_0.3s_forwards]"
-                    style={{
-                      strokeDasharray: 12,
-                      strokeDashoffset: 12,
-                    }}
+                    style={{ strokeDasharray: 12, strokeDashoffset: 12 }}
                   />
                 </svg>
               </div>
 
-              {/* Injection globale des animations CSS de tracé de ligne */}
               <style jsx global>{`
-                @keyframes draw {
-                  to { stroke-dashoffset: 0; }
-                }
+                @keyframes draw { to { stroke-dashoffset: 0; } }
               `}</style>
 
               <div className="space-y-2">
                 <h3 className="text-2xl font-bold text-neutral-800">Inscription réussie !</h3>
                 <p className="text-sm font-medium text-neutral-600 px-4 leading-relaxed">
                   Votre compte de <span className="font-bold text-primary">{role}</span> a été configuré avec succès. <br />
-                  Utilisez l'adresse email <span className="font-bold underline text-neutral-800">{registeredEmail || "renseignée"}</span> pour vous connecter avec votre mot de passe.
+                  Utilisez l'adresse email <span className="font-bold underline text-neutral-800">{registeredEmail || "renseignée"}</span> pour vous connecter.
                 </p>
               </div>
 
               <button 
                 onClick={() => router.push('/login')}
-                className="btn-primary px-8 h-12 text-sm font-bold flex items-center justify-center gap-2 rounded-xl shadow-md w-full max-w-xs"
+                className="btn-primary px-8 h-12 text-sm font-bold flex items-center justify-center gap-2 rounded-xl shadow-md w-full max-w-xs cursor-pointer"
               >
                 <span>Accéder à la connexion</span>
                 <ArrowRight size={16} />
@@ -185,7 +173,7 @@ export default function RegisterPage() {
             </div>
           )}
 
-          {/* ÉCRAN C : ÉCHEC / ERREUR INTERCEPTÉE */}
+          {/* ÉCRAN C : ERREUR API */}
           {submitStatus === 'error' && (
             <div className="space-y-6 py-4 flex flex-col items-center">
               <div className="p-3 bg-red-50 rounded-full text-red-500 border border-red-100">
@@ -199,7 +187,7 @@ export default function RegisterPage() {
               </div>
               <button 
                 onClick={() => setSubmitStatus('idle')}
-                className="px-6 h-11 text-xs font-bold border border-separator/30 text-label rounded-xl hover:bg-neutral-50 transition-colors"
+                className="px-6 h-11 text-xs font-bold border border-separator/30 text-label rounded-xl hover:bg-neutral-50 transition-colors cursor-pointer"
               >
                 Retourner au formulaire
               </button>
@@ -215,14 +203,12 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen w-full bg-neutral-50 flex items-center justify-center p-4">
       
-      {/* ÉTAPE 1 : Sélection du profil */}
+      {/* ÉTAPE 1 : Sélection du type de profil */}
       {step === 1 && (
-        <RegisterProfileSelection 
-          onNext={(selectedRole, selectedSubType) => handleProfileSelection(selectedRole, selectedSubType)} 
-        />
+        <RegisterProfileSelection onNext={handleProfileSelection} />
       )}
 
-      {/* ÉTAPE 2 : Informations supplémentaires */}
+      {/* ÉTAPE 2 : Formulaires dynamiques selon le rôle */}
       {step === 2 && (
         <>
           {role === 'collecteur' ? (
@@ -248,7 +234,7 @@ export default function RegisterPage() {
         </>
       )}
 
-      {/* ÉTAPE 3 : Finalisation */}
+      {/* ÉTAPE 3 : Finalisation et Upload photo/bio */}
       {step === 3 && (
         <FinalisationForm 
           role={role}

@@ -9,6 +9,17 @@ import {
   Map
 } from 'lucide-react';
 
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 export default function ContactForm() {
   const [formData, setFormData] = useState({
     fullName: '',
@@ -19,12 +30,11 @@ export default function ContactForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Logique d'envoi via Tomail
-    console.log('Données soumises via Tomail:', formData);
+    console.log('Données soumises :', formData);
   };
 
   return (
-    <div className="w-full bg-[#F8F9FA] font-sans text-input-element antialiased selection:bg-primary/10 min-h-screen">
+    <div className="w-full bg-[#F8F9FA] font-sans text-input-element antialiased selection:bg-primary/10 min-h-screen select-none">
       
       {/* --- SECTION EN-TÊTE (HERO) --- */}
       <div className="w-full bg-gradient-to-b from-[#F3F4F6]/50 to-[#F8F9FA] py-16 px-6 lg:px-16 text-center space-y-4 border-b border-separator/10">
@@ -50,79 +60,83 @@ export default function ContactForm() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Nom complet */}
+              
+              {/* Nom complet (Input Shadcn) */}
               <div className="space-y-2">
                 <label className="block text-xs font-bold text-label">
                   Nom complet
                 </label>
-                <input 
+                <Input 
                   type="text"
                   placeholder="Ex: Jean Dupont"
                   value={formData.fullName}
                   onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-separator/30 text-xs font-medium focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all bg-white text-label placeholder:text-input-element/30"
+                  className="w-full h-auto px-4 py-3 rounded-xl border border-separator/30 text-xs font-medium focus-visible:ring-primary focus-visible:border-primary bg-white text-label placeholder:text-input-element/30"
                   required
                 />
               </div>
 
-              {/* Email */}
+              {/* Email (Input Shadcn) */}
               <div className="space-y-2">
                 <label className="block text-xs font-bold text-label">
                   Email
                 </label>
-                <input 
+                <Input 
                   type="email"
                   placeholder="jean.dupont@exemple.mg"
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-separator/30 text-xs font-medium focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all bg-white text-label placeholder:text-input-element/30"
+                  className="w-full h-auto px-4 py-3 rounded-xl border border-separator/30 text-xs font-medium focus-visible:ring-primary focus-visible:border-primary bg-white text-label placeholder:text-input-element/30"
                   required
                 />
               </div>
             </div>
 
-            {/* Sujet */}
+            {/* Sujet (Select Shadcn) */}
             <div className="space-y-2">
               <label className="block text-xs font-bold text-label">
                 Sujet
               </label>
-              <select 
-                value={formData.subject}
-                onChange={(e) => setFormData({...formData, subject: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl border border-separator/30 text-xs font-medium focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all bg-white text-label cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%234A5568%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_10px] bg-[right_16px_center] bg-no-repeat"
+              <Select 
+                value={formData.subject} 
+                onValueChange={(value) => setFormData({...formData, subject: value})}
                 required
               >
-                <option value="" disabled hidden>Choisissez un sujet</option>
-                <option value="support">Support technique</option>
-                <option value="commercial">Partenariat commercial</option>
-                <option value="verification">Vérification de compte</option>
-                <option value="autre">Autre demande</option>
-              </select>
+                <SelectTrigger className="w-full h-auto px-4 py-3 rounded-xl border border-separator/30 text-xs font-medium focus:ring-primary focus:border-primary bg-white text-label text-left">
+                  <SelectValue placeholder="Choisissez un sujet" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-separator/20 rounded-xl">
+                  <SelectItem value="support" className="text-xs font-medium text-label focus:bg-neutral focus:text-primary cursor-pointer">Support technique</SelectItem>
+                  <SelectItem value="commercial" className="text-xs font-medium text-label focus:bg-neutral focus:text-primary cursor-pointer">Partenariat commercial</SelectItem>
+                  <SelectItem value="verification" className="text-xs font-medium text-label focus:bg-neutral focus:text-primary cursor-pointer">Vérification de compte</SelectItem>
+                  <SelectItem value="autre" className="text-xs font-medium text-label focus:bg-neutral focus:text-primary cursor-pointer">Autre demande</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            {/* Message */}
+            {/* Message (Textarea Shadcn) */}
             <div className="space-y-2">
               <label className="block text-xs font-bold text-label">
                 Message
               </label>
-              <textarea 
+              <Textarea 
                 rows={5}
                 placeholder="Comment pouvons-nous vous aider ?"
                 value={formData.message}
                 onChange={(e) => setFormData({...formData, message: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl border border-separator/30 text-xs font-medium focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all bg-white text-label placeholder:text-input-element/30 resize-none"
+                className="w-full px-4 py-3 rounded-xl border border-separator/30 text-xs font-medium focus-visible:ring-primary focus-visible:border-primary bg-white text-label placeholder:text-input-element/30 resize-none leading-relaxed"
                 required
-              ></textarea>
+              />
             </div>
 
-            {/* Bouton Envoyer via Tomail */}
-            <button 
+            {/* Bouton Envoyer (Button Shadcn) */}
+            <Button 
               type="submit"
-              className="bg-primary text-white hover:bg-primary/90 px-6 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm outline-none"
+              className="bg-primary text-white hover:bg-primary/90 px-6 py-3 h-auto rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer"
             >
               <Send size={14} />
-              Envoyer via Tomail
-            </button>
+              Envoyer l'email
+            </Button>
           </form>
         </div>
 
@@ -190,39 +204,39 @@ export default function ContactForm() {
 
           {/* Mini Carte Illustrative */}
           <div className="relative rounded-[24px] overflow-hidden border border-separator/10 h-[210px] group shadow-sm">
-            {/* Image de fond stylisée représentant les parcelles/topographie */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-amber-700/10 bg-[radial-gradient(#1E5E3A_1px,transparent_1px)] [background-size:16px_16px] group-hover:scale-105 transition-transform duration-500"></div>
-            
-            {/* Overlay décoratif vectoriel pour simuler des zones de parcelles */}
             <div className="absolute inset-0 opacity-20 mix-blend-overlay bg-repeat bg-[linear-gradient(45deg,#000_25%,transparent_25%,transparent_75%,%23000_75%,%23000),linear-gradient(45deg,#000_25%,transparent_25%,transparent_75%,%23000_75%,%23000)] bg-[length:20px_20px] bg-[position:0_0,10px_10px]"></div>
 
-            {/* Badge de localisation central */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-primary rounded-full flex items-center justify-center shadow-md animate-pulse">
               <MapPin size={16} className="text-white" />
             </div>
 
-            {/* Bouton d'action Google Maps */}
-            <a 
-              href="https://maps.google.com" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm text-label hover:bg-white px-4 py-2.5 rounded-xl font-bold text-[11px] flex items-center gap-2 transition-all shadow-sm border border-separator/20"
+            <Button
+              asChild
+              variant="secondary"
+              className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm text-label hover:bg-white px-4 py-2.5 h-auto rounded-xl font-bold text-[11px] flex items-center gap-2 transition-all shadow-sm border border-separator/20 cursor-pointer"
             >
-              <Map size={12} className="text-primary" />
-              Voir sur Google Maps
-            </a>
+              <a 
+                href="https://maps.google.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                <Map size={12} className="text-primary" />
+                Voir sur Google Maps
+              </a>
+            </Button>
           </div>
 
         </div>
       </div>
 
-      {/* --- BANNIÈRE PARTENAIRES EN PIED DE PAGE --- */}
+      {/* --- BANNIÈRE PARTENAIRES --- */}
       <div className="w-full border-t border-separator/10 bg-white py-10">
         <div className="max-w-[1440px] mx-auto px-6 lg:px-16 text-center space-y-4">
           <p className="text-[10px] font-black uppercase text-input-element/40 tracking-widest">
             Ils nous font confiance pour leurs échanges agricoles
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 opacity-40 select-none">
+          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 opacity-40">
             <span className="font-sans text-base font-black tracking-tight text-label">BioMad</span>
             <span className="font-sans text-base font-black tracking-tight text-label">AgroLink</span>
             <span className="font-sans text-base font-black tracking-tight text-label">EcoFarm</span>

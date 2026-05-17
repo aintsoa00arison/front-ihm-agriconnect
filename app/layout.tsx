@@ -1,7 +1,11 @@
 
-import { Manrope } from 'next/font/google';
+import { Manrope, Geist } from 'next/font/google';
 import "./globals.css";
 import type { Metadata } from "next";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+
 
 // Configuration de la police
 const manrope = Manrope({ 
@@ -21,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="fr">
+    <html lang="fr" className={cn("font-sans", geist.variable)}>
       {/* On applique la variable de police ici pour qu'elle soit dispo partout */}
       <body className={`${manrope.variable} font-sans antialiased`}>
         {children}

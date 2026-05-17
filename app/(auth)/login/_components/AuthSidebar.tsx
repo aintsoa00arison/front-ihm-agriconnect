@@ -16,8 +16,8 @@ export default function AuthSidebar() {
         <div className="absolute inset-0 bg-primary/90" />
       </div>
 
-      {/* 2. Texte en bas à gauche */}
-      <div className="relative z-10 space-y-2 max-w-xl animate-in slide-in-from-bottom-4 duration-700">
+      {/* 2. Texte en bas à gauche avec transition épurée */}
+      <div className="relative z-10 space-y-2 max-w-xl animate-in fade-in duration-300">
         <h1 className="text-3xl font-bold text-white leading-tight tracking-tight">
           Cultivez vos connexions
         </h1>

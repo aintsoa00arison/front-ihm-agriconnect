@@ -1,6 +1,8 @@
-// components/Trust.tsx
+"use client";
+
 import Image from 'next/image';
 import { UserCheck, Star, Gavel, ClipboardCheck } from 'lucide-react';
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function Trust() {
   const trustFeatures = [
@@ -27,14 +29,14 @@ export default function Trust() {
   ];
 
   return (
-    <section className="w-full bg-neutral py-24 font-sans">
+    <section className="w-full bg-neutral py-24 font-sans select-none">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16">
         <div className="flex flex-col lg:flex-row items-center gap-16">
           
           {/* --- PARTIE GAUCHE : TEXTE ET GRILLE --- */}
           <div className="flex-[1.2] space-y-10">
             <div className="space-y-4">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-label">
+              <h2 className="text-sm font-black uppercase tracking-widest text-label">
                 La confiance est notre priorité.
               </h2>
               <p className="text-input-element text-lg leading-relaxed max-w-2xl">
@@ -46,12 +48,13 @@ export default function Trust() {
             {/* Grille des fonctionnalités de confiance */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {trustFeatures.map((feature, index) => (
-                <div key={index} className="flex gap-4 items-start">
-                  <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
+                <div key={index} className="flex gap-4 items-start group">
+                  {/* Boîte icône synchronisée aux arrondis standard du design system */}
+                  <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform duration-200">
                     {feature.icon}
                   </div>
                   <div className="space-y-1">
-                    <h4 className="font-bold text-label">{feature.title}</h4>
+                    <h4 className="font-black text-label tracking-tight">{feature.title}</h4>
                     <p className="text-input-element text-sm leading-snug">
                       {feature.description}
                     </p>
@@ -61,32 +64,43 @@ export default function Trust() {
             </div>
           </div>
 
-          {/* --- PARTIE DROITE : VISUELS ET STATS --- */}
+          {/* --- PARTIE DROITE : VISUELS ET STATS COMPACTÉES --- */}
           <div className="flex-1 flex flex-col md:flex-row lg:flex-col gap-6 w-full">
             
-            {/* Image principale avec arrondis */}
-            <div className="relative rounded-[32px] overflow-hidden shadow-xl h-64 lg:h-80 w-full">
+            {/* Image principale - dimensions exactes préservées */}
+            <div className="relative rounded-[32px] overflow-hidden shadow-xl h-64 lg:h-80 w-full flex-shrink-0">
               <Image 
-                src="/trust-seeds.jpg" // Image des mains avec les graines
+                src="/trust-seeds.jpg" 
                 alt="Fiabilité Agricole"
                 fill
                 className="object-cover"
+                sizes="(max-w-780px) 100vw, 50vw"
               />
             </div>
 
-            {/* Conteneur des petites cartes de stats */}
+            {/* Conteneur des petites cartes de stats avec shadcn */}
             <div className="flex flex-col gap-6 w-full lg:w-auto">
+              
               {/* Carte Note Plateforme */}
-              <div className="bg-secondary p-6 rounded-[24px] shadow-lg text-white flex flex-col justify-center min-w-[240px]">
-                <span className="text-4xl font-black">4.9/5</span>
-                <span className="text-xs font-bold uppercase tracking-widest opacity-80">Note Plateforme</span>
-              </div>
+              <Card className="bg-secondary p-0 border-0 rounded-[24px] shadow-lg text-white flex flex-col justify-center min-w-[240px] overflow-hidden">
+                <CardContent className="p-6 flex flex-col">
+                  <span className="text-4xl font-black tracking-tight">4.9/5</span>
+                  <span className="text-xs font-bold uppercase tracking-widest opacity-80 mt-1">
+                    Note Plateforme
+                  </span>
+                </CardContent>
+              </Card>
 
               {/* Carte Échanges Vérifiés */}
-              <div className="bg-primary p-6 rounded-[24px] shadow-lg text-white flex flex-col justify-center min-w-[240px]">
-                <span className="text-4xl font-black">50k+</span>
-                <span className="text-xs font-bold uppercase tracking-widest opacity-80">Échanges Vérifiés</span>
-              </div>
+              <Card className="bg-primary p-0 border-0 rounded-[24px] shadow-lg text-white flex flex-col justify-center min-w-[240px] overflow-hidden">
+                <CardContent className="p-6 flex flex-col">
+                  <span className="text-4xl font-black tracking-tight">50k+</span>
+                  <span className="text-xs font-bold uppercase tracking-widest opacity-80 mt-1">
+                    Échanges Vérifiés
+                  </span>
+                </CardContent>
+              </Card>
+              
             </div>
 
           </div>
