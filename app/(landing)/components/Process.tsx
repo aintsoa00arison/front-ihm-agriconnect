@@ -1,21 +1,19 @@
-// components/Process.tsx
-
 export default function Process() {
   const steps = [
     {
       number: "1",
       title: "S'inscrire",
-      description: "Créez votre profil en tant que Fournisseur ou Collecteur et vérifiez vos informations.",
+      description: "Créez votre profil en tant que Fournisseur ou Collecteur et validez vos informations.",
     },
     {
       number: "2",
-      title: "Se connecter",
-      description: "Parcourez le marché ou publiez vos besoins pour trouver le partenaire idéal.",
+      title: "Publier",
+      description: "Affichez vos offres de vanille ou publiez vos besoins d'achat pour capter les meilleures opportunités.",
     },
     {
       number: "3",
       title: "Échanger",
-      description: "Finalisez les conditions, effectuez des paiements sécurisés et gérez la logistique sans effort.",
+      description: "Entrez en contact direct, discutez des modalités et concluez vos accords de gré à gré en toute transparence.",
     },
   ];
 
@@ -29,7 +27,7 @@ export default function Process() {
             Simple, Rapide et Transparent.
           </p>
           <p className="text-white/80 text-lg max-w-2xl mx-auto leading-relaxed">
-            Lancez-vous en quelques minutes et rejoignez l'avenir du commerce agricole 
+            Lancez-vous en quelques minutes et rejoignez la plateforme de collecte 
             grâce à notre processus simplifié en trois étapes.
           </p>
         </div>
@@ -44,7 +42,7 @@ export default function Process() {
             <div key={index} className="relative z-10 flex flex-col items-center group">
               
               {/* Cercle avec numéro */}
-              <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-8 shadow-xl group-hover:scale-110 transition-transform duration-300">
+              <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-8 shadow-xl group-hover:scale-110 transition-transform duration-300 select-none">
                 <span className="text-primary text-3xl font-black">
                   {step.number}
                 </span>
