@@ -13,7 +13,7 @@ export default function Features() {
     {
       title: "Informations Sécurisées",
       description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut",
-      icon: <ShieldCheck className="text-green-700 w-8 h-8" />, // Vert comme sur ta maquette
+      icon: <ShieldCheck className="text-green-700 w-8 h-8" />, 
     },
     {
       title: "Efficacité du Marché",

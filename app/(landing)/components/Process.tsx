@@ -8,7 +8,7 @@ export default function Process() {
     {
       number: "2",
       title: "Publier",
-      description: "Affichez vos offres de vanille ou publiez vos besoins d'achat pour capter les meilleures opportunités.",
+      description: "Affichez vos offres ou publiez vos besoins d'achat pour capter les meilleures opportunités.",
     },
     {
       number: "3",
