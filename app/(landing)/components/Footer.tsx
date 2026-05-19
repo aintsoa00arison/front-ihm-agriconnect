@@ -37,7 +37,7 @@ export default function Footer({ setView }: FooterProps) {
               ))}
             </div>
             <p className="text-input-element text-sm leading-relaxed">
-              © {currentYear} AgriConnect. Autonomiser l'écosystème agricole grâce à l'innovation numérique et à la confiance.
+              © {currentYear} Tsena. Autonomiser l'écosystème agricole grâce à l'innovation numérique et à la confiance.
             </p>
           </div>
 

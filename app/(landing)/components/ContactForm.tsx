@@ -192,10 +192,10 @@ export default function ContactForm() {
                     Email
                   </p>
                   <a 
-                    href="mailto:contact@AgriConnect.mg" 
+                    href="mailto:contact@Tsena.mg" 
                     className="text-xs font-bold text-label hover:text-primary hover:underline transition-colors"
                   >
-                    contact@AgriConnect.mg
+                    contact@Tsena.mg
                   </a>
                 </div>
               </div>

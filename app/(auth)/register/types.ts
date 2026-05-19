@@ -5,7 +5,7 @@ export type ProductionType = 'Végétale' | 'Elevage' | 'Rente';
 export type FournisseurType = 'particulier' | 'entreprise';
 
 /**
- * Structure de données plate du store d'inscription AgriConnect
+ * Structure de données plate du store d'inscription Tsena
  * Calquée exactement sur les inputs de CollectorForm et FournisseurForm
  */
 export interface RegisterStoreData {

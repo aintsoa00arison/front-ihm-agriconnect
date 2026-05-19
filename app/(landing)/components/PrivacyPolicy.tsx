@@ -130,10 +130,10 @@ export default function PrivacyPolicy() {
               Contactez notre délégué à la protection des données (DPO).
             </p>
             <a 
-              href="mailto:privacy@AgriConnect.com" 
+              href="mailto:privacy@Tsena.com" 
               className="block text-xs font-bold text-amber-950 hover:underline break-all"
             >
-              privacy@AgriConnect.com
+              privacy@Tsena.com
             </a>
           </div>
         </aside>
@@ -145,10 +145,10 @@ export default function PrivacyPolicy() {
           <section id="intro" className="space-y-6 scroll-mt-10">
             <h2 className="text-2xl font-black text-label tracking-tight">Introduction</h2>
             <p className="leading-relaxed text-[15px]">
-              Bienvenue sur <span className="font-bold text-label">AgriConnect</span>. La présente Politique de Confidentialité décrit comment nous collectons, utilisons, traitons et protégeons vos informations lorsque vous utilisez notre plateforme de mise en relation et d'échange de produits agricoles.
+              Bienvenue sur <span className="font-bold text-label">Tsena</span>. La présente Politique de Confidentialité décrit comment nous collectons, utilisons, traitons et protégeons vos informations lorsque vous utilisez notre plateforme de mise en relation et d'échange de produits agricoles.
             </p>
             <p className="leading-relaxed text-[15px]">
-              En accédant à AgriConnect, vous acceptez les pratiques décrites dans cette politique. Nous plaçons la transparence, le respect mutuel et la protection de vos espaces d'échange privés au cœur de notre service.
+              En accédant à Tsena, vous acceptez les pratiques décrites dans cette politique. Nous plaçons la transparence, le respect mutuel et la protection de vos espaces d'échange privés au cœur de notre service.
             </p>
           </section>
 
@@ -241,7 +241,7 @@ export default function PrivacyPolicy() {
             
             <div className="border border-separator/30 rounded-2xl p-6 space-y-4">
               <p className="text-xs font-medium text-input-element/90">
-                AgriConnect n'agit pas comme un intermédiaire commercial et ne vend ni ne transmet jamais vos informations à des tiers à des fins publicitaires. Le partage est strictement restreint à :
+                Tsena n'agit pas comme un intermédiaire commercial et ne vend ni ne transmet jamais vos informations à des tiers à des fins publicitaires. Le partage est strictement restreint à :
               </p>
               
               <ul className="space-y-3 text-xs font-semibold text-label">
@@ -326,7 +326,7 @@ export default function PrivacyPolicy() {
             </div>
 
             <div className="bg-[#F8F9FA] border border-separator/30 rounded-xl p-5 text-xs leading-relaxed text-input-element/90">
-              Pour exercer vos droits, veuillez nous envoyer une demande signée à <a href="mailto:privacy@AgriConnect.com" className="font-bold text-label hover:underline">privacy@AgriConnect.com</a> avec une copie d'une pièce d'identité en cours de validité.
+              Pour exercer vos droits, veuillez nous envoyer une demande signée à <a href="mailto:privacy@Tsena.com" className="font-bold text-label hover:underline">privacy@Tsena.com</a> avec une copie d'une pièce d'identité en cours de validité.
             </div>
           </section>
 

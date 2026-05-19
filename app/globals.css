@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* Palette AgriConnect */
+  /* Palette Tsena */
   --color-primary: #2e7d32;
   --color-secondary: #ffa000;
   --color-tertiary: #795548;

@@ -72,7 +72,7 @@ export default function TermsOfService() {
           Conditions Générales d'Utilisation
         </h1>
         <p className="text-input-element/80 text-sm font-medium">
-          Dernière mise à jour : <span className="font-bold">14 Mai 2026</span>. Ces conditions régissent votre utilisation de la plateforme AgriConnect et définissent nos engagements mutuels.
+          Dernière mise à jour : <span className="font-bold">14 Mai 2026</span>. Ces conditions régissent votre utilisation de la plateforme Tsena et définissent nos engagements mutuels.
         </p>
       </div>
 
@@ -114,10 +114,10 @@ export default function TermsOfService() {
               <h2 className="text-2xl font-black text-label tracking-tight">Introduction</h2>
             </div>
             <p className="leading-relaxed text-[15px]">
-              Bienvenue sur <span className="font-bold text-label">AgriConnect</span>. Les présentes Conditions Générales d'Utilisation (CGU) ont pour objet de définir les modalités et conditions dans lesquelles la plateforme met à la disposition de ses utilisateurs ses services de mise en relation et d'échange agricole.
+              Bienvenue sur <span className="font-bold text-label">Tsena</span>. Les présentes Conditions Générales d'Utilisation (CGU) ont pour objet de définir les modalités et conditions dans lesquelles la plateforme met à la disposition de ses utilisateurs ses services de mise en relation et d'échange agricole.
             </p>
             <p className="leading-relaxed text-[15px]">
-              En tant que plateforme d'intermédiation technique, AgriConnect permet aux professionnels du secteur de répertorier des stocks et d'entrer directement en contact pour organiser leurs partenariats. En accédant à nos services, vous acceptez d'être lié par ces termes.
+              En tant que plateforme d'intermédiation technique, Tsena permet aux professionnels du secteur de répertorier des stocks et d'entrer directement en contact pour organiser leurs partenariats. En accédant à nos services, vous acceptez d'être lié par ces termes.
             </p>
 
             {/* Note d'information grisée */}
@@ -220,7 +220,7 @@ export default function TermsOfService() {
             
             <div className="bg-light-bg/30 border border-separator/20 rounded-[32px] p-8 space-y-6">
               <p className="leading-relaxed text-[15px]">
-                AgriConnect accorde une importance capitale à la protection de vos données professionnelles. Conformément au RGPD, nous collectons uniquement les informations nécessaires à la mise en relation et au bon fonctionnement de vos profils.
+                Tsena accorde une importance capitale à la protection de vos données professionnelles. Conformément au RGPD, nous collectons uniquement les informations nécessaires à la mise en relation et au bon fonctionnement de vos profils.
               </p>
               
               {/* Badges de conformité technique */}
@@ -245,7 +245,7 @@ export default function TermsOfService() {
               <h2 className="text-2xl font-black text-label tracking-tight">Responsabilité et Garanties</h2>
             </div>
             <p className="leading-relaxed text-[15px]">
-              AgriConnect agit exclusivement en tant qu'intermédiaire technologique de mise en relation. En conséquence :
+              Tsena agit exclusivement en tant qu'intermédiaire technologique de mise en relation. En conséquence :
             </p>
 
             <div className="space-y-6 pt-2">
@@ -278,7 +278,7 @@ export default function TermsOfService() {
               <h2 className="text-2xl font-black text-label tracking-tight">Résiliation</h2>
             </div>
             <p className="leading-relaxed text-[15px]">
-              Tout utilisateur peut clôturer son compte à tout moment depuis ses paramètres. En cas de non-respect avéré des règles de comportement, de signalements répétés via le système de notation ou de détournement frauduleux de la messagerie, AgriConnect se réserve le droit de restreindre, suspendre ou supprimer le compte unilatéralement et sans préavis.
+              Tout utilisateur peut clôturer son compte à tout moment depuis ses paramètres. En cas de non-respect avéré des règles de comportement, de signalements répétés via le système de notation ou de détournement frauduleux de la messagerie, Tsena se réserve le droit de restreindre, suspendre ou supprimer le compte unilatéralement et sans préavis.
             </p>
           </section>
 

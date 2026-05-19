@@ -13,7 +13,7 @@ const manrope = Manrope({
 
 // CONFIGURATION DU NOM DANS L'ONGLET
 export const metadata: Metadata = {
-  title: "AgriConnect",
+  title: "Tsena",
   description: "Plateforme premium pour le secteur agricole à Madagascar",
 };
 

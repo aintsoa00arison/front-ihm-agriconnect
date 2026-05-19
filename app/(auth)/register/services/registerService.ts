@@ -18,7 +18,7 @@ export const checkEmailAvailability = async (email: string): Promise<{ available
       if (email.toLowerCase() === "deja-pris@exemple.com") {
         resolve({
           available: false,
-          message: "Cette adresse email est déjà associée à un compte AgriConnect."
+          message: "Cette adresse email est déjà associée à un compte Tsena."
         });
       } else {
         resolve({

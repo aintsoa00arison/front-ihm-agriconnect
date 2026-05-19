@@ -360,7 +360,7 @@ export default function AuthForm({
           ) : (
             <>
               <div className="relative">
-                <Label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">
+                <Label className="text-[11px] font-bold text-label block ml-1 mb-1">
                   Nouveau mot de passe
                 </Label>
                 <div className="input-icon-container">
@@ -377,8 +377,8 @@ export default function AuthForm({
               </div>
 
               <div className="relative">
-                <Label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">
-                  Confirmer
+                <Label className="text-[11px] font-bold text-label block ml-1 mb-1">
+                  Confirmez le mot de passe
                 </Label>
                 <div className="input-icon-container">
                   <Lock size={18} />
@@ -393,8 +393,7 @@ export default function AuthForm({
                 />
                 {isResetPasswordMismatched && (
                   <p className="text-red-500 text-[10px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in duration-300">
-                    <AlertTriangle size={12} /> Les mots de passe ne
-                    correspondent pas.
+                    <AlertTriangle size={12} /> Les mots de passe ne correspondent pas.
                   </p>
                 )}
               </div>
@@ -438,7 +437,7 @@ export default function AuthForm({
     <div className="w-full max-w-xl p-6 md:p-8 space-y-6 animate-in fade-in duration-300">
       <div className="space-y-1">
         <h2 className="text-3xl font-bold text-primary leading-tight tracking-tight">
-          AgriConnect
+          Tsena
         </h2>
         <p className="text-label text-sm font-medium">
           {isForgotPasswordMode
@@ -450,7 +449,6 @@ export default function AuthForm({
       </div>
 
       {!isForgotPasswordMode && (
-        /* Tabs natifs synchronisés avec ton ancien design (border-b-2, light-bg/20) */
         <Tabs
           value={isLogin ? "login" : "register"}
           className="w-full"
@@ -499,7 +497,7 @@ export default function AuthForm({
 
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div className="relative">
-          <Label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">
+          <Label className="text-[11px] font-bold text-label block ml-1 mb-1">
             Adresse email
           </Label>
           <div className="input-icon-container">
@@ -518,7 +516,7 @@ export default function AuthForm({
 
         {!isForgotPasswordMode && (
           <div className="relative">
-            <Label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">
+            <Label className="text-[11px] font-bold text-label block ml-1 mb-1">
               Mot de passe
             </Label>
             <div className="input-icon-container">
@@ -548,7 +546,7 @@ export default function AuthForm({
         {!isLogin && !isForgotPasswordMode && (
           <>
             <div className="relative animate-in fade-in duration-300">
-              <Label className="text-[11px] font-bold text-label block ml-1 mb-1 uppercase">
+              <Label className="text-[11px] font-bold text-label block ml-1 mb-1">
                 Confirmez le mot de passe
               </Label>
               <div className="input-icon-container">
@@ -565,8 +563,7 @@ export default function AuthForm({
               />
               {isRegisterPasswordMismatched && (
                 <p className="text-red-500 text-[10px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in duration-300">
-                  <AlertTriangle size={12} /> Les mots de passe ne correspondent
-                  pas.
+                  <AlertTriangle size={12} /> Les mots de passe ne correspondent pas.
                 </p>
               )}
             </div>
