@@ -293,7 +293,7 @@ export default function AuthForm({
   // --- RENDU VUE 2 & 3 COMPACTÉES (Vérification & Reset) ---
   if (view === "forgot" || view === "reset") {
     return (
-      <div className="w-full max-w-xl p-6 md:p-8 space-y-6 animate-in fade-in duration-300">
+      <div className="w-full max-w-xl p-6 md:p-8 space-y-6 overflow-hidden h-max max-h-full flex flex-col justify-center animate-in fade-in duration-300">
         <div className="space-y-2">
           <h2 className="text-3xl font-bold text-primary leading-tight">
             {view === "forgot" ? "Vérification" : "Nouveau mot de passe"}
@@ -306,7 +306,7 @@ export default function AuthForm({
         </div>
 
         {errorNotification && (
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex-shrink-0">
             <AlertTriangle
               size={18}
               className="flex-shrink-0 text-red-500 mt-0.5"
@@ -316,7 +316,7 @@ export default function AuthForm({
         )}
 
         {successNotification && (
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 text-xs font-semibold">
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 text-xs font-semibold flex-shrink-0">
             <CheckCircle2
               size={18}
               className="flex-shrink-0 text-green-500 mt-0.5"
@@ -325,7 +325,7 @@ export default function AuthForm({
           </div>
         )}
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form className="space-y-4 overflow-hidden flex flex-col" onSubmit={handleSubmit}>
           {view === "forgot" ? (
             <div className="space-y-2">
               <div className="relative">
@@ -403,7 +403,7 @@ export default function AuthForm({
           <Button
             type="submit"
             disabled={isLoading || isResetPasswordMismatched}
-            className="btn-primary w-full h-12 mt-2"
+            className="btn-primary w-full h-12 mt-2 flex-shrink-0"
           >
             {isLoading ? (
               <Loader2 size={16} className="animate-spin" />
@@ -422,7 +422,7 @@ export default function AuthForm({
               setErrorNotification(null);
               setSuccessNotification(null);
             }}
-            className="text-xs font-bold text-input-element/60 hover:text-primary hover:underline w-full text-center transition-colors h-10"
+            className="text-xs font-bold text-input-element/60 hover:text-primary hover:underline w-full text-center transition-colors h-10 flex-shrink-0"
             disabled={isLoading}
           >
             Retour
@@ -434,8 +434,8 @@ export default function AuthForm({
 
   // --- RENDU VUE 1 : AUTHENTIFICATION PRINCIPALE ---
   return (
-    <div className="w-full max-w-xl p-6 md:p-8 space-y-6 animate-in fade-in duration-300">
-      <div className="space-y-1">
+    <div className="w-full max-w-xl p-6 md:p-8 space-y-6 overflow-hidden h-max max-h-full flex flex-col justify-center animate-in fade-in duration-300">
+      <div className="space-y-1 flex-shrink-0">
         <h2 className="text-3xl font-bold text-primary leading-tight tracking-tight">
           Tsena
         </h2>
@@ -451,7 +451,7 @@ export default function AuthForm({
       {!isForgotPasswordMode && (
         <Tabs
           value={isLogin ? "login" : "register"}
-          className="w-full"
+          className="w-full flex-shrink-0"
           onValueChange={(val) => {
             setIsLogin(val === "login");
             setErrorNotification(null);
@@ -476,7 +476,7 @@ export default function AuthForm({
       )}
 
       {errorNotification && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold animate-in fade-in duration-300">
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex-shrink-0 animate-in fade-in duration-300">
           <AlertTriangle
             size={18}
             className="flex-shrink-0 text-red-500 mt-0.5"
@@ -486,7 +486,7 @@ export default function AuthForm({
       )}
 
       {successNotification && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 text-xs font-semibold animate-in fade-in duration-300">
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 text-xs font-semibold flex-shrink-0 animate-in fade-in duration-300">
           <CheckCircle2
             size={18}
             className="flex-shrink-0 text-green-500 mt-0.5"
@@ -495,8 +495,8 @@ export default function AuthForm({
         </div>
       )}
 
-      <form className="space-y-4" onSubmit={handleSubmit}>
-        <div className="relative">
+      <form className="space-y-4 overflow-hidden flex flex-col" onSubmit={handleSubmit}>
+        <div className="relative flex-shrink-0">
           <Label className="text-[11px] font-bold text-label block ml-1 mb-1">
             Adresse email
           </Label>
@@ -515,7 +515,7 @@ export default function AuthForm({
         </div>
 
         {!isForgotPasswordMode && (
-          <div className="relative">
+          <div className="relative flex-shrink-0">
             <Label className="text-[11px] font-bold text-label block ml-1 mb-1">
               Mot de passe
             </Label>
@@ -545,7 +545,7 @@ export default function AuthForm({
 
         {!isLogin && !isForgotPasswordMode && (
           <>
-            <div className="relative animate-in fade-in duration-300">
+            <div className="relative flex-shrink-0 animate-in fade-in duration-300">
               <Label className="text-[11px] font-bold text-label block ml-1 mb-1">
                 Confirmez le mot de passe
               </Label>
@@ -568,7 +568,7 @@ export default function AuthForm({
               )}
             </div>
 
-            <div className="flex items-start space-x-3 pt-1">
+            <div className="flex items-start space-x-3 pt-1 flex-shrink-0">
               <Checkbox
                 id="terms"
                 checked={agreedToTerms}
@@ -595,7 +595,7 @@ export default function AuthForm({
         )}
 
         {isLogin && !isForgotPasswordMode && (
-          <div className="text-right">
+          <div className="text-right flex-shrink-0">
             <Button
               type="button"
               variant="link"
@@ -614,7 +614,7 @@ export default function AuthForm({
         <Button
           type="submit"
           disabled={isLoading || isRegisterPasswordMismatched}
-          className="btn-primary w-full h-12 mt-2"
+          className="btn-primary w-full h-12 mt-2 flex-shrink-0"
         >
           {isLoading ? (
             <Loader2 size={16} className="animate-spin" />
@@ -636,7 +636,7 @@ export default function AuthForm({
               setErrorNotification(null);
               setSuccessNotification(null);
             }}
-            className="text-xs font-bold text-input-element/60 hover:text-primary hover:underline w-full text-center transition-colors block pt-2 h-10"
+            className="text-xs font-bold text-input-element/60 hover:text-primary hover:underline w-full text-center transition-colors block pt-2 h-10 flex-shrink-0"
             disabled={isLoading}
           >
             Annuler et retourner à la connexion
