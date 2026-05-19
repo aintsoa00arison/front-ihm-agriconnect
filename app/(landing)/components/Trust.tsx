@@ -29,10 +29,9 @@ export default function Trust() {
   ];
 
   return (
-    <section className="w-full bg-neutral py-24 font-sans select-none">
+    <section className="w-full bg-background py-24 font-sans select-none">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16">
         <div className="flex flex-col lg:flex-row items-center gap-16">
-          
           {/* --- PARTIE GAUCHE : TEXTE ET GRILLE --- */}
           <div className="flex-[1.2] space-y-10">
             <div className="space-y-4">
@@ -40,8 +39,9 @@ export default function Trust() {
                 La confiance est notre priorité.
               </h2>
               <p className="text-input-element text-lg leading-relaxed max-w-2xl">
-                Nous savons qu'en agriculture, la fiabilité est primordiale. C'est pourquoi nous 
-                avons intégré un système de confiance multicouche au cœur de notre plateforme.
+                Nous savons qu'en agriculture, la fiabilité est primordiale.
+                C'est pourquoi nous avons intégré un système de confiance
+                multicouche au cœur de notre plateforme.
               </p>
             </div>
 
@@ -54,7 +54,9 @@ export default function Trust() {
                     {feature.icon}
                   </div>
                   <div className="space-y-1">
-                    <h4 className="font-black text-label tracking-tight">{feature.title}</h4>
+                    <h4 className="font-black text-label tracking-tight">
+                      {feature.title}
+                    </h4>
                     <p className="text-input-element text-sm leading-snug">
                       {feature.description}
                     </p>
@@ -66,25 +68,25 @@ export default function Trust() {
 
           {/* --- PARTIE DROITE : VISUELS ET STATS COMPACTÉES --- */}
           <div className="flex-1 flex flex-col md:flex-row lg:flex-col gap-6 w-full">
-            
             {/* Image principale - dimensions exactes préservées */}
-            <div className="relative rounded-[32px] overflow-hidden shadow-xl h-64 lg:h-80 w-full flex-shrink-0">
-              <Image 
-                src="/trust-seeds.jpg" 
+            <div className="relative rounded-[32px] overflow-hidden shadow-xl h-64 lg:h-80 w-full flex-shrink-0  border-3 border-border">
+              <Image
+                src="/images/landing/trust.jpeg"
                 alt="Fiabilité Agricole"
-                fill
                 className="object-cover"
-                sizes="(max-w-780px) 100vw, 50vw"
+                height={736}
+                width={736}
               />
             </div>
 
             {/* Conteneur des petites cartes de stats avec shadcn */}
             <div className="flex flex-col gap-6 w-full lg:w-auto">
-              
               {/* Carte Note Plateforme */}
               <Card className="bg-secondary p-0 border-0 rounded-[24px] shadow-lg text-white flex flex-col justify-center min-w-[240px] overflow-hidden">
                 <CardContent className="p-6 flex flex-col">
-                  <span className="text-4xl font-black tracking-tight">4.9/5</span>
+                  <span className="text-4xl font-black tracking-tight">
+                    4.9/5
+                  </span>
                   <span className="text-xs font-bold uppercase tracking-widest opacity-80 mt-1">
                     Note Plateforme
                   </span>
@@ -94,15 +96,15 @@ export default function Trust() {
               {/* Carte Échanges Vérifiés */}
               <Card className="bg-primary p-0 border-0 rounded-[24px] shadow-lg text-white flex flex-col justify-center min-w-[240px] overflow-hidden">
                 <CardContent className="p-6 flex flex-col">
-                  <span className="text-4xl font-black tracking-tight">50k+</span>
+                  <span className="text-4xl font-black tracking-tight">
+                    50k+
+                  </span>
                   <span className="text-xs font-bold uppercase tracking-widest opacity-80 mt-1">
                     Échanges Vérifiés
                   </span>
                 </CardContent>
               </Card>
-              
             </div>
-
           </div>
         </div>
       </div>

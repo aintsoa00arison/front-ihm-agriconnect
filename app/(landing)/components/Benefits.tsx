@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 
 export default function Benefits() {
   return (
-    <section id="solutions" className="w-full bg-white py-24 font-sans select-none">
+    <section id="solutions" className="w-full bg-background py-24 font-sans select-none">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16 space-y-32">
         
         {/* --- SECTION POUR LES FOURNISSEURS --- */}
@@ -16,10 +16,10 @@ export default function Benefits() {
           <div className="flex-1 w-full">
             <div className="rounded-[32px] overflow-hidden shadow-2xl">
               <Image 
-                src="/produc-img.jpg" 
+                src="/images/landing/fournisseurs.jpg" 
                 alt="Producteurs"
-                width={700}
-                height={500}
+                width={640}
+                height={432}
                 className="w-full h-auto object-cover"
               />
             </div>
@@ -63,10 +63,10 @@ export default function Benefits() {
           <div className="flex-1 w-full">
             <div className="rounded-[32px] overflow-hidden shadow-2xl">
               <Image 
-                src="/collect-img.jpg" 
+                src="/images/landing/collecteurs.jpg" 
                 alt="Collecteurs"
-                width={700}
-                height={500}
+                width={720}
+                height={720}
                 className="w-full h-auto object-cover"
               />
             </div>

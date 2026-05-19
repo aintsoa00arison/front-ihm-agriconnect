@@ -6,18 +6,18 @@
 
 @theme inline {
   /* Palette AgriConnect */
-  --color-primary: #2E7D32;
-  --color-secondary: #FFA000;
+  --color-primary: #2e7d32;
+  --color-secondary: #ffa000;
   --color-tertiary: #795548;
-  --color-neutral: #F8F9FA;
+  --color-neutral: #f8f9fa;
 
   --color-separator: rgba(143, 145, 146, 0.45);
   --color-light-bg: rgba(200, 255, 191, 0.38);
   --color-bg-input: rgba(240, 242, 245, 0.36);
   --color-input-border: rgba(143, 145, 147, 0.3);
-  --color-input-element: #777A7E;
+  --color-input-element: #777a7e;
   --color-input-icon: rgba(119, 122, 126, 0.39);
-  --color-label: #191C1D;
+  --color-label: #191c1d;
 
   /* On définit l'angle de 9px comme une variable de thème */
   --radius-auth: 9px;
@@ -64,7 +64,7 @@
 
 /* Styles de base */
 body {
-  background-color: #ffffff;
+  background-color: var(--color-neutral);
   color: var(--color-label);
   font-family: var(--font-manrope), ui-sans-serif, system-ui;
   -webkit-font-smoothing: antialiased;
@@ -130,7 +130,7 @@ body {
   .input-icon-container {
     position: absolute;
     left: 1rem;
-    top: 2rem; 
+    top: 2rem;
     color: var(--color-input-icon);
     pointer-events: none;
     display: flex;
@@ -140,7 +140,7 @@ body {
   .input-password-toggle {
     position: absolute;
     right: 1rem;
-    top: 2rem; 
+    top: 2rem;
     color: var(--color-input-element);
     background: none;
     border: none;
@@ -150,16 +150,16 @@ body {
   .input-icon-no-label {
     position: absolute;
     left: 1rem;
-    top: 0.9rem; 
+    top: 0.9rem;
     color: var(--color-input-icon);
     pointer-events: none;
     display: flex;
     align-items: center;
   }
-   .input-icon-step2 {
+  .input-icon-step2 {
     position: absolute;
     left: 1rem;
-    top: 2rem; 
+    top: 2rem;
     color: var(--color-input-icon);
     pointer-events: none;
     display: flex;
@@ -168,35 +168,46 @@ body {
 }
 :root {
   /* On lie le background et le foreground à ton design system */
-  --background: #ffffff;
+  --background: var(--color-neutral);
   --foreground: var(--color-label);
-  
+
   --card: #ffffff;
   --card-foreground: var(--color-label);
-  
+
   --popover: #ffffff;
   --popover-foreground: var(--color-label);
-  
+
   /* CI-DESSOUS : Le raccordement magique avec tes vraies couleurs */
-  --primary: #2E7D32;                 /* Ton vert à la place du oklch noir */
+  --primary: #2e7d32; /* Ton vert à la place du oklch noir */
   --primary-foreground: #ffffff;
-  
+
   --secondary: var(--color-secondary);
   --secondary-foreground: var(--color-label);
-  
+
   --muted: var(--color-neutral);
   --muted-foreground: var(--color-input-element);
-  
-  --accent: var(--color-light-bg);   /* Ton fond vert clair au survol */
-  --accent-foreground: #2E7D32;       /* Écrit en vert au survol */
-  
+
+  --accent: var(--color-light-bg); /* Ton fond vert clair au survol */
+  --accent-foreground: #2e7d32; /* Écrit en vert au survol */
+
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
-  
+
+  --success: #00ac28;
+  --success-foreground: #ffffff;
+
+  --info: #42b4e6;
+  --info-foreground: #ffffff;
+
+  --warning: #ffde00;
+  --warning-foreground: #000000;
+
+  --overlay: #0D631B; /* Un vert sombre pour les overlays */
+
   --border: var(--color-input-border);
   --input: var(--color-bg-input);
-  --ring: #2E7D32;
-  
+  --ring: #2e7d32;
+
   --radius: 0.625rem; /* ~10px, parfait pour tes cartes */
 
   /* Variables additionnelles pour les charts et la sidebar */
@@ -207,12 +218,12 @@ body {
   --chart-5: oklch(0.269 0 0);
   --sidebar: #ffffff;
   --sidebar-foreground: var(--color-label);
-  --sidebar-primary: #2E7D32;
+  --sidebar-primary: #2e7d32;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: var(--color-light-bg);
-  --sidebar-accent-foreground: #2E7D32;
+  --sidebar-accent-foreground: #2e7d32;
   --sidebar-border: var(--color-separator);
-  --sidebar-ring: #2E7D32;
+  --sidebar-ring: #2e7d32;
 }
 
 .dark {
@@ -242,4 +253,36 @@ body {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+
+/* Scrollbar*/
+
+/* Pour Chrome, Edge, Safari et Opera */
+::-webkit-scrollbar {
+  width: 10px;  
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background); 
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-input-border); 
+  border-radius: var(--radius-md);
+  border: 2px solid var(--background); 
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--primary); 
+}
+
+/* Pour Firefox */
+@supports (scrollbar-width: thin) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-input-border) var(--background);
+  }
 }

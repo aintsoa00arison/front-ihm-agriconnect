@@ -54,7 +54,7 @@ function TabsTrigger({
         
         // --- ÉTAT ACTIF / SÉLECTIONNÉ ---
         // Écrit en vert primary, bordure basse en vert primary, et fond léger light-bg/20
-        "data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-light-bg/20",
+        "data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-light-bg/50",
         
         // --- ÉTAT INACTIF ---
         // Couleur grisée de tes éléments d'input, pas de fond

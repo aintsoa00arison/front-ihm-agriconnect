@@ -59,17 +59,18 @@ export default function Navbar({ setView }: NavbarProps) {
   };
 
   return (
-    <nav className="w-full bg-white/80 backdrop-blur-md sticky top-0 z-50 font-sans border-b border-separator/10 select-none">
+    <nav className="w-full bg-white/80 backdrop-blur-md sticky top-0 z-50 font-sans border-b border-separator/10 select-none shadow-sm">
       <div className="max-w-[1440px] mx-auto flex items-center justify-between px-6 lg:px-16 py-4">
-        
         {/* --- LOGO --- */}
-        <div 
-          onClick={() => { setView('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+        <div
+          onClick={() => {
+            setView("home");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
           className="flex items-center cursor-pointer group"
         >
-          <div className="text-primary font-bold text-2xl flex gap-1 items-center">
-             <span className="tracking-tighter group-hover:text-label transition-colors">Agri</span>
-             <span className="text-label tracking-tighter group-hover:text-primary transition-colors">Connect</span>
+          <div className="hover:text-primary text-label duration-300 transition-colors font-bold text-2xl flex gap-1 items-center">
+            Tsena
           </div>
         </div>
 
@@ -78,12 +79,12 @@ export default function Navbar({ setView }: NavbarProps) {
           {navLinks.map((link) => {
             const isActive = activeSection === link.id;
             return (
-              <button 
+              <button
                 key={link.id}
                 onClick={() => handleNavClick(link.id)}
                 className={`transition-all text-[15px] font-bold pb-1 border-b-2 outline-none cursor-pointer ${
-                  isActive 
-                    ? "text-primary border-primary" 
+                  isActive
+                    ? "text-primary border-primary"
                     : "text-input-element border-transparent hover:text-primary"
                 }`}
               >
@@ -97,20 +98,21 @@ export default function Navbar({ setView }: NavbarProps) {
         <div className="flex items-center space-x-6">
           <Button
             variant="ghost"
-            onClick={() => router.push('/login?mode=login')}
-            className="text-label font-bold text-sm hover:text-primary hover:bg-neutral transition-colors outline-none cursor-pointer px-4 py-2 rounded-xl"
+            size="lg"
+            onClick={() => router.push("/login?mode=login")}
+            className="text-label font-bold text-sm hover:text-primary hover:bg-neutral transition-colors outline-none cursor-pointer rounded-xl"
           >
             Se connecter
           </Button>
-          
-          <Button 
-            onClick={() => router.push('/login?mode=register')}
-            className="btn-primary py-3 px-7 text-sm font-bold shadow-none outline-none cursor-pointer h-auto"
+
+          <Button
+            size="lg"
+            onClick={() => router.push("/login?mode=register")}
+            className="text-sm font-bold shadow-none outline-none cursor-pointer h-auto"
           >
             Commencer
           </Button>
         </div>
-
       </div>
     </nav>
   );

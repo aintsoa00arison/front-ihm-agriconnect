@@ -24,7 +24,7 @@ export default function Footer({ setView }: FooterProps) {
   };
 
   return (
-    <footer className="w-full bg-white py-12 font-sans border-t border-separator/10 relative z-10 select-none">
+    <footer className="w-full bg-background py-12 font-sans border-t border-separator/10 relative z-10 select-none">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           

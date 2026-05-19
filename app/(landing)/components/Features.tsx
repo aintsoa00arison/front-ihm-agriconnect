@@ -28,7 +28,7 @@ export default function Features() {
   ];
 
   return (
-    <section id="features" className="w-full bg-neutral-50/50 py-16 font-sans select-none">
+    <section id="features" className="w-full bg-background py-16 font-sans select-none">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16 text-center">
         
         {/* --- EN-TÊTE DE LA SECTION --- */}
