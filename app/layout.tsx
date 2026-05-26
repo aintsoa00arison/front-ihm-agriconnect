@@ -24,7 +24,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" className={cn("font-sans", geist.variable)}>
-      {/* On applique la variable de police ici pour qu'elle soit dispo partout */}
       <body
         className={`${manrope.variable} font-sans antialiased bg-background text-foreground min-h-screen w-full`}
       >

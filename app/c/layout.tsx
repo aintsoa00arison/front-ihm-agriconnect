@@ -1,6 +1,6 @@
 "use client";
 import { NotificationMenu } from "@/components/layout/notificationMenu";
-import SidebarFournisseur from "@/components/layout/sidebarFournisseur";
+import SidebarCollecteur from "@/components/layout/sidebarCollecteur";
 import Link from "next/link";
 
 function layout({ children }: { children: React.ReactNode }) {
@@ -18,7 +18,7 @@ function layout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       <div className="grow flex ">
-        <SidebarFournisseur />
+        <SidebarCollecteur />
         <main className="grow py-4 px-6 overflow-y-auto">{children}</main>
       </div>
     </div>

@@ -5,25 +5,25 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-export default function SidebarFournisseur() {
+export default function SidebarCollecteur() {
   const pathname = usePathname();
 
   // Lien de navigation
   const navItems = [
     {
       label: "Catalogue",
-      href: "/f",
+      href: "/c",
       icon: Store,
     },
     {
       label: "Messages",
-      href: "/f/messages",
+      href: "/c/messages",
       icon: MessageCircle,
       badgeCount: 3,
     },
     {
       label: "Mon profil",
-      href: "/f/:id",
+      href: "/c/:id",
       icon: User,
     },
   ];
