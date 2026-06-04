@@ -17,7 +17,7 @@ export interface AuthResponse {
   user?: {
     id: string;
     email: string;
-    role: 'producteur' | 'collecteur';
+    role: "fournisseur" | "collecteur"; 
   };
 }
 // Brouillon d'inscription conservé de manière sécurisée en RAM côté Front-End

@@ -135,16 +135,24 @@ export default function AuthForm({
 
           if (response.success && response.user) {
             setSuccessNotification(
-              "Connexion réussie ! Vous êtes maintenant connecté.",
+              "Connexion réussie ! Redirection en cours...",
             );
+            
             onSubmit?.({
               email: dataToSend.email,
               mode: "login",
               role: response.user.role,
             });
 
+            // Redirection conditionnelle basée sur le rôle de l'utilisateur
             setTimeout(() => {
-              router.push("/dashboard");
+              if (response.user?.role === "collecteur") {
+                router.push("/c");
+              } else if (response.user?.role === "fournisseur") {
+                router.push("/f");
+              } else {
+                router.push("/"); // Route par défaut au cas où
+              }
             }, 1500);
           } else {
             setErrorNotification(

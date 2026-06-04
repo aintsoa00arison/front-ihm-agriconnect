@@ -12,8 +12,8 @@ export async function mockLoginService(credentials: AuthFormData): Promise<AuthR
   if (password !== "password123") {
     return { success: false, message: "Le mot de passe saisi est incorrect." };
   }
-  if (email === "producteur@agriconnect.mg") {
-    return { success: true, user: { id: "usr_prod_01", email, role: "producteur" } };
+  if (email === "fournisseur@agriconnect.mg") {
+    return { success: true, user: { id: "usr_fourn_01", email, role: "fournisseur" } };
   }
   if (email === "collecteur@agriconnect.mg") {
     return { success: true, user: { id: "usr_coll_02", email, role: "collecteur" } };
