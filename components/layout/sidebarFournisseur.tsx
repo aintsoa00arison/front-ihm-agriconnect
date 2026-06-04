@@ -9,11 +9,13 @@ export default function SidebarFournisseur() {
   const pathname = usePathname();
 
   // Lien de navigation
+
   const navItems = [
     {
       label: "Catalogue",
       href: "/f",
       icon: Store,
+      exact: true,
     },
     {
       label: "Messages",
@@ -23,11 +25,10 @@ export default function SidebarFournisseur() {
     },
     {
       label: "Mon profil",
-      href: "/f/:id",
+      href: "/f/profile/brooklyn&simmons", // Mis à jour pour pointer vers la sous-route
       icon: User,
     },
   ];
-
   return (
     <nav className="w-73 bg-white border-r border-border shadow-sm flex flex-col pb-3">
       {/* Bouton Nouvelle Annonce */}
