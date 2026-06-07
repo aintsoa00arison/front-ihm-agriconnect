@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import ProfileHeader from "./ProfileHeader";
 import ProfileReviews from "./ProfileReviews"; 
+import EditCollectorProfileForm from "./EditCollectorProfileForm"; // 👈 Import du formulaire
 import { getUserProfile } from "./services/profileService";
 import { UserProfile } from "./types/profile";
 
@@ -14,6 +15,7 @@ export default function ProfileView({ slug }: ProfileViewProps) {
   const [activeTab, setActiveTab] = useState("apropos");
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isEditing, setIsEditing] = useState<boolean>(false); // 👈 État pour basculer en mode édition
 
   useEffect(() => {
     async function fetchProfileData() {
@@ -47,6 +49,22 @@ export default function ProfileView({ slug }: ProfileViewProps) {
     );
   }
 
+  // 🔄 Condition d'affichage : Si l'utilisateur clique sur "Modifier le profil"
+  if (isEditing) {
+    return (
+      <EditCollectorProfileForm
+        initialData={profile}
+        onCancel={() => setIsEditing(false)}
+        onSave={(updatedData) => {
+          console.log("Données à soumettre au backend :", updatedData);
+          // Optionnel : Mettre à jour l'état local du profil si nécessaire avant validation mutuelle
+          setProfile((prev) => prev ? { ...prev, ...updatedData } : null);
+          setIsEditing(false);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6 pb-6 animate-in fade-in duration-300">
       <ProfileHeader
@@ -60,7 +78,7 @@ export default function ProfileView({ slug }: ProfileViewProps) {
         }}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        onEditClick={() => console.log("Modifier le profil cliqué")}
+        onEditClick={() => setIsEditing(true)} // 👈 Active le mode édition au clic
       />
 
       {/* Contenu dynamique des Onglets */}
@@ -134,7 +152,7 @@ export default function ProfileView({ slug }: ProfileViewProps) {
           </div>
         )}
 
-        {/* --- Onglet Avis (Maintenant modulé et propre grâce au fichier à part) --- */}
+        {/* --- Onglet Avis --- */}
         {activeTab === "avis" && (
           <ProfileReviews 
             rating={profile.rating} 

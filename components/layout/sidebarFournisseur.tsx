@@ -1,14 +1,19 @@
 "use client";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Store, MessageCircle, User, LogOut } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 export default function SidebarFournisseur() {
-  const pathname = usePathname();
+  const [pathname, setPathname] = useState<string>("/f");
 
-  // Lien de navigation
+  // Suivi de l'URL pour la surbrillance active
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setPathname(window.location.pathname);
+    }
+  }, []);
 
   const navItems = [
     {
@@ -25,64 +30,62 @@ export default function SidebarFournisseur() {
     },
     {
       label: "Mon profil",
-      href: "/f/profile/brooklyn&simmons", // Mis à jour pour pointer vers la sous-route
+      href: "/f/profile/brooklyn&simmons",
       icon: User,
     },
   ];
+
   return (
-    <nav className="w-73 bg-white border-r border-border shadow-sm flex flex-col pb-3">
-      {/* Bouton Nouvelle Annonce */}
+    <nav className="w-73 flex-shrink-0 bg-white border-r border-border shadow-sm flex flex-col pb-3 h-full overflow-y-auto">
+      {/* Bouton Nouvelle Annonce redirigeant dynamiquement vers /f?action=new */}
       <div className="px-4 py-4 mb-6 border-b border-border">
-        <Button className="w-full h-12 shadow-sm font-bold gap-2">
-          <Plus className="w-6 h-6" strokeWidth={2.5} />
-          Nouvelle annonce
-        </Button>
+        <a href="/f?action=new" className="w-full block">
+          <Button className="w-full h-12 shadow-sm font-bold gap-2 bg-[#0D631B] hover:bg-[#094713] text-white transition-all">
+            <Plus className="w-6 h-6" strokeWidth={2.5} />
+            Nouvelle annonce
+          </Button>
+        </a>
       </div>
 
       <div className="flex flex-col grow justify-between">
-        {/* Liste de Navigation */}
         <div className="flex flex-col gap-1">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
-              <Link
+              <a
                 key={item.href}
                 href={item.href}
                 className={cn(
                   "group flex items-center pl-6 pr-2 py-4 transition-all duration-200 relative",
                   isActive
-                    ? "bg-light-bg text-primary"
+                    ? "bg-light-bg text-[#0D631B]"
                     : "text-label hover:bg-neutral",
                 )}
               >
-                {/* Icône */}
                 <item.icon
                   className={cn(
                     "w-7 h-7 mr-4",
-                    isActive ? "text-primary" : "text-input-element",
+                    isActive ? "text-[#0D631B]" : "text-input-element",
                   )}
                   strokeWidth={1.8}
                 />
-                {/* Texte */}
                 <span
                   className={cn(
                     "font-bold grow",
-                    isActive ? "text-primary" : "text-label",
+                    isActive ? "text-[#0D631B]" : "text-label",
                   )}
                 >
                   {item.label}
                 </span>
-                {/* Bulle de notification*/}
                 {item.badgeCount && item.badgeCount > 0 && (
                   <span className="mr-2 flex size-5 text-xs items-center justify-center rounded-full bg-red-500 font-bold text-white shadow-sm">
                     <p>{item.badgeCount}</p>
                   </span>
                 )}
-                {/* Barre latérale droite active */}
                 {isActive && (
-                  <div className="absolute right-0 top-0 bottom-0 w-1 rounded-l-md bg-primary" />
+                  <div className="absolute right-0 top-0 bottom-0 w-1 rounded-l-md bg-[#0D631B]" />
                 )}
-              </Link>
+              </a>
             );
           })}
         </div>
@@ -91,7 +94,7 @@ export default function SidebarFournisseur() {
           variant="ghost"
           className="text-destructive font-semibold hover:text-destructive hover:bg-destructive/10 w-full flex items-center justify-start py-6 rounded-none px-4"
         >
-          <LogOut />
+          <LogOut className="mr-4" />
           Se déconnecter
         </Button>
       </div>
