@@ -50,7 +50,7 @@ export default function EditSupplierProfileForm({
   const [productionTypes, setProductionTypes] = useState<{ [key: string]: boolean }>({
     vegetale: initialData?.productionTypes?.includes("Végétale") || false,
     elevage: initialData?.productionTypes?.includes("Élevage") || false,
-    Rento: initialData?.productionTypes?.includes("Rento") || true,
+    Rente: initialData?.productionTypes?.includes("Rente") || true,
   });
   const [bio, setBio] = useState(initialData?.bio || "");
   const [avatarSrc, setAvatarSrc] = useState(initialData?.avatarUrl || "https://api.dicebear.com/9.x/big-ears-neutral/svg?seed=defaultSupplier");
@@ -280,7 +280,7 @@ export default function EditSupplierProfileForm({
                 {Object.keys(productionTypes).map((key) => (
                   <button key={key} type="button" onClick={() => handleCheckboxChange(key)} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-bold transition-all ${productionTypes[key] ? "bg-green-50 border-emerald-500 text-emerald-800" : "bg-slate-50/40 border-slate-200 text-slate-400"}`}>
                     <div className={`w-4 h-4 rounded border flex items-center justify-center text-[10px] ${productionTypes[key] ? "bg-emerald-600 border-emerald-600 text-white" : "bg-white border-slate-300"}`}>{productionTypes[key] && "✓"}</div>
-                    <span className="capitalize">{key === "Rento" ? "Rento" : key === "vegetale" ? "Végétale" : "Élevage"}</span>
+                    <span className="capitalize">{key === "Rente" ? "Rente" : key === "vegetale" ? "Végétale" : "Élevage"}</span>
                   </button>
                 ))}
               </div>
@@ -303,7 +303,7 @@ export default function EditSupplierProfileForm({
                 {Object.keys(productionTypes).map((key) => (
                   <button key={key} type="button" onClick={() => handleCheckboxChange(key)} className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-xl border text-xs font-bold transition-all ${productionTypes[key] ? "bg-green-50 border-emerald-500 text-emerald-800" : "bg-slate-50/40 border-slate-200 text-slate-400"}`}>
                     <div className={`w-4 h-4 rounded border flex items-center justify-center text-[10px] ${productionTypes[key] ? "bg-emerald-600 border-emerald-600 text-white" : "bg-white border-slate-300"}`}>{productionTypes[key] && "✓"}</div>
-                    <span className="capitalize">{key === "Rento" ? "Rento" : key === "vegetale" ? "Végétale" : "Élevage"}</span>
+                    <span className="capitalize">{key === "Rente" ? "Rente" : key === "vegetale" ? "Végétale" : "Élevage"}</span>
                   </button>
                 ))}
               </div>

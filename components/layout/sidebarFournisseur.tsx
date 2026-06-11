@@ -36,15 +36,16 @@ export default function SidebarFournisseur() {
   ];
 
   return (
-    <nav className="w-73 flex-shrink-0 bg-white border-r border-border shadow-sm flex flex-col pb-3 h-full overflow-y-auto">
-      {/* Bouton Nouvelle Annonce redirigeant dynamiquement vers /f?action=new */}
+    <nav className="w-[292px] flex-shrink-0 bg-white border-r border-border shadow-sm flex flex-col pb-3 h-full overflow-y-auto">
+      {/* Bouton Nouvelle Annonce avec redirection via onClick pour un HTML valide */}
       <div className="px-4 py-4 mb-6 border-b border-border">
-        <a href="/f?action=new" className="w-full block">
-          <Button className="w-full h-12 shadow-sm font-bold gap-2 bg-[#0D631B] hover:bg-[#094713] text-white transition-all">
-            <Plus className="w-6 h-6" strokeWidth={2.5} />
-            Nouvelle annonce
-          </Button>
-        </a>
+        <Button 
+          onClick={() => window.location.href = "/f?action=new"}
+          className="w-full h-12 shadow-sm font-bold gap-2 bg-[#0D631B] hover:bg-[#094713] text-white transition-all"
+        >
+          <Plus className="w-6 h-6" strokeWidth={2.5} />
+          Nouvelle annonce
+        </Button>
       </div>
 
       <div className="flex flex-col grow justify-between">
@@ -79,7 +80,7 @@ export default function SidebarFournisseur() {
                 </span>
                 {item.badgeCount && item.badgeCount > 0 && (
                   <span className="mr-2 flex size-5 text-xs items-center justify-center rounded-full bg-red-500 font-bold text-white shadow-sm">
-                    <p>{item.badgeCount}</p>
+                    {item.badgeCount}
                   </span>
                 )}
                 {isActive && (

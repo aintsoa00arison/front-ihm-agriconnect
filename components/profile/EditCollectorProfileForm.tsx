@@ -29,7 +29,7 @@ export default function EditCollectorProfileForm({
   const [productionTypes, setProductionTypes] = useState<{ [key: string]: boolean }>({
     vegetale: initialData?.productionTypes?.includes("Végétale") || false,
     elevage: initialData?.productionTypes?.includes("Élevage") || false,
-    Rento: initialData?.productionTypes?.includes("Rento") || true, // Actif par défaut sur la maquette
+    Rente: initialData?.productionTypes?.includes("Rente") || true, // Actif par défaut sur la maquette
   });
 
   // 3. Informations du représentant légal
@@ -231,7 +231,7 @@ export default function EditCollectorProfileForm({
                 }`}>
                   {productionTypes[key] && <span className="text-[10px]">✓</span>}
                 </div>
-                <span className="capitalize">{key === "Rento" ? "Rento" : key === "vegetale" ? "Végétale" : "Élevage"}</span>
+                <span className="capitalize">{key === "Rente" ? "Rente" : key === "vegetale" ? "Végétale" : "Élevage"}</span>
               </button>
             ))}
           </div>

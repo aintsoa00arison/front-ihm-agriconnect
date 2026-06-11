@@ -3,12 +3,12 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { Store, Plus, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import AdForm from "@/components/annonces/AddForm"; // Chemin relatif corrigé pour la compilation
-
-function FournisseurDashboardContent() {
+import AdForm from "@/components/annonces/AddForm"; 
+import CataloguePage from "@/components/catalogues/CataloguePage"; 
+function CollecteurContent() {
   const [isCreatingNew, setIsCreatingNew] = useState<boolean>(false);
 
-  // Écoute sécurisée de l'URL pour capter ?action=new
+  // Écoute sécurisée des changements de l'URL
   useEffect(() => {
     const handleUrlChange = () => {
       if (typeof window !== "undefined") {
@@ -25,35 +25,39 @@ function FournisseurDashboardContent() {
 
   const handleCancel = () => {
     if (typeof window !== "undefined") {
-      window.history.pushState({}, "", "/f");
+      window.history.pushState({}, "", "/c");
       setIsCreatingNew(false);
     }
   };
 
-  const handleSave = (data: any) => {
-    console.log("Nouvelle annonce enregistrée :", data);
+  const handleSave = async (data: any) => {
+    console.log("Nouvelle demande enregistrée :", data);
+    
     if (typeof window !== "undefined") {
-      window.history.pushState({}, "", "/f");
+      // Temporisation pour laisser au toast d'AdForm le temps de s'afficher
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      
+      window.history.pushState({}, "", "/c");
       setIsCreatingNew(false);
     }
   };
 
   const triggerNewForm = () => {
     if (typeof window !== "undefined") {
-      window.history.pushState({}, "", "/f?action=new");
+      window.history.pushState({}, "", "/c?action=new");
       setIsCreatingNew(true);
     }
   };
 
-  // Simulation d'une liste de produits vide pour l'instant
-  const hasProducts = false;
+  // Mettez à "true" pour afficher le fichier de catalogue avec les offres fournisseurs,
+  // ou à "false" pour tester l'état vide personnalisé.
+  const hasProducts = true; 
 
-  // Si l'action "nouvelle annonce" est détectée, on affiche le formulaire d'ajout
   if (isCreatingNew) {
     return (
       <div className="animate-in fade-in duration-200">
         <AdForm
-          mode="annonce" // Version annonce de vente pour le fournisseur
+          mode="demande"
           onCancel={handleCancel}
           onSave={handleSave}
         />
@@ -62,57 +66,55 @@ function FournisseurDashboardContent() {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      {/* En-tête de l'espace catalogue */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <Store className="text-[#0D631B]" size={24} />
-            Mon Catalogue de Produits
-          </h1>
-          <p className="text-sm text-slate-500 mt-1 font-medium">
-            Gérez vos offres, vos stocks et vos publications visibles par les collecteurs.
-          </p>
-        </div>
-      </div>
-
-      {/* Zone de contenu principal */}
+    <>
       {hasProducts ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Les cartes de produits s'afficheront ici */}
-        </div>
+        /* 👈 Appele du fichier catalogue global pour le profil collecteur */
+        <CataloguePage userRole="collecteur" />
       ) : (
-        /* État vide (Empty State) propre */
-        <div className="flex flex-col items-center justify-center text-center p-12 bg-white rounded-2xl border border-dashed border-slate-200 shadow-sm min-h-[400px]">
-          <div className="size-14 bg-emerald-50 rounded-full flex items-center justify-center text-[#0D631B] mb-4">
-            <Package size={28} />
+        /* Message d'état vide si aucune annonce ou demande n'est disponible */
+        <div className="space-y-6 p-4 md:p-6 lg:p-8 animate-in fade-in duration-300">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                <Store className="text-[#0D631B]" size={24} />
+                Catalogue
+              </h1>
+              <p className="text-sm text-slate-500 mt-1 font-medium">
+                Explorez les offres de récoltes et produits disponibles chez les fournisseurs.
+              </p>
+            </div>
           </div>
-          <h3 className="text-lg font-bold text-slate-900">Aucun produit dans votre catalogue</h3>
-          <p className="text-sm text-slate-500 max-w-sm mt-1 mb-6 font-medium">
-            Vous n'avez pas encore publié d'offres. Commencez dès maintenant à ajouter vos récoltes ou produits disponibles.
-          </p>
-          <Button 
-            onClick={triggerNewForm}
-            className="font-bold gap-2 shadow-sm h-11 px-6 bg-[#0D631B] hover:bg-[#094713] text-white"
-          >
-            <Plus size={20} strokeWidth={2.5} />
-            Ajouter mon premier produit
-          </Button>
+
+          <div className="flex flex-col items-center justify-center text-center p-12 bg-white rounded-2xl border border-dashed border-slate-200 shadow-sm min-h-[400px]">
+            <div className="size-14 bg-emerald-50 rounded-full flex items-center justify-center text-[#0D631B] mb-4">
+              <Package size={28} />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900">Aucune annonce ou demande disponible</h3>
+            <p className="text-sm text-slate-500 max-w-sm mt-1 mb-6 font-medium">
+              Il n'y a actuellement aucune publication sur le marché. Soyez le premier à publier un besoin pour lancer les échanges.
+            </p>
+            <Button 
+              onClick={triggerNewForm}
+              className="font-bold gap-2 shadow-sm h-11 px-6 bg-[#0D631B] hover:bg-[#094713] text-white"
+            >
+              <Plus size={20} strokeWidth={2.5} />
+              Faire ma première demande
+            </Button>
+          </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
-// Composant principal enveloppé dans un Suspense pour éviter toute erreur au rendu Next.js
-export default function SupplierDashboardPage() {
+export default function CollecteurPage() {
   return (
     <Suspense fallback={
       <div className="flex h-64 w-full items-center justify-center text-slate-400 font-medium animate-pulse">
-        Chargement du catalogue fournisseur...
+        Chargement de l'espace catalogue...
       </div>
     }>
-      <FournisseurDashboardContent />
+      <CollecteurContent />
     </Suspense>
   );
 }
