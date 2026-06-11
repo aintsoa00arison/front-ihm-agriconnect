@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { Textarea } from "@/components/ui/textarea";
 
 export default function AutoResizeTextarea({

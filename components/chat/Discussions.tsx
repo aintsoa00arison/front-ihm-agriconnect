@@ -1,3 +1,4 @@
+"use client";
 import { discussions } from "@/data/discussion";
 import Discussion from "./Discussion";
 

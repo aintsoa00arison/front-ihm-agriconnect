@@ -1,11 +1,11 @@
+"use client";
 import Image from "next/image";
-
 type DiscussionProps = {
   name: string;
   lastMessage: string;
   lastMessageDate: Date;
   hasNewMessage: boolean;
-  isOnline : boolean;
+  isOnline: boolean;
 };
 
 // Fonction utilitaire pour connaître le temps écoulé depuis le dernier message

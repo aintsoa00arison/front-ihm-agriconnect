@@ -1,4 +1,4 @@
-import React from 'react'
+"use client";
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from '../ui/drawer';
 import { Button } from '../ui/button';
 import { Star } from 'lucide-react';
