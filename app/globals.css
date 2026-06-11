@@ -202,7 +202,7 @@ body {
   --warning: #ffde00;
   --warning-foreground: #000000;
 
-  --overlay: #0D631B; /* Un vert sombre pour les overlays */
+  --overlay: #0d631b; /* Un vert sombre pour les overlays */
 
   --border: var(--color-input-border);
   --input: var(--color-bg-input);
@@ -255,28 +255,27 @@ body {
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-
 /* Scrollbar*/
 
 /* Pour Chrome, Edge, Safari et Opera */
 ::-webkit-scrollbar {
-  width: 10px;  
+  width: 10px;
   height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--background); 
+  background: var(--background);
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: var(--color-input-border); 
+  background-color: var(--color-input-border);
   border-radius: var(--radius-md);
-  border: 2px solid var(--background); 
+  border: 2px solid var(--background);
   transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: var(--primary); 
+  background-color: var(--primary);
 }
 
 /* Pour Firefox */
@@ -286,3 +285,4 @@ body {
     scrollbar-color: var(--color-input-border) var(--background);
   }
 }
+
