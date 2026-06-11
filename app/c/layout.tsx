@@ -19,7 +19,9 @@ function layout({ children }: { children: React.ReactNode }) {
       </header>
       <div className="flex flex-1 min-h-0">
         <SidebarCollecteur />
-        <main className="flex-1 py-4 px-6 overflow-y-auto">{children}</main>
+        <main className="flex-1 py-4 px-6 min-h-0 overflow-hidden">
+          {children}
+        </main>
       </div>
     </div>
   );
