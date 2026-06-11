@@ -11,6 +11,7 @@ function Discussions() {
           lastMessage={discussion.lastMessage}
           lastMessageDate={discussion.lastMessageDate}
           hasNewMessage={discussion.hasNewMessage}
+          isOnline={discussion.isOnline}
         />
       ))}
     </div>

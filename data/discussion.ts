@@ -4,6 +4,7 @@ export type Discussion = {
   lastMessage: string;
   lastMessageDate: Date;
   hasNewMessage: boolean;
+  isOnline : boolean;
 };
 
 export const discussions: Discussion[] = [
@@ -13,6 +14,7 @@ export const discussions: Discussion[] = [
     lastMessage: "Manao ahoana ny vokatra androany?",
     lastMessageDate: new Date(Date.now() - 1000 * 60 * 15),
     hasNewMessage: true,
+    isOnline: true,
   },
   {
     id: 2,
@@ -20,6 +22,7 @@ export const discussions: Discussion[] = [
     lastMessage: "Misaotra betsaka, hanatona anao aho rahampitso.",
     lastMessageDate: new Date(Date.now() - 1000 * 60 * 60 * 2),
     hasNewMessage: true,
+    isOnline: false,
   },
   {
     id: 3,
@@ -27,6 +30,7 @@ export const discussions: Discussion[] = [
     lastMessage: "Eny, azoko tsara. Hiandry ny valinteninao aho.",
     lastMessageDate: new Date(Date.now() - 1000 * 60 * 60 * 5),
     hasNewMessage: false,
+    isOnline: true,
   },
   {
     id: 4,
@@ -34,12 +38,14 @@ export const discussions: Discussion[] = [
     lastMessage: "Oky, hifandraisana isika rahampitso.",
     lastMessageDate: new Date(Date.now() - 1000 * 60 * 60 * 24),
     hasNewMessage: false,
+    isOnline: true,
   },
   {
     id: 5,
     name: "Santatra",
     lastMessage: "Ahoana ny vidiny amin'izao fotoana izao?",
     lastMessageDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
+    isOnline: false,
     hasNewMessage: true,
   },
   {
@@ -47,6 +53,7 @@ export const discussions: Discussion[] = [
     name: "Henintsoa",
     lastMessage: "Azonao ampitaina amiko ve ny lisitra?",
     lastMessageDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
+    isOnline: false,
     hasNewMessage: false,
   },
   {
@@ -54,6 +61,7 @@ export const discussions: Discussion[] = [
     name: "Fara Noro",
     lastMessage: "Tsara be, misaotra!",
     lastMessageDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4),
+    isOnline: false,
     hasNewMessage: false,
   },
 ];
