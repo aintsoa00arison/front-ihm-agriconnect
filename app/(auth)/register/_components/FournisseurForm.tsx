@@ -120,7 +120,7 @@ export default function FournisseurForm({
     );
   };
 
-  // Validations en temps réel (gérées de manière sécurisée pour éviter les crashs si vides)
+  // Validations en temps réel
   const isEmailContactValid = formData.emailContact
     ? validateEmail(formData.emailContact)
     : true;
@@ -204,46 +204,46 @@ export default function FournisseurForm({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-2 space-y-4 h-fit animate-in fade-in duration-500">
+    <div className="w-full max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 h-fit animate-in fade-in duration-500">
       {/* Stepper positionné sur l'étape 2 */}
       <Stepper steps={registerSteps} currentStep={2} />
 
-      <div className="bg-white rounded-[20px] shadow-sm border border-separator/10 p-6 md:p-8 space-y-6">
+      <div className="bg-white rounded-[16px] sm:rounded-[20px] shadow-sm border border-separator/10 p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
         {/* Titre dynamique centré */}
-        <div className="text-center space-y-1">
-          <h2 className="text-xl font-bold text-label uppercase tracking-wider font-manrope">
+        <div className="text-center space-y-1 sm:space-y-2">
+          <h2 className="text-base sm:text-xl font-bold text-label uppercase tracking-wider font-manrope">
             Information supplémentaire
           </h2>
-          <p className="text-[11px] text-input-element italic">
+          <p className="text-[10px] sm:text-[11px] text-input-element italic">
             {isEntreprise
               ? "Détails de votre exploitation ou société de production"
               : "Complétez vos informations personnelles de producteur"}
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* --- VUE ENTREPRISE (3 Colonnes) --- */}
+        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+          {/* --- VUE ENTREPRISE --- */}
           {isEntreprise && (
-            <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-300">
+            <div className="space-y-5 sm:space-y-6 animate-in slide-in-from-bottom-2 duration-300">
               <div className="space-y-3">
-                <h3 className="text-[10px] font-bold text-label uppercase tracking-widest border-b border-separator/10 pb-1">
+                <h3 className="text-[9px] sm:text-[10px] font-bold text-label uppercase tracking-widest border-b border-separator/10 pb-1">
                   Structure de production
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {/* Nom Entité */}
                   <div className="flex flex-col">
-                    <label className="text-[11px] font-bold text-label ml-1 mb-1.5">
-                      Nom de l'entité
+                    <label className="text-[10px] sm:text-[11px] font-bold text-label ml-1 mb-1.5">
+                      Nom de l'entité <span className="text-red-500">*</span>
                     </label>
                     <div className="relative flex items-center">
                       <Building2
-                        className="absolute left-3.5 text-input-element/60 pointer-events-none"
-                        size={18}
+                        className="absolute left-3 text-input-element/60 pointer-events-none"
+                        size={16}
                       />
                       <Input
                         type="text"
                         placeholder="Ex: Ferme du Sud"
-                        className="pl-11"
+                        className="pl-9 h-10 sm:h-11 text-sm"
                         value={formData.nomEntite}
                         onChange={(e) =>
                           handleInputChange("nomEntite", e.target.value)
@@ -255,18 +255,18 @@ export default function FournisseurForm({
 
                   {/* Localisation Entité */}
                   <div className="flex flex-col">
-                    <label className="text-[11px] font-bold text-label ml-1 mb-1.5">
-                      Localisation
+                    <label className="text-[10px] sm:text-[11px] font-bold text-label ml-1 mb-1.5">
+                      Localisation <span className="text-red-500">*</span>
                     </label>
                     <div className="relative flex items-center">
                       <MapPin
-                        className="absolute left-3.5 text-input-element/60 pointer-events-none"
-                        size={18}
+                        className="absolute left-3 text-input-element/60 pointer-events-none"
+                        size={16}
                       />
                       <Input
                         type="text"
                         placeholder="Commune, Région"
-                        className="pl-11"
+                        className="pl-9 h-10 sm:h-11 text-sm"
                         value={formData.localisationEntite}
                         onChange={(e) =>
                           handleInputChange(
@@ -281,18 +281,18 @@ export default function FournisseurForm({
 
                   {/* Contact Exploitation */}
                   <div className="flex flex-col">
-                    <label className="text-[11px] font-bold text-label ml-1 mb-1.5">
-                      Contact exploitation
+                    <label className="text-[10px] sm:text-[11px] font-bold text-label ml-1 mb-1.5">
+                      Contact exploitation <span className="text-red-500">*</span>
                     </label>
                     <div className="relative flex items-center">
                       <Phone
-                        className="absolute left-3.5 text-input-element/60 pointer-events-none"
-                        size={18}
+                        className="absolute left-3 text-input-element/60 pointer-events-none"
+                        size={16}
                       />
                       <Input
                         type="text"
                         placeholder="034 xx xxx xx"
-                        className="pl-11"
+                        className="pl-9 h-10 sm:h-11 text-sm"
                         aria-invalid={!isContactExploitationValid}
                         maxLength={13}
                         value={formData.contactExploitation}
@@ -306,26 +306,26 @@ export default function FournisseurForm({
                       />
                     </div>
                     {!isContactExploitationValid && (
-                      <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
-                        <AlertTriangle size={11} /> Requis : 10 chiffres.
+                      <p className="text-red-500 text-[8px] sm:text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                        <AlertTriangle size={10} /> Requis : 10 chiffres.
                       </p>
                     )}
                   </div>
 
                   {/* Email Contact */}
                   <div className="flex flex-col">
-                    <label className="text-[11px] font-bold text-label ml-1 mb-1.5">
-                      E-mail contact
+                    <label className="text-[10px] sm:text-[11px] font-bold text-label ml-1 mb-1.5">
+                      E-mail contact <span className="text-red-500">*</span>
                     </label>
                     <div className="relative flex items-center">
                       <Mail
-                        className="absolute left-3.5 text-input-element/60 pointer-events-none"
-                        size={18}
+                        className="absolute left-3 text-input-element/60 pointer-events-none"
+                        size={16}
                       />
                       <Input
                         type="email"
                         placeholder="ferme@exemple.mg"
-                        className="pl-11"
+                        className="pl-9 h-10 sm:h-11 text-sm"
                         aria-invalid={!isEmailContactValid}
                         value={formData.emailContact}
                         onChange={(e) =>
@@ -335,26 +335,26 @@ export default function FournisseurForm({
                       />
                     </div>
                     {!isEmailContactValid && (
-                      <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
-                        <AlertTriangle size={11} /> E-mail invalide.
+                      <p className="text-red-500 text-[8px] sm:text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                        <AlertTriangle size={10} /> E-mail invalide.
                       </p>
                     )}
                   </div>
 
                   {/* NIF */}
                   <div className="flex flex-col">
-                    <label className="text-[11px] font-bold text-label ml-1 mb-1.5">
-                      NIF
+                    <label className="text-[10px] sm:text-[11px] font-bold text-label ml-1 mb-1.5">
+                      NIF <span className="text-red-500">*</span>
                     </label>
                     <div className="relative flex items-center">
                       <FileText
-                        className="absolute left-3.5 text-input-element/60 pointer-events-none"
-                        size={18}
+                        className="absolute left-3 text-input-element/60 pointer-events-none"
+                        size={16}
                       />
                       <Input
                         type="text"
                         placeholder="10 chiffres"
-                        className="pl-11"
+                        className="pl-9 h-10 sm:h-11 text-sm"
                         aria-invalid={!isNifValid}
                         maxLength={10}
                         value={formData.nif}
@@ -365,26 +365,26 @@ export default function FournisseurForm({
                       />
                     </div>
                     {!isNifValid && (
-                      <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
-                        <AlertTriangle size={11} /> Requis : 10 chiffres.
+                      <p className="text-red-500 text-[8px] sm:text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                        <AlertTriangle size={10} /> Requis : 10 chiffres.
                       </p>
                     )}
                   </div>
 
                   {/* STAT */}
                   <div className="flex flex-col">
-                    <label className="text-[11px] font-bold text-label ml-1 mb-1.5">
-                      STAT
+                    <label className="text-[10px] sm:text-[11px] font-bold text-label ml-1 mb-1.5">
+                      STAT <span className="text-red-500">*</span>
                     </label>
                     <div className="relative flex items-center">
                       <FileText
-                        className="absolute left-3.5 text-input-element/60 pointer-events-none"
-                        size={18}
+                        className="absolute left-3 text-input-element/60 pointer-events-none"
+                        size={16}
                       />
                       <Input
                         type="text"
                         placeholder="Stats ID"
-                        className="pl-11"
+                        className="pl-9 h-10 sm:h-11 text-sm"
                         aria-invalid={!isStatValid}
                         value={formData.stat}
                         onChange={(e) =>
@@ -394,9 +394,8 @@ export default function FournisseurForm({
                       />
                     </div>
                     {!isStatValid && (
-                      <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
-                        <AlertTriangle size={11} /> Identifiant trop court (min.
-                        5).
+                      <p className="text-red-500 text-[8px] sm:text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                        <AlertTriangle size={10} /> Identifiant trop court (min. 5).
                       </p>
                     )}
                   </div>
@@ -405,24 +404,24 @@ export default function FournisseurForm({
 
               {/* SECTION RESPONSABLE ENTREPRISE */}
               <div className="space-y-3">
-                <h3 className="text-[10px] font-bold text-label uppercase tracking-widest border-b border-separator/10 pb-1">
+                <h3 className="text-[9px] sm:text-[10px] font-bold text-label uppercase tracking-widest border-b border-separator/10 pb-1">
                   Responsable
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {/* Nom complet responsable */}
                   <div className="flex flex-col">
-                    <label className="text-[11px] font-bold text-label ml-1 mb-1.5">
-                      Nom complet
+                    <label className="text-[10px] sm:text-[11px] font-bold text-label ml-1 mb-1.5">
+                      Nom complet <span className="text-red-500">*</span>
                     </label>
                     <div className="relative flex items-center">
                       <User
-                        className="absolute left-3.5 text-input-element/60 pointer-events-none"
-                        size={18}
+                        className="absolute left-3 text-input-element/60 pointer-events-none"
+                        size={16}
                       />
                       <Input
                         type="text"
                         placeholder="Gérant"
-                        className="pl-11"
+                        className="pl-9 h-10 sm:h-11 text-sm"
                         value={formData.nomResponsable}
                         onChange={(e) =>
                           handleInputChange("nomResponsable", e.target.value)
@@ -434,18 +433,18 @@ export default function FournisseurForm({
 
                   {/* Téléphone direct responsable */}
                   <div className="flex flex-col">
-                    <label className="text-[11px] font-bold text-label ml-1 mb-1.5">
-                      Téléphone direct
+                    <label className="text-[10px] sm:text-[11px] font-bold text-label ml-1 mb-1.5">
+                      Téléphone direct <span className="text-red-500">*</span>
                     </label>
                     <div className="relative flex items-center">
                       <Phone
-                        className="absolute left-3.5 text-input-element/60 pointer-events-none"
-                        size={18}
+                        className="absolute left-3 text-input-element/60 pointer-events-none"
+                        size={16}
                       />
                       <Input
                         type="text"
                         placeholder="03x xx xxx xx"
-                        className="pl-11"
+                        className="pl-9 h-10 sm:h-11 text-sm"
                         aria-invalid={!isTelephoneResponsableValid}
                         maxLength={13}
                         value={formData.telephoneResponsable}
@@ -459,26 +458,26 @@ export default function FournisseurForm({
                       />
                     </div>
                     {!isTelephoneResponsableValid && (
-                      <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
-                        <AlertTriangle size={11} /> Requis : 10 chiffres.
+                      <p className="text-red-500 text-[8px] sm:text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                        <AlertTriangle size={10} /> Requis : 10 chiffres.
                       </p>
                     )}
                   </div>
 
                   {/* CIN responsable */}
                   <div className="flex flex-col">
-                    <label className="text-[11px] font-bold text-label ml-1 mb-1.5">
-                      Numéro CIN
+                    <label className="text-[10px] sm:text-[11px] font-bold text-label ml-1 mb-1.5">
+                      Numéro CIN <span className="text-red-500">*</span>
                     </label>
                     <div className="relative flex items-center">
                       <CreditCard
-                        className="absolute left-3.5 text-input-element/60 pointer-events-none"
-                        size={18}
+                        className="absolute left-3 text-input-element/60 pointer-events-none"
+                        size={16}
                       />
                       <Input
                         type="text"
                         placeholder="101 000 000 000"
-                        className="pl-11"
+                        className="pl-9 h-10 sm:h-11 text-sm"
                         aria-invalid={!isCinResponsableValid}
                         maxLength={15}
                         value={formData.cinResponsable}
@@ -492,9 +491,8 @@ export default function FournisseurForm({
                       />
                     </div>
                     {!isCinResponsableValid && (
-                      <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
-                        <AlertTriangle size={11} /> Requis : 12 chiffres (se
-                        terminant par 1 ou 2).
+                      <p className="text-red-500 text-[8px] sm:text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                        <AlertTriangle size={10} /> Requis : 12 chiffres.
                       </p>
                     )}
                   </div>
@@ -503,23 +501,23 @@ export default function FournisseurForm({
             </div>
           )}
 
-          {/* --- VUE PARTICULIER (2 Colonnes) --- */}
+          {/* --- VUE PARTICULIER --- */}
           {!isEntreprise && (
-            <div className="max-w-2xl mx-auto space-y-5 animate-in slide-in-from-bottom-2 duration-300">
+            <div className="max-w-2xl mx-auto space-y-4 sm:space-y-5 animate-in slide-in-from-bottom-2 duration-300">
               {/* Nom complet particulier */}
               <div className="flex flex-col">
-                <label className="text-[11px] font-bold text-label ml-1 mb-1.5">
-                  Nom et prénom(s)
+                <label className="text-[10px] sm:text-[11px] font-bold text-label ml-1 mb-1.5">
+                  Nom et prénom(s) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative flex items-center">
                   <User
-                    className="absolute left-3.5 text-input-element/60 pointer-events-none"
-                    size={18}
+                    className="absolute left-3 text-input-element/60 pointer-events-none"
+                    size={16}
                   />
                   <Input
                     type="text"
                     placeholder="Votre nom complet"
-                    className="pl-11 h-11"
+                    className="pl-9 h-10 sm:h-11 text-sm"
                     value={formData.nomParticulier}
                     onChange={(e) =>
                       handleInputChange("nomParticulier", e.target.value)
@@ -529,21 +527,21 @@ export default function FournisseurForm({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {/* Téléphone particulier */}
                 <div className="flex flex-col">
-                  <label className="text-[11px] font-bold text-label ml-1 mb-1.5">
-                    Numéro de téléphone
+                  <label className="text-[10px] sm:text-[11px] font-bold text-label ml-1 mb-1.5">
+                    Numéro de téléphone <span className="text-red-500">*</span>
                   </label>
                   <div className="relative flex items-center">
                     <Phone
-                      className="absolute left-3.5 text-input-element/60 pointer-events-none"
-                      size={18}
+                      className="absolute left-3 text-input-element/60 pointer-events-none"
+                      size={16}
                     />
                     <Input
                       type="text"
                       placeholder="03x xx xxx xx"
-                      className="pl-11 h-11"
+                      className="pl-9 h-10 sm:h-11 text-sm"
                       aria-invalid={!isTelephoneParticulierValid}
                       maxLength={13}
                       value={formData.telephoneParticulier}
@@ -557,26 +555,26 @@ export default function FournisseurForm({
                     />
                   </div>
                   {!isTelephoneParticulierValid && (
-                    <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
-                      <AlertTriangle size={11} /> Requis : 10 chiffres.
+                    <p className="text-red-500 text-[8px] sm:text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                      <AlertTriangle size={10} /> Requis : 10 chiffres.
                     </p>
                   )}
                 </div>
 
                 {/* CIN particulier */}
                 <div className="flex flex-col">
-                  <label className="text-[11px] font-bold text-label ml-1 mb-1.5">
-                    Numéro CIN
+                  <label className="text-[10px] sm:text-[11px] font-bold text-label ml-1 mb-1.5">
+                    Numéro CIN <span className="text-red-500">*</span>
                   </label>
                   <div className="relative flex items-center">
                     <CreditCard
-                      className="absolute left-3.5 text-input-element/60 pointer-events-none"
-                      size={18}
+                      className="absolute left-3 text-input-element/60 pointer-events-none"
+                      size={16}
                     />
                     <Input
                       type="text"
                       placeholder="101 000 000 000"
-                      className="pl-11 h-11"
+                      className="pl-9 h-10 sm:h-11 text-sm"
                       aria-invalid={!isCinParticulierValid}
                       maxLength={15}
                       value={formData.cinParticulier}
@@ -590,9 +588,8 @@ export default function FournisseurForm({
                     />
                   </div>
                   {!isCinParticulierValid && (
-                    <p className="text-red-500 text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
-                      <AlertTriangle size={11} /> Requis : 12 chiffres (se
-                      terminant par 1 ou 2).
+                    <p className="text-red-500 text-[8px] sm:text-[9px] font-semibold mt-1 ml-1 flex items-center gap-1 animate-in fade-in">
+                      <AlertTriangle size={10} /> Requis : 12 chiffres.
                     </p>
                   )}
                 </div>
@@ -600,18 +597,18 @@ export default function FournisseurForm({
 
               {/* Localisation particulier */}
               <div className="flex flex-col">
-                <label className="text-[11px] font-bold text-label ml-1 mb-1.5">
-                  Adresse postale / Localisation
+                <label className="text-[10px] sm:text-[11px] font-bold text-label ml-1 mb-1.5">
+                  Adresse postale / Localisation <span className="text-red-500">*</span>
                 </label>
                 <div className="relative flex items-center">
                   <MapPin
-                    className="absolute left-3.5 text-input-element/60 pointer-events-none"
-                    size={18}
+                    className="absolute left-3 text-input-element/60 pointer-events-none"
+                    size={16}
                   />
                   <Input
                     type="text"
                     placeholder="Ville, Quartier, Lot"
-                    className="pl-11 h-11"
+                    className="pl-9 h-10 sm:h-11 text-sm"
                     value={formData.localisationParticulier}
                     onChange={(e) =>
                       handleInputChange(
@@ -626,15 +623,15 @@ export default function FournisseurForm({
             </div>
           )}
 
-          {/* SECTION PRODUCTION (Commune aux deux, avec Checkbox Shadcn) */}
-          <div className="flex items-center justify-between bg-neutral-50 p-3 rounded-xl border border-separator/10">
-            <div className="flex items-center space-x-2 ml-2 select-none">
-              <Tractor size={14} className="text-label" />
-              <span className="text-[10px] font-bold text-label uppercase">
+          {/* SECTION PRODUCTION - Responsive */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-neutral-50 p-3 sm:p-4 rounded-xl border border-separator/10">
+            <div className="flex items-center justify-center sm:justify-start space-x-2 ml-0 sm:ml-2 select-none">
+              <Tractor size={14} />
+              <span className="text-[9px] sm:text-[10px] font-bold text-label uppercase">
                 Type de production :
               </span>
             </div>
-            <div className="flex gap-6 mr-2">
+            <div className="flex flex-wrap justify-center sm:justify-end gap-3 sm:gap-6">
               {["Végétale", "Elevage", "Rente"].map((item) => (
                 <div key={item} className="flex items-center space-x-2 group">
                   <Checkbox
@@ -646,7 +643,7 @@ export default function FournisseurForm({
                   />
                   <label
                     htmlFor={`prod-${item}`}
-                    className="text-xs font-bold text-neutral-700 cursor-pointer group-hover:text-primary transition-colors select-none"
+                    className="text-[11px] sm:text-xs font-bold text-neutral-700 cursor-pointer group-hover:text-primary transition-colors select-none"
                   >
                     {item}
                   </label>
@@ -655,23 +652,23 @@ export default function FournisseurForm({
             </div>
           </div>
 
-          {/* NAVIGATION */}
-          <div className="flex items-center justify-between pt-4 border-t border-separator/10">
+          {/* NAVIGATION - Responsive */}
+          <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-4 border-t border-separator/10">
             <button
               type="button"
               onClick={onBack}
-              className="px-8 py-2.5 rounded-xl border border-separator/30 text-sm font-bold text-label hover:bg-neutral-50 transition-all flex items-center space-x-2 cursor-pointer"
+              className="w-full sm:w-auto px-6 sm:px-8 py-2.5 rounded-xl border border-separator/30 text-sm font-bold text-label hover:bg-neutral-50 transition-all flex items-center justify-center space-x-2 cursor-pointer"
             >
-              <ChevronLeft size={18} />
+              <ChevronLeft size={16} />
               <span>Précédent</span>
             </button>
             <button
               type="submit"
               disabled={hasErrors}
-              className="btn-primary px-10 py-2.5 text-xs flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="btn-primary w-full sm:w-auto px-6 sm:px-10 py-2.5 text-xs sm:text-sm flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               <span>Suivant</span>
-              <ChevronRight size={16} />
+              <ChevronRight size={14} />
             </button>
           </div>
         </form>

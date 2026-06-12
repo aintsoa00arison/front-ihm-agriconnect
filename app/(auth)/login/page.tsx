@@ -15,11 +15,11 @@ function LoginContent() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-light-bg/10">
-      {/* Le secret est ici : key={mode} force React à détruire et recréer 
-        le formulaire proprement dès que l'URL change ou qu'on fait un retour arrière.
-      */}
-      <AuthForm key={mode} mode={mode} onSubmit={handleLogin} />
+    <div className="min-h-screen flex items-center justify-center bg-light-bg/10 px-4 sm:px-6 py-8 sm:py-12">
+      {/* Container responsive avec gestion de la largeur */}
+      <div className="w-full max-w-[480px] mx-auto">
+        <AuthForm key={mode} mode={mode} onSubmit={handleLogin} />
+      </div>
     </div>
   );
 }
