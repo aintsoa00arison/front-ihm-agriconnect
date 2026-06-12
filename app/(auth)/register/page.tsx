@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { XCircle, Loader2, ArrowRight } from 'lucide-react';
+import { XCircle, Loader2, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 // Importation des types et du store d'inscription
 import { RegisterStoreData } from './types'; 
@@ -111,83 +111,64 @@ export default function RegisterPage() {
   // --- RENDU : CHARGEMENT OU FEEDBACKS INTERMÉDIAIRES ---
   if (isSubmitting || submitStatus !== 'idle') {
     return (
-      <div className="min-h-screen w-full bg-neutral-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-xl bg-white rounded-[24px] shadow-xl border border-separator/10 p-8 text-center space-y-6 animate-in fade-in zoom-in-95 duration-300">
+      <div className="min-h-screen w-full bg-neutral-50 flex items-center justify-center px-4 py-8 sm:px-6">
+        <div className="w-full max-w-xl bg-white rounded-[20px] sm:rounded-[24px] shadow-xl border border-separator/10 p-4 sm:p-6 md:p-8 text-center space-y-4 sm:space-y-6 animate-in fade-in zoom-in-95 duration-300">
           
-          {/* ÉCRAN A : CHARGEMENT */}
+          {/* ÉCRAN A : CHARGEMENT - Responsive */}
           {isSubmitting && (
-            <div className="space-y-4 py-8 flex flex-col items-center">
-              <Loader2 size={50} className="text-primary animate-spin" />
-              <h3 className="text-lg font-bold text-label">Création de votre compte en cours...</h3>
-              <p className="text-xs text-input-element">Veuillez patienter pendant la configuration de votre profil OmniAgri.</p>
+            <div className="space-y-3 sm:space-y-4 py-6 sm:py-8 flex flex-col items-center">
+              <Loader2 size={40} className="sm:size-12 text-primary animate-spin" />
+              <h3 className="text-base sm:text-lg font-bold text-label">Création de votre compte en cours...</h3>
+              <p className="text-[11px] sm:text-xs text-input-element max-w-xs sm:max-w-sm">
+                Veuillez patienter pendant la configuration de votre profil. Cela peut prendre quelques instants en fonction de votre connexion et du serveur. Merci de votre compréhension.
+              </p>
             </div>
           )}
 
-          {/* ÉCRAN B : INCRIPTION RÉUSSIE */}
+          {/* ÉCRAN B : INSCRIPTION RÉUSSIE - Responsive */}
           {submitStatus === 'success' && (
-            <div className="space-y-6 py-4 flex flex-col items-center">
-              <div className="flex items-center justify-center w-20 h-20 bg-green-50 rounded-full border border-green-100">
-                <svg 
-                  className="w-12 h-12 text-green-500" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2.5" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                >
-                  <circle 
-                    cx="12" 
-                    cy="12" 
-                    r="10" 
-                    className="animate-[draw_0.4s_ease-out_forwards]"
-                    style={{ strokeDasharray: 63, strokeDashoffset: 63 }}
-                  />
-                  <path 
-                    d="m9 12 2 2 4-4" 
-                    className="animate-[draw_0.3s_ease-out_0.3s_forwards]"
-                    style={{ strokeDasharray: 12, strokeDashoffset: 12 }}
-                  />
-                </svg>
+            <div className="space-y-4 sm:space-y-6 py-4 flex flex-col items-center">
+              <div className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-green-50 rounded-full border border-green-100">
+                <CheckCircle2 size={32} className="sm:size-10 text-green-500" strokeWidth={1.5} />
               </div>
 
-              <style jsx global>{`
-                @keyframes draw { to { stroke-dashoffset: 0; } }
-              `}</style>
-
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-neutral-800">Inscription réussie !</h3>
-                <p className="text-sm font-medium text-neutral-600 px-4 leading-relaxed">
+              <div className="space-y-1 sm:space-y-2">
+                <h3 className="text-xl sm:text-2xl font-bold text-neutral-800">Inscription réussie !</h3>
+                <p className="text-xs sm:text-sm font-medium text-neutral-600 px-4 leading-relaxed">
                   Votre compte de <span className="font-bold text-primary">{role}</span> a été configuré avec succès. <br />
-                  Utilisez l'adresse email <span className="font-bold underline text-neutral-800">{registeredEmail || "renseignée"}</span> pour vous connecter.
+                  Utilisez l'adresse email{" "}
+                  <span className="font-bold underline text-neutral-800 break-words">
+                    {registeredEmail || "renseignée"}
+                  </span>{" "}
+                  pour vous connecter.
                 </p>
               </div>
 
               <button 
                 onClick={() => router.push('/login')}
-                className="btn-primary px-8 h-12 text-sm font-bold flex items-center justify-center gap-2 rounded-xl shadow-md w-full max-w-xs cursor-pointer"
+                className="btn-primary px-6 sm:px-8 h-10 sm:h-12 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 rounded-xl shadow-md w-full max-w-xs cursor-pointer"
               >
                 <span>Accéder à la connexion</span>
-                <ArrowRight size={16} />
+                <ArrowRight size={14} className="sm:size-16" />
               </button>
             </div>
           )}
 
-          {/* ÉCRAN C : ERREUR API */}
+          {/* ÉCRAN C : ERREUR API - Responsive */}
           {submitStatus === 'error' && (
-            <div className="space-y-6 py-4 flex flex-col items-center">
-              <div className="p-3 bg-red-50 rounded-full text-red-500 border border-red-100">
-                <XCircle size={56} className="stroke-[1.5]" />
+            <div className="space-y-4 sm:space-y-6 py-4 flex flex-col items-center">
+              <div className="p-2 sm:p-3 bg-red-50 rounded-full text-red-500 border border-red-100">
+                <XCircle size={40} className="sm:size-14 stroke-[1.5]" />
               </div>
-              <div className="space-y-2">
-                <h3 className="text-xl font-bold text-neutral-800">Impossible de finaliser l'inscription</h3>
-                <p className="text-xs font-semibold text-red-600 bg-red-50 border border-red-100 p-3 rounded-xl max-w-md mx-auto leading-relaxed">
+              <div className="space-y-1 sm:space-y-2">
+                <h3 className="text-lg sm:text-xl font-bold text-neutral-800">Impossible de finaliser l'inscription</h3>
+                <p className="text-[11px] sm:text-xs font-semibold text-red-600 bg-red-50 border border-red-100 p-2 sm:p-3 rounded-xl max-w-md mx-auto leading-relaxed break-words">
                   {apiMessage}
                 </p>
               </div>
               <button 
                 onClick={() => setSubmitStatus('idle')}
-                className="px-6 h-11 text-xs font-bold border border-separator/30 text-label rounded-xl hover:bg-neutral-50 transition-colors cursor-pointer"
+                className="px-5 sm:px-6 h-10 sm:h-11 text-[11px] sm:text-xs font-bold border border-separator/30 text-label rounded-xl hover:bg-neutral-50 transition-colors cursor-pointer"
               >
                 Retourner au formulaire
               </button>
@@ -201,7 +182,7 @@ export default function RegisterPage() {
 
   // --- RENDU STANDARD DU TUNNEL DES ÉTAPES ---
   return (
-    <div className="min-h-screen w-full bg-neutral-50 flex items-center justify-center p-4">
+    <div className="min-h-screen w-full bg-neutral-50 flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
       
       {/* ÉTAPE 1 : Sélection du type de profil */}
       {step === 1 && (
