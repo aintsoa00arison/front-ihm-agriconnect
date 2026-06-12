@@ -5,7 +5,7 @@ import { Store, Plus, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AdForm from "@/components/annonces/AddForm"; 
 import CataloguePage from "@/components/catalogues/CataloguePage"; 
-function CollecteurContent() {
+function FournisseurContent() {
   const [isCreatingNew, setIsCreatingNew] = useState<boolean>(false);
 
   // Écoute sécurisée des changements de l'URL
@@ -25,7 +25,7 @@ function CollecteurContent() {
 
   const handleCancel = () => {
     if (typeof window !== "undefined") {
-      window.history.pushState({}, "", "/c");
+      window.history.pushState({}, "", "/f");
       setIsCreatingNew(false);
     }
   };
@@ -37,14 +37,14 @@ function CollecteurContent() {
       // Temporisation pour laisser au toast d'AdForm le temps de s'afficher
       await new Promise((resolve) => setTimeout(resolve, 2000));
       
-      window.history.pushState({}, "", "/c");
+      window.history.pushState({}, "", "/f");
       setIsCreatingNew(false);
     }
   };
 
   const triggerNewForm = () => {
     if (typeof window !== "undefined") {
-      window.history.pushState({}, "", "/c?action=new");
+      window.history.pushState({}, "", "/f?action=new");
       setIsCreatingNew(true);
     }
   };
@@ -68,8 +68,8 @@ function CollecteurContent() {
   return (
     <>
       {hasProducts ? (
-        /* 👈 Appele du fichier catalogue global pour le profil collecteur */
-        <CataloguePage userRole="collecteur" />
+        /* 👈 Appele du fichier catalogue global pour le profil fournisseur */
+        <CataloguePage userRole="fournisseur" />
       ) : (
         /* Message d'état vide si aucune annonce ou demande n'est disponible */
         <div className="space-y-6 p-4 md:p-6 lg:p-8 animate-in fade-in duration-300">
@@ -107,14 +107,14 @@ function CollecteurContent() {
   );
 }
 
-export default function CollecteurPage() {
+export default function FournisseurPage() {
   return (
     <Suspense fallback={
       <div className="flex h-64 w-full items-center justify-center text-slate-400 font-medium animate-pulse">
       
       </div>
     }>
-      <CollecteurContent />
+      <FournisseurContent />
     </Suspense>
   );
 }

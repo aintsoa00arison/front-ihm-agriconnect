@@ -260,9 +260,7 @@ export default function AnnuairePage({ type, onBack }: AnnuairePageProps) {
                         </div>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-md text-primary-foreground bg-primary uppercase tracking-wider">
-                      {user.type}
-                    </span>
+              
                   </div>
                   <p className="text-xs text-muted-foreground font-medium leading-relaxed line-clamp-2">{user.description}</p>
                 </div>

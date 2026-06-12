@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import ProfileHeader from "./ProfileHeader";
 import ProfileReviews from "./ProfileReviews"; 
 import EditCollectorProfileForm from "./EditCollectorProfileForm";
@@ -16,7 +17,12 @@ interface ProfileViewProps {
 }
 
 export default function ProfileView({ slug }: ProfileViewProps) {
-  const [activeTab, setActiveTab] = useState("annonces");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // Récupérer l'onglet depuis l'URL ou utiliser "annonces" par défaut
+  const tabFromUrl = searchParams?.get("tab") || "annonces";
+  const [activeTab, setActiveTabState] = useState(tabFromUrl);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editingAd, setEditingAd] = useState<any | null>(null);
@@ -33,6 +39,18 @@ export default function ProfileView({ slug }: ProfileViewProps) {
     }
     fetchProfileData();
   }, [slug]);
+
+  // Synchroniser l'état avec l'URL quand elle change
+  useEffect(() => {
+    const newTab = searchParams?.get("tab") || "annonces";
+    setActiveTabState(newTab);
+  }, [searchParams]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTabState(value);
+    // Mettre à jour l'URL sans recharger la page
+    router.push(`?tab=${value}`, { scroll: false });
+  };
 
   const showGlobalNotification = (msg: string, type: "success" | "error" = "success") => {
     setGlobalToast({ message: msg, type });
@@ -81,7 +99,7 @@ export default function ProfileView({ slug }: ProfileViewProps) {
           <ProfileHeader
             user={profile}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             onEditClick={() => setIsEditing(true)}
           />
           

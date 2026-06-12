@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
-  MoreVertical, Edit2, Trash2, X, Star, Check, Ban, AlertTriangle, Scale, MapPin, ChevronDown, ChevronUp, Bell
+  MoreVertical, Edit2, Trash2, X, Star, Check, AlertTriangle, Scale, MapPin, ChevronDown, ChevronUp, Bell, SlidersHorizontal, Calendar, ArrowUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface InterestedUser {
   id: string;
@@ -24,6 +25,7 @@ interface AdItem {
   mediaUrl: string;
   price: string;
   timeAgo: string;
+  date: Date;
   interestedCount: number;
   interestedUsers: InterestedUser[];
 }
@@ -42,6 +44,12 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
   // --- Données de l'annonce ---
   const [ads, setAds] = useState<AdItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterType, setFilterType] = useState<string>("all");
+  const [filterDate, setFilterDate] = useState<string>("all");
+  const [showFilters, setShowFilters] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Simulation de chargement initial
   useEffect(() => {
@@ -53,22 +61,131 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
           productionType: "Végétale",
           quantity: "3 tonnes",
           location: "Antananarivo, Madagascar",
-          description: "Cultivé sous le soleil de Midi sur des terres préservées, ce blé offre des arômes de noisette et une digestibilité optimale. Naturellement riche en minéraux et faible en gluten, il est l'allié parfait d'une cuisine saine et savoureuse.",
+          description: "Cultivé sous le soleil de Midi sur des terres préservées, ce blé offre des arômes de noisette et une digestibilité optimale.",
           mediaUrl: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=800",
           price: "3000 MGA/kg",
           timeAgo: "il y a 2h",
+          date: new Date(Date.now() - 2 * 60 * 60 * 1000),
           interestedCount: 250,
           interestedUsers: [
             { id: "u_1", name: "John Doe", role: "Collecteur - Fianarantsoa", rating: 5.0, avatar: "https://api.dicebear.com/9.x/big-ears-neutral/svg?seed=John" },
             { id: "u_2", name: "Jane Cooper", role: "Producteur - Elevage", rating: 4.2, avatar: "https://api.dicebear.com/9.x/big-ears-neutral/svg?seed=Jane" },
             { id: "u_3", name: "Jenny Wilson", role: "Grossiste - Rente", rating: 4.5, avatar: "https://api.dicebear.com/9.x/big-ears-neutral/svg?seed=Jenny" },
           ]
+        },
+        {
+          id: "ad_2",
+          productName: "Maïs Jaune Sec",
+          productionType: "Rente",
+          quantity: "10 tonnes",
+          location: "Fianarantsoa, Madagascar",
+          description: "Maïs de qualité supérieure, idéal pour l'alimentation animale.",
+          mediaUrl: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=800&q=80",
+          price: "1400 MGA/kg",
+          timeAgo: "il y a 5h",
+          date: new Date(Date.now() - 5 * 60 * 60 * 1000),
+          interestedCount: 120,
+          interestedUsers: [
+            { id: "u_4", name: "Paul Raso", role: "Collecteur - Mahajanga", rating: 4.0, avatar: "https://api.dicebear.com/9.x/big-ears-neutral/svg?seed=Paul" },
+          ]
+        },
+        {
+          id: "ad_3",
+          productName: "Pommes de terre",
+          productionType: "Végétale",
+          quantity: "8 tonnes",
+          location: "Antsirabe, Madagascar",
+          description: "Pommes de terre variété Mona Lisa, calibre 40-60mm.",
+          mediaUrl: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=800&q=80",
+          price: "3500 MGA/kg",
+          timeAgo: "il y a 2 jours",
+          date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+          interestedCount: 45,
+          interestedUsers: []
         }
       ]);
       setLoading(false);
     }, 1000);
     return () => clearTimeout(timer);
   }, []);
+
+  // Écouter la recherche depuis le layout
+  useEffect(() => {
+    const handleSearchEvent = (event: CustomEvent) => {
+      setSearchQuery(event.detail);
+    };
+
+    window.addEventListener("profileAdsSearch", handleSearchEvent as EventListener);
+    
+    return () => {
+      window.removeEventListener("profileAdsSearch", handleSearchEvent as EventListener);
+    };
+  }, []);
+
+  // Détecter le scroll pour afficher le bouton
+  useEffect(() => {
+    const handleScroll = () => {
+      if (scrollRef.current) {
+        setShowScrollButton(scrollRef.current.scrollTop > 300);
+      }
+    };
+
+    const scrollElement = scrollRef.current;
+    if (scrollElement) {
+      scrollElement.addEventListener('scroll', handleScroll);
+      return () => scrollElement.removeEventListener('scroll', handleScroll);
+    }
+  }, [loading]);
+
+  const scrollToTop = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Fonction pour filtrer les annonces
+  const getFilteredAds = () => {
+    let filtered = [...ads];
+
+    // Filtre par recherche
+    if (searchQuery.trim() !== "") {
+      filtered = filtered.filter(ad => 
+        ad.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ad.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ad.location.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Filtre par type de production
+    if (filterType !== "all") {
+      filtered = filtered.filter(ad => ad.productionType === filterType);
+    }
+
+    // Filtre par date
+    if (filterDate !== "all") {
+      const now = new Date();
+      const days7 = 7 * 24 * 60 * 60 * 1000;
+      const days30 = 30 * 24 * 60 * 60 * 1000;
+
+      filtered = filtered.filter(ad => {
+        const diff = now.getTime() - ad.date.getTime();
+        switch (filterDate) {
+          case "today":
+            return ad.date.toDateString() === now.toDateString();
+          case "week":
+            return diff <= days7;
+          case "month":
+            return diff <= days30;
+          default:
+            return true;
+        }
+      });
+    }
+
+    return filtered;
+  };
+
+  const filteredAds = getFilteredAds();
 
   // --- États UI ---
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
@@ -97,7 +214,7 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
 
   const handleAcceptInterested = (user: InterestedUser, adName: string) => {
     showToast(
-      `Vous avez matché ou vous avez approuvé le profil de ${user.name} pour cette annonce. Vous pouvez commencer à discuter avec lui.`,
+      `Vous avez matché avec ${user.name} pour cette annonce. Vous pouvez commencer à discuter.`,
       "success"
     );
     if (selectedAdForInterested) {
@@ -132,6 +249,12 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
     }
   };
 
+  // Reset filters
+  const resetFilters = () => {
+    setFilterType("all");
+    setFilterDate("all");
+  };
+
   // --- Skeleton Loader ---
   if (loading) {
     return (
@@ -148,9 +271,9 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
   }
 
   return (
-    <div className="space-y-6 relative">
+    <div ref={scrollRef} className="space-y-6 relative overflow-y-auto h-full">
       
-      {/* Pop-ups / Toasts de notification (Maintenant en bas à droite) */}
+      {/* Pop-ups / Toasts de notification en bas à droite */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 w-full max-w-md pointer-events-none">
         {toasts.map((t) => (
           <div 
@@ -185,13 +308,94 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
         ))}
       </div>
 
+      {/* Barre de filtres */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="w-full p-4 flex items-center justify-between bg-slate-50/50 hover:bg-slate-50 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal size={16} className="text-[#2e7d32]" />
+            <span className="text-sm font-bold text-slate-700">Filtres</span>
+            {(filterType !== "all" || filterDate !== "all") && (
+              <span className="text-xs font-bold bg-[#2e7d32] text-white px-2 py-0.5 rounded-full">
+                {(filterType !== "all" ? 1 : 0) + (filterDate !== "all" ? 1 : 0)}
+              </span>
+            )}
+          </div>
+          <ChevronDown size={16} className={`text-slate-400 transition-transform ${showFilters ? "rotate-180" : ""}`} />
+        </button>
+
+        {showFilters && (
+          <div className="p-4 border-t border-slate-100 space-y-4 animate-in slide-in-from-top-2 duration-200">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Filtre par type */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Type de production</label>
+                <Select value={filterType} onValueChange={setFilterType}>
+                  <SelectTrigger className="h-10 border-slate-200 rounded-xl text-sm bg-slate-50/50">
+                    <SelectValue placeholder="Tous les types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les types</SelectItem>
+                    <SelectItem value="Végétale">Végétale</SelectItem>
+                    <SelectItem value="Élevage">Élevage</SelectItem>
+                    <SelectItem value="Rente">Rente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Filtre par date */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1">
+                  <Calendar size={12} /> Période
+                </label>
+                <Select value={filterDate} onValueChange={setFilterDate}>
+                  <SelectTrigger className="h-10 border-slate-200 rounded-xl text-sm bg-slate-50/50">
+                    <SelectValue placeholder="Toutes les périodes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les périodes</SelectItem>
+                    <SelectItem value="today">Aujourd'hui</SelectItem>
+                    <SelectItem value="week">Cette semaine</SelectItem>
+                    <SelectItem value="month">Ce mois</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Bouton réinitialiser */}
+            {(filterType !== "all" || filterDate !== "all") && (
+              <div className="flex justify-end">
+                <button
+                  onClick={resetFilters}
+                  className="text-xs font-bold text-[#2e7d32] hover:underline flex items-center gap-1"
+                >
+                  <X size={12} /> Réinitialiser les filtres
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Résultat du filtrage */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-slate-500">
+          <span className="font-bold text-slate-800">{filteredAds.length}</span> annonce{filteredAds.length !== 1 ? 's' : ''} trouvée{filteredAds.length !== 1 ? 's' : ''}
+          {searchQuery && ` pour "${searchQuery}"`}
+        </p>
+      </div>
+
       {/* Cartes d'annonces */}
-      {ads.length === 0 ? (
+      {filteredAds.length === 0 ? (
         <div className="text-center py-12 text-slate-400 font-medium bg-white rounded-2xl border border-dashed">
-          Aucune annonce trouvée.
+          {searchQuery 
+            ? `Aucune annonce ne correspond à votre recherche "${searchQuery}"`
+            : "Aucune annonce ne correspond à vos critères."}
         </div>
       ) : (
-        ads.map((ad) => {
+        filteredAds.map((ad) => {
           const isExpanded = !!expandedAdIds[ad.id];
           return (
             <div key={ad.id} className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
@@ -266,6 +470,7 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
         })
       )}
 
+      {/* Modale intéressés */}
       {selectedAdForInterested && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-40">
           <div className="bg-white rounded-3xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh]">
@@ -306,6 +511,7 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
         </div>
       )}
 
+      {/* Modale suppression */}
       {selectedAdForDelete && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-40">
           <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 text-center space-y-5 border border-slate-50">
@@ -320,6 +526,17 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Flèche de défilement vers le haut */}
+      {showScrollButton && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-24 right-6 z-50 p-3 bg-[#2e7d32] text-white rounded-full shadow-lg hover:bg-[#1b5e20] transition-all duration-300 animate-in fade-in zoom-in cursor-pointer"
+          aria-label="Remonter en haut"
+        >
+          <ArrowUp size={20} strokeWidth={2.5} />
+        </button>
       )}
     </div>
   );

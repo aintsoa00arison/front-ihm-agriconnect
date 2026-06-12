@@ -262,7 +262,7 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
   );
 
   return (
-    <div className="w-full max-w-6xl mx-auto pb-12 animate-in fade-in duration-300 relative">
+    <div className="w-full max-w-6xl mx-auto pb-12 p-6 animate-in fade-in duration-300 relative">
       
       {/* ================= CONTENEUR DES POP-UPS (EN BAS À DROITE) ================= */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 w-full max-w-md pointer-events-none">
