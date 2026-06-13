@@ -11,7 +11,7 @@ import { SearchIcon } from "lucide-react";
 
 function page() {
   return (
-    <div className="flex gap-5 h-full overflow-hidden p-1">
+    <div className="flex gap-5 h-full overflow-hidden p-4">
       <aside className="w-sm rounded-lg bg-white shadow-sm p-4 px-2 pr-0 flex flex-col min-h-0 shrink-0">
         <div className="mb-4 shrink-0 px-4">
           <h2 className="text-2xl font-semibold mb-4">Discussions</h2>
