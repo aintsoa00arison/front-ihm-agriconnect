@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "./ui/card";
 import { Textarea } from "./ui/textarea";
+import { Button } from "./ui/button";
 
 export default function BasicRating() {
   const [rating, setRating] = useState(0);
@@ -19,7 +20,7 @@ export default function BasicRating() {
   const ratingLabels = ["Mauvaise", "Correcte", "Bonne", "Très bonne", "Excellente"];
 
   return (
-    <Card >
+    <Card>
       <CardHeader>
         <CardTitle className="text-lg font-semibold">Note</CardTitle>
         <CardDescription className="text-muted-foreground">
@@ -83,10 +84,13 @@ export default function BasicRating() {
           </div>
         )}
 
-        <Textarea placeholder="Partagez le ressenti de votre expérience avec John Doe..." className="mt-4 border-border bg-neutral/50 resize-none" />
+        <Textarea
+          placeholder="Partagez le ressenti de votre expérience avec John Doe..."
+          className="mt-4 border-border bg-neutral/50 resize-none"
+        />
       </CardContent>
-      <CardFooter>
-
+      <CardFooter className="justify-end gap-2 border-t border-border">
+        <Button size="lg">Publier l&apos;avis</Button>
       </CardFooter>
     </Card>
   );

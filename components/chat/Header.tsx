@@ -38,7 +38,7 @@ function Header() {
               Evaluer le profil
             </DrawerTitle>
           </DrawerHeader>
-          <div className="p-4  no-scrollbar overflow-y-auto">
+          <div className="p-4 scrollbar-none overflow-y-auto">
             <div className='flex flex-col items-center mb-8'>
               <Image
                 src="/images/default-avatar.jpg"
