@@ -2,7 +2,11 @@
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from '../ui/drawer';
 import { Button } from '../ui/button';
 import { Star } from 'lucide-react';
+
 import Image from 'next/image';
+import StarAffichage from './Star';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import BasicRating from '../rating-group';
 
 function Header() {
   return (
@@ -28,17 +32,38 @@ function Header() {
             <Star /> Evaluer le profil
           </Button>
         </DrawerTrigger>
-        <DrawerContent className="border-l border-border">
+        <DrawerContent className="border-l border-border rounded-none">
           <DrawerHeader>
-            <DrawerTitle>Are you absolutely sure?</DrawerTitle>
-            <DrawerDescription>This action cannot be undone.</DrawerDescription>
+            <DrawerTitle className="text-xl font-semibold">
+              Evaluer le profil
+            </DrawerTitle>
           </DrawerHeader>
-          <DrawerFooter>
-            <Button>Submit</Button>
-            <DrawerClose>
-              <Button variant="outline">Cancel</Button>
-            </DrawerClose>
-          </DrawerFooter>
+          <div className="p-4  no-scrollbar overflow-y-auto">
+            <div className='flex flex-col items-center mb-8'>
+              <Image
+                src="/images/default-avatar.jpg"
+                alt="Avatar de John Doe"
+                width={100}
+                height={100}
+                className="rounded-full"
+              />
+              <p className="text-center mt-2 text-xl font-bold">John Doe</p>
+              <p className="text-center text-primary font-semibold mb-3">
+                Fournisseur
+              </p>
+              <StarAffichage rating={3.2} />
+            </div>
+
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Bio</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className='text-muted-foreground font-semibold'>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Et impedit deleniti eaque dolore veritatis ipsam debitis minima iste rerum? Porro, natus! Consequatur qui vel maiores vitae reiciendis iste sunt ipsum.</p>
+              </CardContent>
+            </Card>
+            <BasicRating />
+          </div>
         </DrawerContent>
       </Drawer>
     </header>
