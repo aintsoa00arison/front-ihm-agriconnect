@@ -286,3 +286,15 @@ body {
   }
 }
 
+/* globals.css */
+[data-sonner-toaster] [data-close-button] {
+  position: absolute !important;
+  right: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  left: auto !important;
+}
+
+[data-sonner-toaster] [data-content] {
+  padding-right: 32px !important;
+}

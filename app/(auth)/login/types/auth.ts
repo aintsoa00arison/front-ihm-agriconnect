@@ -1,11 +1,9 @@
 // types/auth.ts
-
 export interface AuthFormData {
   email: string;
   password?: string;
 }
 
-// Nouvelle interface pour la vérification du code
 export interface VerifyCodeData {
   email: string;
   code: string;
@@ -17,17 +15,20 @@ export interface AuthResponse {
   user?: {
     id: string;
     email: string;
-    role: "fournisseur" | "collecteur"; 
+    role: "fournisseur" | "collecteur";
   };
 }
-// Brouillon d'inscription conservé de manière sécurisée en RAM côté Front-End
+
 export interface RegisterDraft {
   email: string;
   password?: string;
-  code?: string; 
+  code?: string;
 }
-// Réponse classique pour les actions intermédiaires (envoi de mail, validation de code)
+
 export interface ActionResponse {
   success: boolean;
   message: string;
 }
+
+export type AuthView = "auth" | "forgot" | "reset";
+export type ToastType = "success" | "error" | "info";
