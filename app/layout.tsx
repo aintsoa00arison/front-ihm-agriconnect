@@ -2,7 +2,8 @@ import { Manrope, Geist } from "next/font/google";
 import "./globals.css";
 import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner-toaster";
+
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -43,12 +44,12 @@ export default function RootLayout({
               fontSize: "0.75rem",
               fontWeight: "600",
             },
+            className: "!pr-10", // Ajoute du padding à droite
             classNames: {
-              toast: "border shadow-xl",
+              toast: "border shadow-xl relative",
               success: "bg-[#e8f5e9] border-[#2e7d32]/30 text-[#1b5e20]",
               error: "bg-red-50 border-red-200 text-red-900",
               info: "bg-amber-50 border-amber-200 text-amber-900",
-              closeButton: "text-slate-400 hover:text-slate-600",
             },
           }}
         />
