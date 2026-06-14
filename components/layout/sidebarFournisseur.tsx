@@ -1,42 +1,21 @@
+// app/f/components/SidebarFournisseur.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Store, MessageCircle, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
+import LogoutModal from "./LogoutModal";
 
-export default function SidebarFournisseur() {
-  const [pathname, setPathname] = useState<string>("/f");
-  const [userSlug, setUserSlug] = useState<string>("");
-  const [mounted, setMounted] = useState(false);
+interface SidebarFournisseurProps {
+  userSlug: string;
+  userName: string;
+}
+
+export default function SidebarFournisseur({ userSlug, userName }: SidebarFournisseurProps) {
+  const pathname = usePathname();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    if (typeof window !== "undefined") {
-      setPathname(window.location.pathname);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    
-    try {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        const user = JSON.parse(storedUser);
-        if (user.name) {
-          const slug = user.name.toLowerCase().replace(/\s+/g, "-");
-          setUserSlug(slug);
-          return;
-        }
-      }
-      setUserSlug("brooklyn-simmons");
-    } catch (error) {
-      console.error("Erreur:", error);
-      setUserSlug("brooklyn-simmons");
-    }
-  }, [mounted]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -47,29 +26,8 @@ export default function SidebarFournisseur() {
   const navItems = [
     { label: "Catalogue", href: "/f", icon: Store, exact: true },
     { label: "Messages", href: "/f/messages", icon: MessageCircle, badgeCount: 3 },
-    { label: "Mon profil", href: `/f/profile/${userSlug || "brooklyn-simmons"}?tab=annonces`, icon: User },
+    { label: "Mon profil", href: `/f/profile/${userSlug}?tab=annonces`, icon: User },
   ];
-
-  if (!mounted) {
-    return (
-      <nav className="w-[292px] flex-shrink-0 bg-white border-r border-border shadow-sm flex flex-col pb-3 h-full overflow-y-auto">
-        <div className="px-4 py-4 mb-6 border-b border-border">
-          <div className="w-full h-12 bg-slate-100 rounded-lg animate-pulse" />
-        </div>
-        <div className="flex flex-col grow justify-between">
-          <div className="flex flex-col gap-1">
-            {["Catalogue", "Messages", "Mon profil"].map((_, i) => (
-              <div key={i} className="flex items-center pl-6 pr-2 py-4">
-                <div className="w-7 h-7 mr-4 bg-slate-100 rounded-full animate-pulse" />
-                <div className="h-4 w-20 bg-slate-100 rounded animate-pulse" />
-              </div>
-            ))}
-          </div>
-          <div className="h-12 bg-slate-100 rounded-none animate-pulse" />
-        </div>
-      </nav>
-    );
-  }
 
   return (
     <>
@@ -90,6 +48,7 @@ export default function SidebarFournisseur() {
               const isActive = item.exact 
                 ? pathname === item.href 
                 : pathname.startsWith(item.href.split('?')[0]);
+              
               return (
                 <a
                   key={item.href}
@@ -127,43 +86,17 @@ export default function SidebarFournisseur() {
             onClick={() => setShowLogoutModal(true)}
             className="text-destructive font-semibold hover:text-destructive hover:bg-destructive/10 w-full flex items-center justify-start py-6 rounded-none px-4"
           >
-            <LogOut className="mr-4" />
+            <LogOut className="mr-4" size={18} />
             Se déconnecter
           </Button>
         </div>
       </nav>
 
-      {/* Modal de confirmation de déconnexion */}
-      {showLogoutModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 text-center space-y-5 border border-slate-100">
-            <div className="mx-auto size-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center">
-              <LogOut size={32} />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-lg font-bold text-slate-900">Se déconnecter ?</h3>
-              <p className="text-xs font-semibold text-slate-500 leading-relaxed px-4">
-                Êtes-vous sûr de vouloir vous déconnecter ? Vous devrez vous reconnecter pour accéder à votre compte.
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowLogoutModal(false)} 
-                className="flex-1 rounded-xl font-bold border-slate-200 text-slate-600 hover:bg-slate-50"
-              >
-                Annuler
-              </Button>
-              <Button 
-                onClick={handleLogout} 
-                className="flex-1 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white"
-              >
-                Se déconnecter
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <LogoutModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+      />
     </>
   );
 }
