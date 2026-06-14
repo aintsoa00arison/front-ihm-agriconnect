@@ -98,7 +98,7 @@ export default function CollecteurPage() {
   return (
     <Suspense fallback={
       <div className="flex h-64 w-full items-center justify-center text-slate-400 font-medium animate-pulse">
-        Chargement de l'espace catalogue...
+     
       </div>
     }>
       <CollecteurContent />
