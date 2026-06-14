@@ -20,7 +20,7 @@ export default function QuantityInput({ value, unit, onValueChange, onUnitChange
       <label className="text-sm font-bold text-slate-800">Quantité</label>
       <div className="flex gap-2">
         <Input
-          type="text"
+          type="number"
           value={value}
           onChange={(e) => onValueChange(e.target.value)}
           placeholder="Ex: 3"
