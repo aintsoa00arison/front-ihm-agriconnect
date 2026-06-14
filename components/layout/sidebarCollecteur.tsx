@@ -80,7 +80,7 @@ export default function SidebarCollecteur() {
 
   return (
     <>
-      <nav className="w-[292px] flex-shrink-0 bg-white border-r border-border shadow-sm flex flex-col pb-3 h-full overflow-y-auto">
+      <nav className="w-73 shrink-0 bg-white border-r border-border shadow-sm flex flex-col pb-3 h-full overflow-y-auto">
         <div className="px-4 py-4 mb-6 border-b border-border">
           <Button 
             onClick={() => window.location.href = "/c?action=new"}
