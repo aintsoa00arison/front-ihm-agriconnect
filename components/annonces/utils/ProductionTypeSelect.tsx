@@ -1,7 +1,7 @@
 // components/ad/ProductionTypeSelect.tsx
 "use client";
 
-import { ProductionType } from "./types/ad";
+import { ProductionType } from "../types/ad";
 
 interface ProductionTypeSelectProps {
   value: ProductionType;

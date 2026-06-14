@@ -2,7 +2,7 @@ export const REGEX_PATTERNS = {
   email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   phone: /^\d{10}$/,          // 10 chiffres (Madagascar)
   nif: /^\d{10}$/,            // 10 chiffres
-  cin: /^\d{11}[1-2]$/,       // 12 chiffres au total, le dernier est obligatoirement 1 ou 2
+  cin: /^\d{11}[1-2]$/,       // 12 chiffres et  doit se terminer par 1 ou 2 au total, le dernier est obligatoirement 1 ou 2
   stat: /^.{5,}$/             // Minimum 5 caractères
 };
 

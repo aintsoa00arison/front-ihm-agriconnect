@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { AdFormMode, AdData, ProductionType, QuantityUnit } from "./types/ad";
 import BreadcrumbNav from "./BreadcrumbNav";
-import ProductionTypeSelect from "./ProductionTypeSelect";
-import QuantityInput from "./QuantityInput";
-import LocationInput from "./LocationInput";
-import DescriptionTextarea from "./DescriptionTextarea";
-import MediaUpload from "./MediaUpload";
+import ProductionTypeSelect from "./utils/ProductionTypeSelect";
+import QuantityInput from "./utils/QuantityInput";
+import LocationInput from "./utils/LocationInput";
+import DescriptionTextarea from "./utils/DescriptionTextarea";
+import MediaUpload from "./utils/MediaUpload";
 import AdPreview from "./AdPreview";
 import { FormSkeleton, PreviewSkeleton } from "./AdSkeletons";
 

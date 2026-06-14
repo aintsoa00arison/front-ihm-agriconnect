@@ -3,7 +3,7 @@
 
 import { MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { AdFormMode } from "./types/ad";
+import { AdFormMode } from "../types/ad";
 
 interface LocationInputProps {
   mode: AdFormMode;
