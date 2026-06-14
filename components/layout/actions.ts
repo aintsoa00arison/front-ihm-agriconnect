@@ -19,7 +19,7 @@ export const getUserData = cache(async (): Promise<UserData> => {
     if (userCookie?.value) {
       try {
         const user = JSON.parse(userCookie.value);
-        const slug = user.name?.toLowerCase().replace(/\s+/g, "-") || "brooklyn-simmons";
+        const slug = user.name?.toLowerCase().replace(/\s+/g, "-") ;
         return {
           slug,
           name: user.name || "Utilisateur",

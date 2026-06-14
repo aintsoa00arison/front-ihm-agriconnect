@@ -14,7 +14,7 @@ interface CataloguePageProps {
 }
 
 const fannoncesDeVente = [
-  // ... (tes données existantes)
+
   {
     id: "ann_f1",
     title: "Blé de province",
