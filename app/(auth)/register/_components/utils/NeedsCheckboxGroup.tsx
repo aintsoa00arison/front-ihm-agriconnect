@@ -2,7 +2,7 @@
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import { NEEDS, NeedType } from "../../types/collector";
+import { NEEDS, NeedType } from "../../../../services/register/types/collector";
 
 interface NeedsCheckboxGroupProps {
   selectedNeeds: string[];

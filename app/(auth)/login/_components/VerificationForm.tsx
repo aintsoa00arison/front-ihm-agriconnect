@@ -5,13 +5,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { verifyCodeService, sendVerificationEmail } from "../services/authService";
-import { useRegisterStore } from "../../register/registerStore";
+import { useAuth } from "../../../services/hooks/useAuth";
+import { useRegisterStore } from "../../../services/register/store/registerStore";
 import VerificationCodeField from "./Fields/VerificationCodeField";
 
 interface VerificationFormProps {
   email: string;
-  mode: "register" | "reset"; // Ajout de la propriété mode
+  mode: "register" | "reset";
   onVerified: () => void;
 }
 
@@ -22,44 +22,28 @@ export default function VerificationForm({
 }: VerificationFormProps) {
   const router = useRouter();
   const setRegisterDraft = useRegisterStore((state) => state.setRegisterDraft);
+  const { verifyCode, sendVerificationEmail, isLoading } = useAuth();
   const [code, setCode] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    try {
-      const response = await verifyCodeService({ email, code });
-      if (response.success) {
-        toast.success("Code validé avec succès !");
-        
-        setTimeout(() => {
-          if (mode === "register") {
-            // Cas inscription : sauvegarde le code et redirige vers la suite
-            setRegisterDraft({ code });
-            router.push("/register");
-          } else {
-            // Cas reset password : passe à l'étape suivante
-            onVerified();
-          }
-        }, 1500);
-      } else {
-        toast.error(response.message);
-        setIsLoading(false);
-      }
-    } catch (error: any) {
-      toast.error(error.message || "Une erreur est survenue.");
-      setIsLoading(false);
+    
+    const success = await verifyCode(email, code);
+    
+    if (success) {
+      setTimeout(() => {
+        if (mode === "register") {
+          setRegisterDraft({ code });
+          router.push("/register");
+        } else {
+          onVerified();
+        }
+      }, 1500);
     }
   };
 
   const handleResendCode = async () => {
-    try {
-      const response = await sendVerificationEmail(email);
-      if (response.success) toast.success("Un nouveau code vous a été renvoyé.");
-    } catch (error: any) {
-      toast.error(error.message || "Impossible de renvoyer le code.");
-    }
+    await sendVerificationEmail(email);
   };
 
   return (

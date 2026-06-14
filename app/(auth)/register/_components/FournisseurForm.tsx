@@ -7,7 +7,7 @@ import EntrepriseForm from "./utils/EntrepriseForm";
 import ParticulierForm from "./utils/ParticulierForm";
 import ProductionCheckboxGroup from "./utils/ProductionCheckboxGroup";
 import FormNavigation from "./utils/FormNavigation";
-import { UserType, FournisseurDataToSubmit, ProductionType } from "../types/fournisseur";
+import { UserType, FournisseurDataToSubmit, ProductionType } from "../../../services/register/types/fournisseur";
 
 interface Props {
   type: UserType;

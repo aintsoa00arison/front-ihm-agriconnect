@@ -7,9 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { validateEmail, analyzeEmailError } from "../../../utils/validation";
-import { sendVerificationEmail } from "../services/authService";
-import { checkEmailAvailability } from "../../register/services/registerService";
-import { useRegisterStore } from "../../register/registerStore";
+import { useAuth } from "../../../services/hooks/useAuth";
+import { useRegisterStore } from "../../../services/register/store/registerStore";
 import EmailField from "./Fields/EmailField";
 import PasswordField from "./Fields/PasswordField";
 
@@ -20,13 +19,27 @@ interface RegisterFormProps {
 
 export default function RegisterForm({ onCodeSent, onSubmit }: RegisterFormProps) {
   const setRegisterDraft = useRegisterStore((state) => state.setRegisterDraft);
+  const { sendVerificationEmail, isLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   const isPasswordMismatch = confirmPassword.length > 0 && password !== confirmPassword;
+
+  // Fonction pour vérifier la disponibilité de l'email
+  const checkEmailAvailability = async (email: string): Promise<boolean> => {
+    try {
+      const response = await sendVerificationEmail(email);
+      return response;
+    } catch (error: any) {
+      if (error.response?.status === 409) {
+        toast.error("Cet email est déjà utilisé.");
+        return false;
+      }
+      return true;
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,27 +58,15 @@ export default function RegisterForm({ onCodeSent, onSubmit }: RegisterFormProps
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const emailCheck = await checkEmailAvailability(cleanEmail);
-      if (!emailCheck.available) {
-        toast.error(emailCheck.message);
-        setIsLoading(false);
-        return;
-      }
-      const response = await sendVerificationEmail(cleanEmail);
-      if (response.success) {
-        toast.success("Un code de vérification vous a été envoyé.");
-        setRegisterDraft({ email: cleanEmail, password });
-        onSubmit?.({ email: cleanEmail, password, mode: "register_draft" });
-        onCodeSent(cleanEmail, password);
-      } else {
-        toast.error(response.message);
-      }
-    } catch (error: any) {
-      toast.error(error.message || "Erreur lors de l'envoi du mail.");
-    } finally {
-      setIsLoading(false);
+    const isEmailAvailable = await checkEmailAvailability(cleanEmail);
+    if (!isEmailAvailable) return;
+
+    const success = await sendVerificationEmail(cleanEmail);
+    
+    if (success) {
+      setRegisterDraft({ email: cleanEmail, password });
+      onSubmit?.({ email: cleanEmail, password, mode: "register_draft" });
+      onCodeSent(cleanEmail, password);
     }
   };
 

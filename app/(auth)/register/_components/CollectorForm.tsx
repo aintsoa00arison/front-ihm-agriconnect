@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Stepper } from "@/components/ui/stepper";
 import CollectorFormContent from "./utils/CollectorFormContent";
 import FormNavigation from "./utils/FormNavigation";
-import { CollectorFormData, CollectorDataToSubmit } from "../types/collector";
+import { CollectorFormData, CollectorDataToSubmit } from "../../../services/register/types/collector";
 
 interface Props {
   initialData: any;

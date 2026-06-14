@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { validateEmail, analyzeEmailError } from "../../../utils/validation";
-import { sendVerificationEmail } from  "../services/authService";
+import { authService } from "../../../services/auth/authService";
 import EmailField from "./Fields/EmailField";
 
 interface ForgotPasswordFormProps {
@@ -28,7 +28,9 @@ export default function ForgotPasswordForm({ onCodeSent, onCancel }: ForgotPassw
 
     setIsLoading(true);
     try {
-      const response = await sendVerificationEmail(cleanEmail);
+      // Appel réel à l'API pour envoyer l'email de validation
+      const response = await authService.sendVerificationEmail(cleanEmail);
+      
       if (response.success) {
         toast.success(response.message);
         onCodeSent(cleanEmail);
@@ -36,7 +38,8 @@ export default function ForgotPasswordForm({ onCodeSent, onCancel }: ForgotPassw
         toast.error(response.message);
       }
     } catch (error: any) {
-      toast.error(error.message || "Erreur lors de l'envoi du code.");
+      console.error("Erreur d'envoi:", error);
+      toast.error(error.response?.data?.detail || "Erreur lors de l'envoi du code.");
     } finally {
       setIsLoading(false);
     }
