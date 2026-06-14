@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import {
-  MoreVertical, Edit2, Trash2, X, Star, Check, AlertTriangle, Scale, MapPin, ChevronDown, ChevronUp, Bell, SlidersHorizontal, Calendar, ArrowUp
-} from "lucide-react";
+import { Bell, X, ArrowUp, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import ProfileFilters from "./ProfileFilters";
+import InterestedUsersModal from "./InterestedUsersModal";
+import AdCard from "./AdCard";
 
 interface InterestedUser {
   id: string;
@@ -41,15 +41,18 @@ interface ProfileAdsProps {
 }
 
 export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
-  // --- Données de l'annonce ---
   const [ads, setAds] = useState<AdItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<string>("all");
   const [filterDate, setFilterDate] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [selectedAdForInterested, setSelectedAdForInterested] = useState<AdItem | null>(null);
+  const [selectedAdForDelete, setSelectedAdForDelete] = useState<AdItem | null>(null);
+  const [expandedAdIds, setExpandedAdIds] = useState<Record<string, boolean>>({});
+  const [toasts, setToasts] = useState<ToastState[]>([]);
 
   // Simulation de chargement initial
   useEffect(() => {
@@ -143,57 +146,6 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
     }
   };
 
-  // Fonction pour filtrer les annonces
-  const getFilteredAds = () => {
-    let filtered = [...ads];
-
-    // Filtre par recherche
-    if (searchQuery.trim() !== "") {
-      filtered = filtered.filter(ad => 
-        ad.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ad.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ad.location.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    // Filtre par type de production
-    if (filterType !== "all") {
-      filtered = filtered.filter(ad => ad.productionType === filterType);
-    }
-
-    // Filtre par date
-    if (filterDate !== "all") {
-      const now = new Date();
-      const days7 = 7 * 24 * 60 * 60 * 1000;
-      const days30 = 30 * 24 * 60 * 60 * 1000;
-
-      filtered = filtered.filter(ad => {
-        const diff = now.getTime() - ad.date.getTime();
-        switch (filterDate) {
-          case "today":
-            return ad.date.toDateString() === now.toDateString();
-          case "week":
-            return diff <= days7;
-          case "month":
-            return diff <= days30;
-          default:
-            return true;
-        }
-      });
-    }
-
-    return filtered;
-  };
-
-  const filteredAds = getFilteredAds();
-
-  // --- États UI ---
-  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
-  const [selectedAdForInterested, setSelectedAdForInterested] = useState<AdItem | null>(null);
-  const [selectedAdForDelete, setSelectedAdForDelete] = useState<AdItem | null>(null);
-  const [expandedAdIds, setExpandedAdIds] = useState<Record<string, boolean>>({});
-  const [toasts, setToasts] = useState<ToastState[]>([]);
-
   const showToast = (message: string, type: "success" | "info" | "error" = "success") => {
     const id = Date.now();
     setToasts((prev) => [...prev, { id, message, type }]);
@@ -206,10 +158,16 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
     setExpandedAdIds((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const handleDeleteAd = (id: string) => {
-    setAds((prev) => prev.filter(ad => ad.id !== id));
-    setSelectedAdForDelete(null);
-    showToast("L'annonce a été supprimée avec succès.", "success");
+  const handleDeleteAd = (ad: AdItem) => {
+    setSelectedAdForDelete(ad);
+  };
+
+  const confirmDelete = () => {
+    if (selectedAdForDelete) {
+      setAds((prev) => prev.filter(ad => ad.id !== selectedAdForDelete.id));
+      setSelectedAdForDelete(null);
+      showToast("L'annonce a été supprimée avec succès.", "success");
+    }
   };
 
   const handleAcceptInterested = (user: InterestedUser, adName: string) => {
@@ -249,13 +207,53 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
     }
   };
 
-  // Reset filters
+  // Fonction pour filtrer les annonces
+  const getFilteredAds = () => {
+    let filtered = [...ads];
+
+    if (searchQuery.trim() !== "") {
+      filtered = filtered.filter(ad => 
+        ad.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ad.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ad.location.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (filterType !== "all") {
+      filtered = filtered.filter(ad => ad.productionType === filterType);
+    }
+
+    if (filterDate !== "all") {
+      const now = new Date();
+      const days7 = 7 * 24 * 60 * 60 * 1000;
+      const days30 = 30 * 24 * 60 * 60 * 1000;
+
+      filtered = filtered.filter(ad => {
+        const diff = now.getTime() - ad.date.getTime();
+        switch (filterDate) {
+          case "today":
+            return ad.date.toDateString() === now.toDateString();
+          case "week":
+            return diff <= days7;
+          case "month":
+            return diff <= days30;
+          default:
+            return true;
+        }
+      });
+    }
+
+    return filtered;
+  };
+
   const resetFilters = () => {
     setFilterType("all");
     setFilterDate("all");
   };
 
-  // --- Skeleton Loader ---
+  const filteredAds = getFilteredAds();
+
+  // Skeleton Loader
   if (loading) {
     return (
       <div className="space-y-6">
@@ -273,7 +271,7 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
   return (
     <div ref={scrollRef} className="space-y-6 relative overflow-y-auto h-full">
       
-      {/* Pop-ups / Toasts de notification en bas à droite */}
+      {/* Toasts */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 w-full max-w-md pointer-events-none">
         {toasts.map((t) => (
           <div 
@@ -308,76 +306,16 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
         ))}
       </div>
 
-      {/* Barre de filtres */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className="w-full p-4 flex items-center justify-between bg-slate-50/50 hover:bg-slate-50 transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal size={16} className="text-[#2e7d32]" />
-            <span className="text-sm font-bold text-slate-700">Filtres</span>
-            {(filterType !== "all" || filterDate !== "all") && (
-              <span className="text-xs font-bold bg-[#2e7d32] text-white px-2 py-0.5 rounded-full">
-                {(filterType !== "all" ? 1 : 0) + (filterDate !== "all" ? 1 : 0)}
-              </span>
-            )}
-          </div>
-          <ChevronDown size={16} className={`text-slate-400 transition-transform ${showFilters ? "rotate-180" : ""}`} />
-        </button>
-
-        {showFilters && (
-          <div className="p-4 border-t border-slate-100 space-y-4 animate-in slide-in-from-top-2 duration-200">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Filtre par type */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Type de production</label>
-                <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger className="h-10 border-slate-200 rounded-xl text-sm bg-slate-50/50">
-                    <SelectValue placeholder="Tous les types" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tous les types</SelectItem>
-                    <SelectItem value="Végétale">Végétale</SelectItem>
-                    <SelectItem value="Élevage">Élevage</SelectItem>
-                    <SelectItem value="Rente">Rente</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Filtre par date */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1">
-                  <Calendar size={12} /> Période
-                </label>
-                <Select value={filterDate} onValueChange={setFilterDate}>
-                  <SelectTrigger className="h-10 border-slate-200 rounded-xl text-sm bg-slate-50/50">
-                    <SelectValue placeholder="Toutes les périodes" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Toutes les périodes</SelectItem>
-                    <SelectItem value="today">Aujourd'hui</SelectItem>
-                    <SelectItem value="week">Cette semaine</SelectItem>
-                    <SelectItem value="month">Ce mois</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Bouton réinitialiser */}
-            {(filterType !== "all" || filterDate !== "all") && (
-              <div className="flex justify-end">
-                <button
-                  onClick={resetFilters}
-                  className="text-xs font-bold text-[#2e7d32] hover:underline flex items-center gap-1"
-                >
-                  <X size={12} /> Réinitialiser les filtres
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      {/* Filtres */}
+      <ProfileFilters
+        filterType={filterType}
+        filterDate={filterDate}
+        showFilters={showFilters}
+        onToggleFilters={() => setShowFilters(!showFilters)}
+        onFilterTypeChange={setFilterType}
+        onFilterDateChange={setFilterDate}
+        onResetFilters={resetFilters}
+      />
 
       {/* Résultat du filtrage */}
       <div className="flex items-center justify-between">
@@ -395,140 +333,53 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
             : "Aucune annonce ne correspond à vos critères."}
         </div>
       ) : (
-        filteredAds.map((ad) => {
-          const isExpanded = !!expandedAdIds[ad.id];
-          return (
-            <div key={ad.id} className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-              <div>
-                <div className="relative w-full h-56 md:h-72 bg-slate-50">
-                  <img src={ad.mediaUrl} alt={ad.productName} className="w-full h-full object-cover" />
-                  <span className="absolute top-4 left-4 bg-[#2e7d32] text-white text-[10px] font-extrabold px-3.5 py-1.5 rounded-full shadow-md uppercase tracking-wider">
-                    {ad.productionType}
-                  </span>
-                </div>
-                <div className="p-6 space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-                    <div className="space-y-1.5 flex-1">
-                      <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                        {ad.productName}
-                        <span className="text-xs font-semibold text-slate-400 normal-case">{ad.timeAgo}</span>
-                      </h2>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-slate-400">
-                        <span className="flex items-center gap-1.5"><Scale size={14} />{ad.quantity}</span>
-                        <span className="flex items-center gap-1.5"><MapPin size={14} />{ad.location}</span>
-                      </div>
-                      {isExpanded && (
-                        <div className="pt-3 mt-2 border-t border-slate-100 animate-in slide-in-from-top-2 duration-200">
-                          <p className="text-xs font-medium text-slate-500 leading-relaxed">{ad.description}</p>
-                        </div>
-                      )}
-                    </div>
-                    <div className="sm:text-right flex-shrink-0 flex flex-col sm:items-end justify-between min-h-[50px]">
-                      <span className="text-xl font-extrabold text-[#ffa000]">{ad.price}</span>
-                      <button onClick={() => toggleDescription(ad.id)} className="text-xs font-bold text-slate-900 hover:text-[#2e7d32] mt-1 underline transition-colors flex items-center gap-1">
-                        {isExpanded ? <>masquer détails<ChevronUp size={14} /></> : <>voir détails<ChevronDown size={14} /></>}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className="border-t border-slate-100 px-6 py-4 flex items-center justify-between gap-4 bg-slate-50/50">
-                  <div className="flex items-center gap-3">
-                    <div className="flex -space-x-2.5 overflow-hidden">
-                      {ad.interestedUsers.slice(0, 3).map((usr) => (
-                        <div key={usr.id} className="relative size-7 rounded-full border-2 border-white overflow-hidden bg-slate-100 flex-shrink-0">
-                          <img src={usr.avatar} alt={usr.name} className="object-cover size-full" />
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex flex-wrap items-center gap-x-2 text-xs font-bold">
-                      <span className="text-slate-800">{ad.interestedCount} personnes sont intéressées</span>
-                      <button onClick={() => setSelectedAdForInterested(ad)} className="text-[#ffa000] hover:underline">voir tout</button>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <button onClick={() => setActiveMenuId(activeMenuId === ad.id ? null : ad.id)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                      <MoreVertical size={20} className="text-slate-600" />
-                    </button>
-                    {activeMenuId === ad.id && (
-                      <>
-                        <div className="fixed inset-0 z-20" onClick={() => setActiveMenuId(null)} />
-                        <div className="absolute right-0 bottom-full mb-2 w-40 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden z-30 animate-in fade-in zoom-in-95 duration-100">
-                          <button onClick={() => { onEditAd(ad); setActiveMenuId(null); }} className="flex items-center gap-3 w-full px-4 py-3 text-xs font-bold text-slate-700 hover:bg-green-50/50 hover:text-[#2e7d32] transition-all text-left">
-                            <Edit2 size={14} className="text-[#2e7d32]" /> Modifier
-                          </button>
-                          <button onClick={() => { setSelectedAdForDelete(ad); setActiveMenuId(null); }} className="flex items-center gap-3 w-full px-4 py-3 text-xs font-bold text-red-600 hover:bg-red-50 transition-all text-left border-t border-slate-100">
-                            <Trash2 size={14} className="text-red-500" /> Supprimer
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })
+        filteredAds.map((ad) => (
+          <AdCard
+            key={ad.id}
+            ad={ad}
+            isExpanded={!!expandedAdIds[ad.id]}
+            onToggleDescription={toggleDescription}
+            onEdit={onEditAd}
+            onDelete={handleDeleteAd}
+            onViewInterested={setSelectedAdForInterested}
+          />
+        ))
       )}
 
       {/* Modale intéressés */}
-      {selectedAdForInterested && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-40">
-          <div className="bg-white rounded-3xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh]">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-base font-extrabold text-slate-800">Liste des Intéressés</h3>
-              <button onClick={() => setSelectedAdForInterested(null)} className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400"><X size={18} /></button>
-            </div>
-            <div className="p-4 overflow-y-auto space-y-4">
-              {selectedAdForInterested.interestedUsers.length === 0 ? (
-                <p className="text-center py-6 text-xs text-slate-400 font-bold">Aucun profil restant.</p>
-              ) : (
-                selectedAdForInterested.interestedUsers.map((usr) => (
-                  <div key={usr.id} className="flex items-center justify-between gap-4 p-3 rounded-2xl border border-slate-50">
-                    <div className="flex items-center gap-3">
-                      <div className="size-10 rounded-full overflow-hidden bg-slate-100 border">
-                        <img src={usr.avatar} alt={usr.name} className="size-full object-cover" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-slate-900">{usr.name}</h4>
-                        <p className="text-[10px] font-medium text-slate-400">{usr.role}</p>
-                        <div className="flex items-center gap-0.5 mt-0.5">
-                          {Array.from({ length: 5 }).map((_, idx) => (
-                            <Star key={idx} size={10} className={idx < Math.floor(usr.rating) ? "fill-amber-400 text-amber-400" : "text-slate-200"} />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button className="text-xs font-bold text-[#ffa000] hover:underline">Profil</button>
-                      <button onClick={() => handleAcceptInterested(usr, selectedAdForInterested.productName)} className="p-2 bg-emerald-50 text-[#2e7d32] rounded-xl hover:bg-[#e8f5e9]"><Check size={14} strokeWidth={3} /></button>
-                      <button onClick={() => handleRejectInterested(usr)} className="p-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><X size={14} strokeWidth={2.5} /></button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <InterestedUsersModal
+        ad={selectedAdForInterested}
+        onClose={() => setSelectedAdForInterested(null)}
+        onAccept={handleAcceptInterested}
+        onReject={handleRejectInterested}
+      />
 
       {/* Modale suppression */}
       {selectedAdForDelete && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-40">
           <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 text-center space-y-5 border border-slate-50">
-            <div className="mx-auto size-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center"><AlertTriangle size={32} /></div>
+            <div className="mx-auto size-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center">
+              <AlertTriangle size={32} />
+            </div>
             <div className="space-y-2">
               <h3 className="text-lg font-bold text-slate-900">Supprimer l'annonce?</h3>
-              <p className="text-xs font-semibold text-slate-500 leading-relaxed px-4">Êtes-vous sûr de vouloir supprimer cette annonce? Cette action est irréversible.</p>
+              <p className="text-xs font-semibold text-slate-500 leading-relaxed px-4">
+                Êtes-vous sûr de vouloir supprimer cette annonce? Cette action est irréversible.
+              </p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="outline" onClick={() => setSelectedAdForDelete(null)} className="flex-1 rounded-xl font-bold border-slate-200 text-slate-600">Annuler</Button>
-              <Button onClick={() => handleDeleteAd(selectedAdForDelete.id)} className="flex-1 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white">Supprimer</Button>
+              <Button variant="outline" onClick={() => setSelectedAdForDelete(null)} className="flex-1 rounded-xl font-bold border-slate-200 text-slate-600">
+                Annuler
+              </Button>
+              <Button onClick={confirmDelete} className="flex-1 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white">
+                Supprimer
+              </Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Flèche de défilement vers le haut */}
+      {/* Flèche de défilement */}
       {showScrollButton && (
         <button
           onClick={scrollToTop}
