@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { validateEmail, analyzeEmailError } from "../../../utils/validation";
 import { sendVerificationEmail } from  "../services/authService";
-import EmailField from "./EmailField";
+import EmailField from "./Fields/EmailField";
 
 interface ForgotPasswordFormProps {
   onCodeSent: (email: string) => void;

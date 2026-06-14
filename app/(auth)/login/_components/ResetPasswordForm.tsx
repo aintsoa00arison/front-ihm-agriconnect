@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import PasswordField from "./PasswordField";
+import PasswordField from "./Fields/PasswordField";
 
 interface ResetPasswordFormProps {
   email: string;

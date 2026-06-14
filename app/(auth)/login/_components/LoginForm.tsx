@@ -7,8 +7,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { validateEmail, analyzeEmailError } from "../../../utils/validation";
 import { mockLoginService } from  "../services/authService";
-import EmailField from "./EmailField";
-import PasswordField from "./PasswordField";
+import EmailField from "./Fields/EmailField";
+import PasswordField from "./Fields/PasswordField";
 
 interface LoginFormProps {
   onForgotPassword: () => void;

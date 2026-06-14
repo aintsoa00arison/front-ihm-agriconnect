@@ -10,8 +10,8 @@ import { validateEmail, analyzeEmailError } from "../../../utils/validation";
 import { sendVerificationEmail } from "../services/authService";
 import { checkEmailAvailability } from "../../register/services/registerService";
 import { useRegisterStore } from "../../register/registerStore";
-import EmailField from "./EmailField";
-import PasswordField from "./PasswordField";
+import EmailField from "./Fields/EmailField";
+import PasswordField from "./Fields/PasswordField";
 
 interface RegisterFormProps {
   onCodeSent: (email: string, password: string) => void;

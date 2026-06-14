@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { verifyCodeService, sendVerificationEmail } from "../services/authService";
 import { useRegisterStore } from "../../register/registerStore";
-import VerificationCodeField from "./VerificationCodeField";
+import VerificationCodeField from "./Fields/VerificationCodeField";
 
 interface VerificationFormProps {
   email: string;
