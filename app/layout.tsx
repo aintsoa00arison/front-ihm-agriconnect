@@ -2,8 +2,7 @@ import { Manrope, Geist } from "next/font/google";
 import "./globals.css";
 import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
-import { Toaster } from "@/components/ui/sonner-toaster";
-
+import { Toaster } from "sonner";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
