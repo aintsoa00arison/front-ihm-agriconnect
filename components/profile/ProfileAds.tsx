@@ -3,10 +3,20 @@
 import { useState, useEffect, useRef } from "react";
 import { Bell, X, ArrowUp, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import ProfileFilters from "./ProfileFilters";
 import InterestedUsersModal from "./InterestedUsersModal";
 import AdCard from "./AdCard";
-
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 interface InterestedUser {
   id: string;
   name: string;
@@ -317,14 +327,6 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
         onResetFilters={resetFilters}
       />
 
-      {/* Résultat du filtrage */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500">
-          <span className="font-bold text-slate-800">{filteredAds.length}</span> annonce{filteredAds.length !== 1 ? 's' : ''} trouvée{filteredAds.length !== 1 ? 's' : ''}
-          {searchQuery && ` pour "${searchQuery}"`}
-        </p>
-      </div>
-
       {/* Cartes d'annonces */}
       {filteredAds.length === 0 ? (
         <div className="text-center py-12 text-slate-400 font-medium bg-white rounded-2xl border border-dashed">
@@ -354,31 +356,42 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
         onReject={handleRejectInterested}
       />
 
-      {/* Modale suppression */}
-      {selectedAdForDelete && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-40">
-          <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 text-center space-y-5 border border-slate-50">
-            <div className="mx-auto size-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center">
-              <AlertTriangle size={32} />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-lg font-bold text-slate-900">Supprimer l'annonce?</h3>
-              <p className="text-xs font-semibold text-slate-500 leading-relaxed px-4">
-                Êtes-vous sûr de vouloir supprimer cette annonce? Cette action est irréversible.
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" onClick={() => setSelectedAdForDelete(null)} className="flex-1 rounded-xl font-bold border-slate-200 text-slate-600">
-                Annuler
-              </Button>
-              <Button onClick={confirmDelete} className="flex-1 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white">
-                Supprimer
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modale suppression avec AlertDialog de shadcn */}
 
+{/* Modale suppression avec AlertDialog de shadcn */}
+<AlertDialog open={!!selectedAdForDelete} onOpenChange={() => setSelectedAdForDelete(null)}>
+  <AlertDialogContent className="rounded-2xl max-w-md p-6">
+    <div className="flex flex-col items-center text-center space-y-4">
+      <div className="size-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center">
+        <AlertTriangle size={24} />
+      </div>
+      
+      <div className="space-y-2">
+        <h2 className="text-lg font-bold text-slate-900">
+          Supprimer l'annonce ?
+        </h2>
+        <p className="text-xs text-slate-500">
+          Êtes-vous sûr de vouloir supprimer cette annonce ? Cette action est irréversible.
+        </p>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3 w-full pt-2">
+        <button
+          onClick={() => setSelectedAdForDelete(null)}
+          className="flex-1 px-4 py-2.5 rounded-xl font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors text-sm"
+        >
+          Annuler
+        </button>
+        <button
+          onClick={confirmDelete}
+          className="flex-1 px-4 py-2.5 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white transition-colors text-sm"
+        >
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </AlertDialogContent>
+</AlertDialog>
       {/* Flèche de défilement */}
       {showScrollButton && (
         <button
