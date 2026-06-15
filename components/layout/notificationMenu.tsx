@@ -55,7 +55,7 @@ export function NotificationMenu() {
         <Button
           variant="outline"
           size="icon"
-          className="rounded-full bg-neutral border-none h-11 w-11 relative hover:bg-input-border/20 transition-colors"
+          className="rounded-full bg-neutral border-none size-11 relative hover:bg-input-border/20 transition-colors"
         >
           {/* Badge point rouge sur la cloche */}
           <span className="absolute top-2.5 right-2.5 block h-2.5 w-2.5 rounded-full bg-red-600 border-2 border-white ring-1 ring-red-600/20"></span>
@@ -65,7 +65,7 @@ export function NotificationMenu() {
 
       <DropdownMenuContent
         align="end"
-        className="w-105  p-0 overflow-hidden rounded-xl border-separator/30 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+        className="sm:w-105  w-85 p-0 overflow-hidden rounded-xl border-separator/30 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
       >
         {/* HEADER */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-separator/20 bg-white">
