@@ -20,18 +20,74 @@ interface ProfileHeaderProps {
     bio: string;
     avatarUrl?: string;
     bannerUrl?: string;
-    isOwner?: boolean;  // Ajout de isOwner
+    isOwner?: boolean;
   } | null;
   activeTab: string;
   onTabChange: (value: string) => void;
   onEditClick?: () => void;
+  isLoading?: boolean;
 }
 
-export default function ProfileHeader({ user, activeTab, onTabChange, onEditClick }: ProfileHeaderProps) {
+// Composant Skeleton
+function ProfileHeaderSkeleton() {
+  return (
+    <div className="w-full bg-white">
+      {/* Bannière skeleton */}
+      <div className="relative w-full h-48 md:h-64 bg-slate-200 animate-pulse rounded-b-[2rem]" />
+      
+      <div className="max-w-7xl mx-auto px-4 relative">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between -mt-16 mb-6 gap-4">
+          <div className="flex items-end gap-5">
+            {/* Avatar skeleton */}
+            <div className="w-32 h-32 rounded-full bg-slate-200 animate-pulse border-4 border-white shadow-sm flex-shrink-0" />
+            
+            <div className="mb-2 space-y-2">
+              {/* Nom skeleton */}
+              <div className="h-8 w-48 bg-slate-200 animate-pulse rounded" />
+              {/* Étoiles skeleton */}
+              <div className="flex items-center gap-1.5">
+                <div className="h-4 w-24 bg-slate-200 animate-pulse rounded" />
+              </div>
+            </div>
+          </div>
+          
+          {/* Bouton skeleton */}
+          <div className="h-10 w-36 bg-slate-200 animate-pulse rounded-lg" />
+        </div>
+        
+        {/* Bio skeleton */}
+        <div className="border-b border-slate-100 pb-6 mb-0">
+          <div className="space-y-2">
+            <div className="h-4 bg-slate-200 animate-pulse rounded w-full" />
+            <div className="h-4 bg-slate-200 animate-pulse rounded w-3/4" />
+          </div>
+        </div>
+        
+        {/* Tabs skeleton */}
+        <div className="w-full sm:w-1/4 mt-4">
+          <div className="flex gap-6">
+            <div className="h-10 w-20 bg-slate-200 animate-pulse rounded" />
+            <div className="h-10 w-20 bg-slate-200 animate-pulse rounded" />
+            <div className="h-10 w-20 bg-slate-200 animate-pulse rounded" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function ProfileHeader({ 
+  user, 
+  activeTab, 
+  onTabChange, 
+  onEditClick,
+  isLoading = false 
+}: ProfileHeaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  if (!user) {
-    return null;
+  // Afficher le skeleton pendant le chargement
+  if (isLoading || !user) {
+    return <ProfileHeaderSkeleton />;
   }
 
   const getTabValue = (label: string) => {
@@ -72,7 +128,6 @@ export default function ProfileHeader({ user, activeTab, onTabChange, onEditClic
                   <img src={user.avatarUrl} alt="Avatar" className="w-full h-full rounded-full object-cover" />
                 )}
                 
-                {/* Tooltip sur l'icône appareil photo - visible seulement si propriétaire */}
                 {user.isOwner && (
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -115,7 +170,6 @@ export default function ProfileHeader({ user, activeTab, onTabChange, onEditClic
               </div>
             </div>
 
-            {/* Bouton Modifier le profil - visible seulement si propriétaire */}
             {user.isOwner && (
               <Button onClick={onEditClick} className="bg-[#2D6A36] hover:bg-[#23562b] text-white font-bold rounded-lg h-10 px-5 shadow-sm">
                 <Pencil size={16} className="mr-2" /> Modifier le profil
@@ -123,7 +177,6 @@ export default function ProfileHeader({ user, activeTab, onTabChange, onEditClic
             )}
           </div>
 
-          {/* Bio - affichée seulement si elle existe */}
           {user.bio && user.bio !== "Aucune description disponible" && (
             <div className="border-b border-slate-100 pb-6 mb-0">
               <p className="text-sm text-slate-500 max-w-full leading-relaxed">{user.bio}</p>

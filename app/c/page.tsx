@@ -10,11 +10,13 @@ import { getUserRole } from "../services/lib/auth";
 function CollecteurContent() {
   const [isCreatingNew, setIsCreatingNew] = useState<boolean>(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Récupérer le rôle directement
     const role = getUserRole();
     setUserRole(role);
+    setIsLoading(false);
     console.log("Rôle récupéré:", role);
     
     const handleUrlChange = () => {
@@ -52,13 +54,14 @@ function CollecteurContent() {
 
   const hasProducts = true;
 
+  if (isLoading) {
+    return null; // Rien n'afficher pendant le chargement
+  }
+
   if (!userRole) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="animate-pulse text-center">
-          <div className="w-12 h-12 bg-slate-200 rounded-full mx-auto mb-4"></div>
-          <div className="h-4 bg-slate-200 rounded w-32 mx-auto"></div>
-        </div>
+        <p className="text-slate-500">Chargement...</p>
       </div>
     );
   }
@@ -122,9 +125,13 @@ export default function CollecteurPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="animate-pulse">
-          <div className="w-12 h-12 bg-slate-200 rounded-full mx-auto mb-4"></div>
-          <div className="h-4 bg-slate-200 rounded w-32 mx-auto"></div>
+        <div className="w-full max-w-md px-4">
+          <div className="h-8 bg-slate-100 rounded animate-pulse mb-4"></div>
+          <div className="space-y-3">
+            <div className="h-4 bg-slate-100 rounded animate-pulse"></div>
+            <div className="h-4 bg-slate-100 rounded animate-pulse w-5/6"></div>
+            <div className="h-4 bg-slate-100 rounded animate-pulse w-4/6"></div>
+          </div>
         </div>
       </div>
     }>
