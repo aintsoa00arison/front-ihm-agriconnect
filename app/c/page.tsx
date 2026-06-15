@@ -3,13 +3,22 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { Store, Plus, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import AdForm from "@/components/annonces/AddForm";
-import CataloguePage from "@/components/catalogues/CataloguePage";
+import AdForm from "@/components/annonces/AddForm"; 
+import CataloguePage from "@/components/catalogues/CataloguePage"; 
+import { getUserRole } from "../services/lib/auth";
 
 function CollecteurContent() {
   const [isCreatingNew, setIsCreatingNew] = useState<boolean>(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Récupérer le rôle directement
+    const role = getUserRole();
+    setUserRole(role);
+    setIsLoading(false);
+    console.log("Rôle récupéré:", role);
+    
     const handleUrlChange = () => {
       if (typeof window !== "undefined") {
         const params = new URLSearchParams(window.location.search);
@@ -45,6 +54,18 @@ function CollecteurContent() {
 
   const hasProducts = true;
 
+  if (isLoading) {
+    return null; // Rien n'afficher pendant le chargement
+  }
+
+  if (!userRole) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-slate-500">Chargement...</p>
+      </div>
+    );
+  }
+
   return (
     <div className=" bg-white h-full">
       {isCreatingNew ? (
@@ -70,6 +91,13 @@ function CollecteurContent() {
                     les fournisseurs.
                   </p>
                 </div>
+                <Button
+                  onClick={triggerNewForm}
+                  className="font-bold gap-2 shadow-sm h-11 px-6 bg-[#0D631B] hover:bg-[#094713] text-white"
+                >
+                  <Plus size={20} strokeWidth={2.5} />
+                  Nouvelle demande
+                </Button>
               </div>
 
               <div className="flex flex-col items-center justify-center text-center p-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200 shadow-sm min-h-100">
@@ -80,8 +108,7 @@ function CollecteurContent() {
                   Aucune annonce ou demande disponible
                 </h3>
                 <p className="text-sm text-slate-500 max-w-sm mt-1 mb-6 font-medium">
-                  Il n&apos;y a actuellement aucune publication sur le marché. Soyez
-                  le premier à publier un besoin pour lancer les échanges.
+                  Il n'y a actuellement aucune publication sur le marché.
                 </p>
                 <Button
                   onClick={triggerNewForm}
@@ -101,11 +128,18 @@ function CollecteurContent() {
 
 export default function CollecteurPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex h-64 w-full items-center justify-center text-slate-400 font-medium animate-pulse"></div>
-      }
-    >
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-full max-w-md px-4">
+          <div className="h-8 bg-slate-100 rounded animate-pulse mb-4"></div>
+          <div className="space-y-3">
+            <div className="h-4 bg-slate-100 rounded animate-pulse"></div>
+            <div className="h-4 bg-slate-100 rounded animate-pulse w-5/6"></div>
+            <div className="h-4 bg-slate-100 rounded animate-pulse w-4/6"></div>
+          </div>
+        </div>
+      </div>
+    }>
       <CollecteurContent />
     </Suspense>
   );

@@ -1,4 +1,3 @@
-// app/profile/ProfileView.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -7,10 +6,11 @@ import { toast } from "sonner";
 import ProfileHeader from "./ProfileHeader";
 import ProfileReviews from "./ProfileReviews"; 
 import EditCollectorProfileForm from "./Edit/EditCollectorProfileForm";
+import EditSupplierProfileForm from "./Edit/EditSupplierProfileForm";
 import ProfileAds from "./ProfileAds"; 
 import AdForm from "@/components/annonces/AddForm"; 
-import { getUserProfile } from "./services/profileService";
-import { UserProfile } from "./types/profile";
+import { useProfile } from "../../app/services/hooks/useProfile";
+import { getUserId } from "../../app/services/lib/auth";
 import AboutSection from "./ProfileAbout";
 
 interface ProfileViewProps {
@@ -21,27 +21,17 @@ export default function ProfileView({ slug }: ProfileViewProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  // Récupérer l'onglet depuis l'URL ou utiliser "annonces" par défaut
   const tabFromUrl = searchParams?.get("tab") || "annonces";
   const [activeTab, setActiveTabState] = useState(tabFromUrl);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editingAd, setEditingAd] = useState<any | null>(null);
+  
+  const { profile, loading, error, updateCollectorProfile, updateFournisseurProfile } = useProfile(slug);
+  
+  // Vérifier si c'est le profil de l'utilisateur connecté
+  const currentUserId = getUserId();
+  const isOwner = profile?.id === currentUserId || slug === "me";
 
-  useEffect(() => {
-    async function fetchProfileData() {
-      try {
-        const data = await getUserProfile(slug);
-        setProfile(data);
-      } catch (error) {
-        console.error("Erreur:", error);
-        toast.error("Erreur lors du chargement du profil");
-      }
-    }
-    fetchProfileData();
-  }, [slug]);
-
-  // Synchroniser l'état avec l'URL quand elle change
   useEffect(() => {
     const newTab = searchParams?.get("tab") || "annonces";
     setActiveTabState(newTab);
@@ -49,14 +39,23 @@ export default function ProfileView({ slug }: ProfileViewProps) {
 
   const handleTabChange = (value: string) => {
     setActiveTabState(value);
-    // Mettre à jour l'URL sans recharger la page
     router.push(`?tab=${value}`, { scroll: false });
   };
 
-  const handleProfileSave = (data: any) => {
-    setProfile((prev) => (prev ? { ...prev, ...data } : null));
-    setIsEditing(false);
-    toast.success("Profil mis à jour avec succès !");
+  const handleProfileSave = async (data: any) => {
+    let result;
+    if (profile?.role === "collecteur") {
+      result = await updateCollectorProfile(data);
+    } else {
+      result = await updateFournisseurProfile(data);
+    }
+    
+    if (result.success) {
+      setIsEditing(false);
+      toast.success("Profil mis à jour avec succès !");
+    } else {
+      toast.error(result.message);
+    }
   };
 
   const handleAdSave = () => {
@@ -64,15 +63,48 @@ export default function ProfileView({ slug }: ProfileViewProps) {
     toast.success("Modification enregistrée avec succès !");
   };
 
+  if (loading) {
+    return null; // Ne rien afficher pendant le chargement
+  }
+
+  if (error || !profile) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500">{error || "Profil non trouvé"}</p>
+          <button 
+            onClick={() => router.push('/login')}
+            className="mt-4 text-primary hover:underline"
+          >
+            Retour à la connexion
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Ajouter isOwner au profil pour le composant ProfileHeader
+  const profileWithOwner = { ...profile, isOwner };
+
+  const isCollector = profile.role === "collecteur";
+
   return (
-    <div className="relative min-h-screen pb-12">
-      {/* ÉDITION CONDITIONNELLE OU VUE PRINCIPALE */}
+    <div className="relative min-h-screen bg-white pb-12">
       {isEditing ? (
-        <EditCollectorProfileForm
-          initialData={profile}
-          onCancel={() => setIsEditing(false)}
-          onSave={handleProfileSave}
-        />
+        isCollector ? (
+          <EditCollectorProfileForm
+            initialData={profile}
+            onCancel={() => setIsEditing(false)}
+            onSave={handleProfileSave}
+          />
+        ) : (
+          <EditSupplierProfileForm
+            type={profile.type || "particulier"}
+            initialData={profile}
+            onCancel={() => setIsEditing(false)}
+            onSave={handleProfileSave}
+          />
+        )
       ) : editingAd ? (
         <AdForm
           mode={profile?.role === "fournisseur" ? "annonce" : "demande"}
@@ -81,30 +113,20 @@ export default function ProfileView({ slug }: ProfileViewProps) {
           onSave={handleAdSave}
         />
       ) : (
-        /* VUE PRINCIPALE */
         <div className="space-y-6 animate-in fade-in duration-300">
-          <ProfileHeader
-            user={profile}
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-            onEditClick={() => setIsEditing(true)}
-          />
-
-          {/* Contenu affiché seulement si le profil existe */}
-          {profile && (
-            <div className="max-w-7xl mx-auto px-4 h-full">
-              {activeTab === "annonces" && (
-                <ProfileAds onEditAd={setEditingAd} />
-              )}
-              {activeTab === "apropos" && <AboutSection profile={profile} />}
-              {activeTab === "avis" && (
-                <ProfileReviews
-                  rating={profile.rating}
-                  reviews={profile.reviews}
-                />
-              )}
-            </div>
-          )}
+         <ProfileHeader
+          user={profileWithOwner}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          onEditClick={() => setIsEditing(true)}
+          isLoading={loading}
+        />
+          
+          <div className="max-w-7xl mx-auto px-4">
+            {activeTab === "annonces" && <ProfileAds onEditAd={setEditingAd} />}
+            {activeTab === "apropos" && <AboutSection profile={profile} />}
+            {activeTab === "avis" && <ProfileReviews rating={profile.rating} reviews={profile.reviews || []} />}
+          </div>
         </div>
       )}
     </div>

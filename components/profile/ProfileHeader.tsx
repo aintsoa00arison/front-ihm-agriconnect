@@ -20,18 +20,74 @@ interface ProfileHeaderProps {
     bio: string;
     avatarUrl?: string;
     bannerUrl?: string;
+    isOwner?: boolean;
   } | null;
   activeTab: string;
   onTabChange: (value: string) => void;
   onEditClick?: () => void;
+  isLoading?: boolean;
 }
 
-export default function ProfileHeader({ user, activeTab, onTabChange, onEditClick }: ProfileHeaderProps) {
+// Composant Skeleton
+function ProfileHeaderSkeleton() {
+  return (
+    <div className="w-full bg-white">
+      {/* Bannière skeleton */}
+      <div className="relative w-full h-48 md:h-64 bg-slate-200 animate-pulse rounded-b-[2rem]" />
+      
+      <div className="max-w-7xl mx-auto px-4 relative">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between -mt-16 mb-6 gap-4">
+          <div className="flex items-end gap-5">
+            {/* Avatar skeleton */}
+            <div className="w-32 h-32 rounded-full bg-slate-200 animate-pulse border-4 border-white shadow-sm flex-shrink-0" />
+            
+            <div className="mb-2 space-y-2">
+              {/* Nom skeleton */}
+              <div className="h-8 w-48 bg-slate-200 animate-pulse rounded" />
+              {/* Étoiles skeleton */}
+              <div className="flex items-center gap-1.5">
+                <div className="h-4 w-24 bg-slate-200 animate-pulse rounded" />
+              </div>
+            </div>
+          </div>
+          
+          {/* Bouton skeleton */}
+          <div className="h-10 w-36 bg-slate-200 animate-pulse rounded-lg" />
+        </div>
+        
+        {/* Bio skeleton */}
+        <div className="border-b border-slate-100 pb-6 mb-0">
+          <div className="space-y-2">
+            <div className="h-4 bg-slate-200 animate-pulse rounded w-full" />
+            <div className="h-4 bg-slate-200 animate-pulse rounded w-3/4" />
+          </div>
+        </div>
+        
+        {/* Tabs skeleton */}
+        <div className="w-full sm:w-1/4 mt-4">
+          <div className="flex gap-6">
+            <div className="h-10 w-20 bg-slate-200 animate-pulse rounded" />
+            <div className="h-10 w-20 bg-slate-200 animate-pulse rounded" />
+            <div className="h-10 w-20 bg-slate-200 animate-pulse rounded" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function ProfileHeader({ 
+  user, 
+  activeTab, 
+  onTabChange, 
+  onEditClick,
+  isLoading = false 
+}: ProfileHeaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // PROTECTION CRUCIALE : Si user est null ou undefined, on arrête tout.
-  if (!user) {
-    return null;
+  // Afficher le skeleton pendant le chargement
+  if (isLoading || !user) {
+    return <ProfileHeaderSkeleton />;
   }
 
   const getTabValue = (label: string) => {
@@ -46,7 +102,6 @@ export default function ProfileHeader({ user, activeTab, onTabChange, onEditClic
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Logique pour uploader la photo
       console.log("Photo sélectionnée:", file);
     }
   };
@@ -57,7 +112,7 @@ export default function ProfileHeader({ user, activeTab, onTabChange, onEditClic
         {/* Bannière */}
         <div className="relative w-full h-48 md:h-64 bg-slate-100 overflow-hidden rounded-b-[2rem]">
           <Image 
-            src={user?.bannerUrl || "/images/auth/champ.jpeg"} 
+            src={user.bannerUrl || "/images/auth/champ.jpeg"} 
             alt="Bannière" 
             fill 
             className="object-cover" 
@@ -69,11 +124,11 @@ export default function ProfileHeader({ user, activeTab, onTabChange, onEditClic
           <div className="flex flex-col sm:flex-row sm:items-end justify-between -mt-16 mb-6 gap-4">
             <div className="flex items-end gap-5">
               <div className="relative w-32 h-32 rounded-full border-4 border-white bg-slate-200 shadow-sm flex-shrink-0">
-                {user?.avatarUrl && (
+                {user.avatarUrl && (
                   <img src={user.avatarUrl} alt="Avatar" className="w-full h-full rounded-full object-cover" />
                 )}
                 
-                {/* Tooltip sur l'icône appareil photo */}
+                {user.isOwner && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button 
@@ -87,6 +142,7 @@ export default function ProfileHeader({ user, activeTab, onTabChange, onEditClic
                       <p>Modifier la photo de profil</p>
                     </TooltipContent>
                   </Tooltip>
+                )}
                 <input 
                   type="file" 
                   ref={fileInputRef} 
@@ -98,30 +154,34 @@ export default function ProfileHeader({ user, activeTab, onTabChange, onEditClic
 
               <div className="mb-2">
                 <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold text-slate-900">{user?.name}</h1>
+                  <h1 className="text-2xl font-bold text-slate-900">{user.name}</h1>
                   <span className="px-3 py-1 rounded-full border border-[#0D631B]/20 bg-[#E8F5E7] text-[#0D631B] text-xs font-bold capitalize">
-                    {user?.role}
+                    {user.role === "collecteur" ? "Collecteur" : "Fournisseur"}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 mt-1">
                   <div className="flex text-amber-400">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={14} fill={i < (user?.rating || 0) ? "currentColor" : "none"} />
+                      <Star key={i} size={14} fill={i < (user.rating || 0) ? "currentColor" : "none"} />
                     ))}
                   </div>
-                  <span className="text-sm font-bold text-slate-600">{(user?.rating || 0).toFixed(1)}</span>
+                  <span className="text-sm font-bold text-slate-600">{(user.rating || 0).toFixed(1)}</span>
                 </div>
               </div>
             </div>
 
-            <Button onClick={onEditClick} className="bg-[#2D6A36] hover:bg-[#23562b] text-white font-bold rounded-lg h-10 px-5 shadow-sm">
-              <Pencil size={16} className="mr-2" /> Modifier le profil
-            </Button>
+            {user.isOwner && (
+              <Button onClick={onEditClick} className="bg-[#2D6A36] hover:bg-[#23562b] text-white font-bold rounded-lg h-10 px-5 shadow-sm">
+                <Pencil size={16} className="mr-2" /> Modifier le profil
+              </Button>
+            )}
           </div>
 
-          <div className="border-b border-slate-100 pb-6 mb-0">
-            <p className="text-sm text-slate-500 max-w-full leading-relaxed">{user?.bio}</p>
-          </div>
+          {user.bio && user.bio !== "Aucune description disponible" && (
+            <div className="border-b border-slate-100 pb-6 mb-0">
+              <p className="text-sm text-slate-500 max-w-full leading-relaxed">{user.bio}</p>
+            </div>
+          )}
 
           <div className="w-full sm:w-1/4">
             <Tabs value={activeTab} onValueChange={onTabChange}>
