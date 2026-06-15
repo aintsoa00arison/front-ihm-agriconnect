@@ -67,15 +67,17 @@ function CollecteurContent() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className=" bg-white h-full">
       {isCreatingNew ? (
-        <div className="animate-in fade-in duration-200 p-6">
+        <div className="animate-in fade-in duration-200 p-6 h-full overflow-y-auto">
           <AdForm mode="demande" onCancel={handleCancel} onSave={handleSave} />
         </div>
       ) : (
         <>
           {hasProducts ? (
-            <CataloguePage userRole={userRole === "collector" ? "collecteur" : "fournisseur"} />
+            <div className="h-full overflow-hidden">
+              <CataloguePage userRole="collecteur" />
+            </div>
           ) : (
             <div className="space-y-6 p-4 md:p-6 lg:p-8 animate-in fade-in duration-300">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
@@ -85,10 +87,11 @@ function CollecteurContent() {
                     Catalogue
                   </h1>
                   <p className="text-sm text-slate-500 mt-1 font-medium">
-                    Explorez les offres de récoltes et produits disponibles chez les fournisseurs.
+                    Explorez les offres de récoltes et produits disponibles chez
+                    les fournisseurs.
                   </p>
                 </div>
-                <Button 
+                <Button
                   onClick={triggerNewForm}
                   className="font-bold gap-2 shadow-sm h-11 px-6 bg-[#0D631B] hover:bg-[#094713] text-white"
                 >
@@ -97,15 +100,17 @@ function CollecteurContent() {
                 </Button>
               </div>
 
-              <div className="flex flex-col items-center justify-center text-center p-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200 shadow-sm min-h-[400px]">
+              <div className="flex flex-col items-center justify-center text-center p-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200 shadow-sm min-h-100">
                 <div className="size-14 bg-emerald-50 rounded-full flex items-center justify-center text-[#0D631B] mb-4">
                   <Package size={28} />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900">Aucune annonce ou demande disponible</h3>
+                <h3 className="text-lg font-bold text-slate-900">
+                  Aucune annonce ou demande disponible
+                </h3>
                 <p className="text-sm text-slate-500 max-w-sm mt-1 mb-6 font-medium">
                   Il n'y a actuellement aucune publication sur le marché.
                 </p>
-                <Button 
+                <Button
                   onClick={triggerNewForm}
                   className="font-bold gap-2 shadow-sm h-11 px-6 bg-[#0D631B] hover:bg-[#094713] text-white"
                 >

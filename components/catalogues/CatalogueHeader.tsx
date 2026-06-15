@@ -17,9 +17,9 @@ export default function CatalogueHeader({
   searchQuery 
 }: CatalogueHeaderProps) {
   return (
-    <div className="sticky top-0 z-20 bg-neutral/95 backdrop-blur-sm pb-4">
-      <h1 className="text-3xl font-extrabold text-foreground mb-2">Catalogue</h1>
-      <p className="text-sm text-muted-foreground">
+    <div className="sticky top-0 z-20 bg-neutral/95 backdrop-blur-sm">
+      <h1 className="text-xl md:text-3xl font-extrabold text-foreground mb-1 md:mb-2">Catalogue</h1>
+      <p className="text-xs md:text-sm text-muted-foreground">
         {userRole === "fournisseur" 
           ? "Consultez les demandes d'achat des collecteurs" 
           : "Découvrez les annonces de vente des fournisseurs"}

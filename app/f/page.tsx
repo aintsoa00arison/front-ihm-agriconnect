@@ -68,7 +68,6 @@ function FournisseurContent() {
   return (
     <>
       {hasProducts ? (
-        /* 👈 Appele du fichier catalogue global pour le profil fournisseur */
         <CataloguePage userRole="fournisseur" />
       ) : (
         /* Message d'état vide si aucune annonce ou demande n'est disponible */

@@ -22,9 +22,9 @@ export default function AdCard({ ad, isExpanded, onToggleExpand, onViewProfile }
         </span>
       </div>
       <div className="p-6 space-y-4">
-        <div className="flex justify-between items-start gap-4">
+        <div className="flex flex-col md:flex-row md:justify-between items-start gap-4">
           <div>
-            <h2 className="text-xl font-bold text-foreground flex items-center gap-2 flex-wrap">
+            <h2 className="text-xl font-bold text-foreground flex items-center gap-1 flex-wrap">
               {ad.title} 
               <span className="text-xs font-semibold text-muted-foreground">{ad.timeAgo}</span>
             </h2>
@@ -37,7 +37,7 @@ export default function AdCard({ ad, isExpanded, onToggleExpand, onViewProfile }
               </span>
             </div>
           </div>
-          <div className="text-right">
+          <div className="md:text-right md:flex md:flex-col md:items-end flex justify-between w-full md:w-auto">
             <p className="text-xl font-black text-secondary">
               {ad.price.toLocaleString()} <span className="text-xs font-bold text-muted-foreground uppercase">Mga/{ad.unit}</span>
             </p>
