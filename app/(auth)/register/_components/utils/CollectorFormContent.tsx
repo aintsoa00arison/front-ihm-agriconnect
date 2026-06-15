@@ -15,7 +15,6 @@ import {
   validatePhone,
   validateNif,
   validateCin,
-  validateStat,
   formatPhone,
   formatCin,
 } from "../../../../utils/validation";
@@ -23,6 +22,12 @@ import FormInput from "./FormInput";
 import NeedsCheckboxGroup from "./NeedsCheckboxGroup";
 import SectionHeader from "./SectionHeader";
 import { CollectorFormData } from "../../../../services/register/types/collector";
+
+// Validation STAT : 17 chiffres exactement
+const validateStat = (stat: string): boolean => {
+  const cleanStat = stat.replace(/\s/g, "");
+  return /^\d{17}$/.test(cleanStat);
+};
 
 interface CollectorFormContentProps {
   formData: CollectorFormData;
@@ -39,7 +44,6 @@ export default function CollectorFormContent({
   onNeedChange,
   onValidationChange,
 }: CollectorFormContentProps) {
-  // États pour savoir si les champs ont été touchés
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const markAsTouched = (field: string) => {
@@ -61,9 +65,10 @@ export default function CollectorFormContent({
       ? "Requis : 10 chiffres" 
       : touched.nif && !formData.nif ? "Le NIF est requis" : undefined,
     stat: touched.stat && formData.stat && !validateStat(formData.stat) 
-      ? "Identifiant trop court (min. 5)" 
+      ? "Le STAT doit contenir exactement 17 chiffres" 
       : touched.stat && !formData.stat ? "Le STAT est requis" : undefined,
-    nomComplet: touched.nomComplet && !formData.nomComplet ? "Le nom complet est requis" : undefined,
+    nom: touched.nom && !formData.nom ? "Le nom est requis" : undefined,
+    prenom: touched.prenom && !formData.prenom ? "Le prénom est requis" : undefined,
     telephoneDirect: touched.telephoneDirect && formData.telephoneDirect && !validatePhone(formData.telephoneDirect) 
       ? "Requis : 10 chiffres" 
       : touched.telephoneDirect && !formData.telephoneDirect ? "Le téléphone est requis" : undefined,
@@ -72,12 +77,12 @@ export default function CollectorFormContent({
       : touched.cin && !formData.cin ? "Le CIN est requis" : undefined,
   };
 
-  // Vérifier si le formulaire est valide
   const isValid = Object.values(errors).every((error) => !error) &&
     formData.raisonSociale !== "" &&
     formData.siegeSocial !== "" &&
     formData.description !== "" &&
-    formData.nomComplet !== "";
+    formData.nom !== "" &&
+    formData.prenom !== "";
 
   useEffect(() => {
     onValidationChange?.(isValid);
@@ -169,10 +174,11 @@ export default function CollectorFormContent({
             value={formData.stat}
             onChange={(v) => handleChange("stat", v)}
             onBlur={() => markAsTouched("stat")}
-            placeholder="Stats ID"
+            placeholder="17 chiffres"
             icon={<FileText size={16} />}
             error={errors.stat}
-            
+            numeric={true}
+            maxLength={17}
             required
           />
         </div>
@@ -182,16 +188,28 @@ export default function CollectorFormContent({
       <div className="space-y-3">
         <SectionHeader title="Représentant légal" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          <FormInput
-            label="Nom complet"
-            value={formData.nomComplet}
-            onChange={(v) => handleChange("nomComplet", v)}
-            onBlur={() => markAsTouched("nomComplet")}
-            placeholder="Prénoms & Nom"
-            icon={<User size={16} />}
-            error={errors.nomComplet}
-            required
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <FormInput
+              label="Nom"
+              value={formData.nom || ""}
+              onChange={(v) => handleChange("nom", v)}
+              onBlur={() => markAsTouched("nom")}
+              placeholder="RAKOTO"
+              icon={<User size={16} />}
+              error={errors.nom}
+              required
+            />
+            <FormInput
+              label="Prénom"
+              value={formData.prenom || ""}
+              onChange={(v) => handleChange("prenom", v)}
+              onBlur={() => markAsTouched("prenom")}
+              placeholder="Jean"
+              icon={<User size={16} />}
+              error={errors.prenom}
+              required
+            />
+          </div>
           <FormInput
             label="Téléphone direct"
             value={formData.telephoneDirect}
