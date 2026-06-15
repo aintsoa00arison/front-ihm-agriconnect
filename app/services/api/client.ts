@@ -4,14 +4,14 @@ import axios from 'axios';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export const apiClient = axios.create({
-  baseURL: API_BASE_URL,  
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
   withCredentials: true,
 });
 
-// Intercepteur pour ajouter le token d'accès
+// Intercepteur pour ajouter le token
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token');
   if (token) {
@@ -20,20 +20,25 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Intercepteur pour rafraîchir le token
+// Intercepteur pour refresh token
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
+      
       try {
+        const accessToken = localStorage.getItem('access_token');
         const response = await apiClient.post('/auth/refresh', {
-          access_token: localStorage.getItem('access_token'),
+          access_token: accessToken,
         });
+        
         const { access_token } = response.data;
         localStorage.setItem('access_token', access_token);
         originalRequest.headers.Authorization = `Bearer ${access_token}`;
+        
         return apiClient(originalRequest);
       } catch (refreshError) {
         localStorage.removeItem('access_token');
@@ -41,6 +46,7 @@ apiClient.interceptors.response.use(
         return Promise.reject(refreshError);
       }
     }
+    
     return Promise.reject(error);
   }
 );

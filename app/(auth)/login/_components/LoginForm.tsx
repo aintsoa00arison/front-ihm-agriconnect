@@ -17,10 +17,15 @@ interface LoginFormProps {
 export default function LoginForm({ onForgotPassword, onSubmit }: LoginFormProps) {
   const { login, isLoading, user } = useAuth();
   const [email, setEmail] = useState("");
-  const [passord, setPassword] = useState("");
+  const [password, setPassword] = useState("");
+
+  console.log("🔵 LoginForm rendu"); // Debug
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("🔵 handleSubmit appelé"); // Debug
+    console.log("🔵 Email:", email, "Password:", password); // Debug
+    
     const cleanEmail = email.trim().toLowerCase();
 
     if (!validateEmail(cleanEmail)) {
@@ -28,7 +33,9 @@ export default function LoginForm({ onForgotPassword, onSubmit }: LoginFormProps
       return;
     }
 
-    const result = await login({ email: cleanEmail, passord });
+    console.log("🔵 Appel de login..."); // Debug
+    const result = await login({ email: cleanEmail, password });
+    console.log("🔵 Résultat du login:", result); // Debug
     
     if (result.success) {
       onSubmit?.({ 
@@ -48,7 +55,7 @@ export default function LoginForm({ onForgotPassword, onSubmit }: LoginFormProps
         required
       />
       <PasswordField
-        value={passord}
+        value={password}
         onChange={(e) => setPassword(e.target.value)}
         disabled={isLoading}
         required

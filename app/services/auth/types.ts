@@ -6,7 +6,7 @@ export interface TokenOutput {
 
 export interface UserLoginDTO {
   email: string;
-  passord: string;  
+  password: string;  
 }
 
 export interface EmailValidationDTO {
