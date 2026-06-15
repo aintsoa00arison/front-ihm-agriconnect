@@ -1,11 +1,10 @@
-// components/register/utils/EntrepriseForm.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { Building2, MapPin, Phone, Mail, FileText, User, CreditCard } from "lucide-react";
 import FormInput from "./FormInput";
 import SectionHeader from "./SectionHeader";
-import { formatPhone, formatCin, validateEmail, validatePhone, validateNif, validateCin, validateStat } from "../../../../utils/validation";
+import { formatPhone, formatCin, validateEmail, validatePhone, validateNif, validateCin } from "../../../../utils/validation";
 
 interface EntrepriseFormProps {
   formData: {
@@ -22,6 +21,12 @@ interface EntrepriseFormProps {
   onInputChange: (field: string, value: string) => void;
   onValidationChange?: (isValid: boolean) => void;
 }
+
+// 🔥 Validation STAT : 17 chiffres exactement
+const validateStat = (stat: string): boolean => {
+  const cleanStat = stat.replace(/\s/g, "");
+  return /^\d{17}$/.test(cleanStat);
+};
 
 export default function EntrepriseForm({ formData, onInputChange, onValidationChange }: EntrepriseFormProps) {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -44,14 +49,14 @@ export default function EntrepriseForm({ formData, onInputChange, onValidationCh
       ? "Requis : 10 chiffres"
       : touched.nif && !formData.nif ? "Le NIF est requis" : undefined,
     stat: touched.stat && formData.stat && !validateStat(formData.stat)
-      ? "Identifiant trop court (min. 5)"
+      ? "Le STAT doit contenir exactement 17 chiffres"
       : touched.stat && !formData.stat ? "Le STAT est requis" : undefined,
     nomResponsable: touched.nomResponsable && !formData.nomResponsable ? "Le nom du responsable est requis" : undefined,
     telephoneResponsable: touched.telephoneResponsable && formData.telephoneResponsable && !validatePhone(formData.telephoneResponsable)
       ? "Requis : 10 chiffres"
       : touched.telephoneResponsable && !formData.telephoneResponsable ? "Le téléphone est requis" : undefined,
     cinResponsable: touched.cinResponsable && formData.cinResponsable && !validateCin(formData.cinResponsable)
-      ? "Requis : 12 chiffres et  doit se terminer par 1 ou 2"
+      ? "Requis : 12 chiffres (doit se terminer par 1 ou 2)"
       : touched.cinResponsable && !formData.cinResponsable ? "Le CIN est requis" : undefined,
   };
 
@@ -111,7 +116,6 @@ export default function EntrepriseForm({ formData, onInputChange, onValidationCh
             icon={<Phone size={16} />}
             error={errors.contactExploitation}
             maxLength={13}
-          
             required
           />
           <FormInput
@@ -142,10 +146,11 @@ export default function EntrepriseForm({ formData, onInputChange, onValidationCh
             value={formData.stat}
             onChange={(v) => handleChange("stat", v)}
             onBlur={() => markAsTouched("stat")}
-            placeholder="Stats ID"
+            placeholder="17 chiffres"
             icon={<FileText size={16} />}
             error={errors.stat}
-            numeric={true} 
+            numeric={true}
+            maxLength={17}
             required
           />
         </div>
@@ -174,7 +179,6 @@ export default function EntrepriseForm({ formData, onInputChange, onValidationCh
             icon={<Phone size={16} />}
             error={errors.telephoneResponsable}
             maxLength={13}
-          
             required
           />
           <FormInput
@@ -186,7 +190,6 @@ export default function EntrepriseForm({ formData, onInputChange, onValidationCh
             icon={<CreditCard size={16} />}
             error={errors.cinResponsable}
             maxLength={15}
-            
             required
           />
         </div>

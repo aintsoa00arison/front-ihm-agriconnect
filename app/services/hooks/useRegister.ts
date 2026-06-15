@@ -1,17 +1,16 @@
-// services/hooks/useRegister.ts
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { registerService } from '../register/registerService';
 import { useRegisterStore } from '../register/store/registerStore';
 import { authService } from '../auth/authService';
+import { IndividualProviderPayload, EntrepriseProviderPayload } from '../register/types/payloads';
 
 export const useRegister = () => {
   const router = useRouter();
   const { registerDraft } = useRegisterStore();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Envoyer le code de vérification
   const sendVerificationCode = async (email: string): Promise<boolean> => {
     setIsLoading(true);
     try {
@@ -31,11 +30,10 @@ export const useRegister = () => {
     }
   };
 
-  // Vérifier le code
-  const verifyCode = async (email: string, code: string): Promise<boolean> => {
+  const verifyCode = async (userId: string, code: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const response = await authService.verifyCode({ email, code });
+      const response = await authService.verifyCode(userId, code);
       if (response.success) {
         toast.success(response.message);
         return true;
@@ -51,100 +49,107 @@ export const useRegister = () => {
     }
   };
 
-  // Finaliser l'inscription du collecteur
-  const registerCollector = async (): Promise<boolean> => {
+  const registerCollector = async (): Promise<{ success: boolean; userId?: string }> => {
     setIsLoading(true);
     try {
-      const { email, password, code } = registerDraft;
-      
-      if (!email || !password || !code) {
+      const { email, password } = registerDraft;
+      if (!email || !password) {
         toast.error("Données d'inscription manquantes");
-        return false;
+        return { success: false };
       }
 
-      const collectorData = registerService.prepareCollectorData(registerDraft);
-      if (!collectorData) {
+      const payload = registerService.prepareCollectorData(registerDraft);
+      if (!payload) {
         toast.error("Données du formulaire incomplètes");
-        return false;
+        return { success: false };
       }
 
-      const response = await registerService.registerCollector(
-        collectorData,
-        email,
-        password,
-        code
-      );
-
-      if (response.success) {
-        toast.success(response.message);
-        router.push('/login');
-        return true;
-      } else {
-        toast.error(response.message);
-        return false;
-      }
-    } catch (error: any) {
-      toast.error(error.response?.data?.detail || "Erreur lors de l'inscription");
-      return false;
+      const response = await registerService.registerCollector(payload, email, password);
+      return response;
+    } catch (error) {
+      return { success: false };
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Finaliser l'inscription du fournisseur
-  const registerFournisseur = async (bio?: string, photo?: File | string | null): Promise<boolean> => {
+  const registerFournisseur = async (bio?: string, photo?: File | string | null): Promise<{ success: boolean; userId?: string }> => {
+    console.log("🔵 registerFournisseur - === DÉBUT ===");
+    console.log("🔵 bio:", bio);
+    console.log("🔵 photo:", photo ? "présente" : "absente");
+    console.log("🔵 registerDraft:", JSON.stringify(registerDraft, null, 2));
+    
     setIsLoading(true);
     try {
-      const { email, password, code, type } = registerDraft;
+      const { email, password, type } = registerDraft;
       
-      if (!email || !password || !code || !type) {
+      console.log("🔵 email:", email);
+      console.log("🔵 password:", password ? "***" : "MANQUANT");
+      console.log("🔵 type:", type);
+      
+      if (!email || !password || !type) {
+        console.error("🔴 Données manquantes:", { email: !!email, password: !!password, type: !!type });
         toast.error("Données d'inscription manquantes");
-        return false;
+        return { success: false };
       }
 
       const fournisseurData = registerService.prepareFournisseurData(registerDraft);
+      console.log("🔵 fournisseurData préparé:", JSON.stringify(fournisseurData, null, 2));
+      
       if (!fournisseurData) {
         toast.error("Données du formulaire incomplètes");
-        return false;
+        return { success: false };
       }
 
-      let response;
+      let response: { success: boolean; message: string; userId?: string };
+      
       if (type === "entreprise") {
+        console.log("🔵 Appel registerEntrepriseProvider");
+        if (!('legal_name' in fournisseurData)) {
+          toast.error("Données entreprise invalides");
+          return { success: false };
+        }
         response = await registerService.registerEntrepriseProvider(
-          fournisseurData,
+          fournisseurData as EntrepriseProviderPayload,
           email,
           password,
-          code,
           bio,
           photo
         );
       } else {
+        console.log("🔵 Appel registerIndividualProvider");
+        if (!('last_name' in fournisseurData)) {
+          toast.error("Données particulier invalides");
+          return { success: false };
+        }
         response = await registerService.registerIndividualProvider(
-          fournisseurData,
+          fournisseurData as IndividualProviderPayload,
           email,
           password,
-          code,
           bio,
           photo
         );
       }
 
+      console.log("🔵 Réponse reçue:", response);
+      
       if (response.success) {
         toast.success(response.message);
-        router.push('/login');
-        return true;
+        return { success: true, userId: response.userId };
       } else {
         toast.error(response.message);
-        return false;
+        return { success: false };
       }
     } catch (error: any) {
+      console.error("🔴 Erreur inscription fournisseur:", error);
+      console.error("🔴 Détails erreur:", error.response?.data);
       toast.error(error.response?.data?.detail || "Erreur lors de l'inscription");
-      return false;
+      return { success: false };
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   return {
     sendVerificationCode,
     verifyCode,

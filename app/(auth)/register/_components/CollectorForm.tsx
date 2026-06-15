@@ -1,4 +1,3 @@
-// components/register/CollectorForm.tsx
 "use client";
 
 import { useState } from "react";
@@ -6,6 +5,7 @@ import { Stepper } from "@/components/ui/stepper";
 import CollectorFormContent from "./utils/CollectorFormContent";
 import FormNavigation from "./utils/FormNavigation";
 import { CollectorFormData, CollectorDataToSubmit } from "../../../services/register/types/collector";
+import { useRegisterStore } from "../../../services/register/store/registerStore";
 
 interface Props {
   initialData: any;
@@ -16,16 +16,19 @@ interface Props {
 const registerSteps = ["Type de rôle", "Informations supplémentaires", "Finalisation du profil"];
 
 export default function CollectorForm({ initialData, onBack, onNext }: Props) {
+  const setRegisterDraft = useRegisterStore((state) => state.setRegisterDraft);
+  
   const [formData, setFormData] = useState<CollectorFormData>({
     raisonSociale: initialData?.entreprise?.raison_sociale || "",
     siegeSocial: initialData?.entreprise?.siege_social || "",
-    telephonePro: initialData?.entreprise?.telephone_pro || "",
-    emailPro: initialData?.entreprise?.email_pro || "",
-    nif: initialData?.entreprise?.nif || "",
-    stat: initialData?.entreprise?.stat || "",
+    telephonePro: initialData?.entreprise?.telephone_pro || "0340000000",
+    emailPro: initialData?.entreprise?.email_pro || "contact@email.com",
+    nif: initialData?.entreprise?.nif || "1234567890",
+    stat: initialData?.entreprise?.stat || "12345678901234567",
     nomComplet: initialData?.representant_legal?.nom_complet || "",
-    telephoneDirect: initialData?.representant_legal?.telephone_direct || "",
-    cin: initialData?.representant_legal?.cin || "",
+    telephoneDirect: initialData?.representant_legal?.telephone_direct || "0320000000",
+    cin: initialData?.representant_legal?.cin || "101123456789",
+    description: initialData?.entreprise?.description || "Description de l'entreprise",
   });
 
   const [selectedNeeds, setSelectedNeeds] = useState<string[]>(initialData?.besoins || []);
@@ -33,17 +36,34 @@ export default function CollectorForm({ initialData, onBack, onNext }: Props) {
 
   const handleInputChange = (field: keyof CollectorFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setRegisterDraft({ [field]: value });
   };
 
   const handleNeedChange = (need: string, checked: boolean) => {
-    setSelectedNeeds((prev) =>
-      checked ? [...prev, need] : prev.filter((item) => item !== need)
-    );
+    const newNeeds = checked 
+      ? [...selectedNeeds, need] 
+      : selectedNeeds.filter((item) => item !== need);
+    setSelectedNeeds(newNeeds);
+    setRegisterDraft({ besoins: newNeeds });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) return;
+
+    setRegisterDraft({
+      raisonSociale: formData.raisonSociale,
+      siegeSocial: formData.siegeSocial,
+      telephonePro: formData.telephonePro,
+      emailPro: formData.emailPro,
+      nif: formData.nif,
+      stat: formData.stat,
+      nomComplet: formData.nomComplet,
+      telephoneDirect: formData.telephoneDirect,
+      cin: formData.cin,
+      besoins: selectedNeeds,
+      description: formData.description || "",
+    });
 
     const dataToSubmit: CollectorDataToSubmit = {
       entreprise: {
@@ -53,6 +73,7 @@ export default function CollectorForm({ initialData, onBack, onNext }: Props) {
         email_pro: formData.emailPro,
         nif: formData.nif,
         stat: formData.stat,
+        description: formData.description || "",
       },
       representant_legal: {
         nom_complet: formData.nomComplet,

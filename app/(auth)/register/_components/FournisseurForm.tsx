@@ -1,4 +1,3 @@
-// components/register/FournisseurForm.tsx
 "use client";
 
 import { useState } from "react";
@@ -8,6 +7,7 @@ import ParticulierForm from "./utils/ParticulierForm";
 import ProductionCheckboxGroup from "./utils/ProductionCheckboxGroup";
 import FormNavigation from "./utils/FormNavigation";
 import { UserType, FournisseurDataToSubmit, ProductionType } from "../../../services/register/types/fournisseur";
+import { useRegisterStore } from "../../../services/register/store/registerStore";
 
 interface Props {
   type: UserType;
@@ -19,6 +19,7 @@ interface Props {
 const registerSteps = ["Type de profil", "Informations supplémentaires", "Finalisation du profil"];
 
 export default function FournisseurForm({ type, initialData, onBack, onNext }: Props) {
+  const setRegisterDraft = useRegisterStore((state) => state.setRegisterDraft);
   const isEntreprise = type === "entreprise";
 
   const [formData, setFormData] = useState({
@@ -33,7 +34,8 @@ export default function FournisseurForm({ type, initialData, onBack, onNext }: P
     telephoneResponsable: initialData?.responsable?.telephone_direct || "",
     cinResponsable: initialData?.responsable?.cin || "",
     // Particulier
-    nomParticulier: initialData?.profil?.nom_complet || "",
+    nom: initialData?.profil?.nom || "",
+    prenom: initialData?.profil?.prenom || "",
     telephoneParticulier: initialData?.profil?.telephone || "",
     cinParticulier: initialData?.profil?.cin || "",
     localisationParticulier: initialData?.profil?.localisation || "",
@@ -48,12 +50,15 @@ export default function FournisseurForm({ type, initialData, onBack, onNext }: P
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setRegisterDraft({ [field]: value });
   };
 
   const handleProductionChange = (prod: ProductionType, checked: boolean) => {
-    setSelectedProductions((prev) =>
-      checked ? [...prev, prod] : prev.filter((item) => item !== prod)
-    );
+    const newProductions = checked
+      ? [...selectedProductions, prod]
+      : selectedProductions.filter((item) => item !== prod);
+    setSelectedProductions(newProductions);
+    setRegisterDraft({ productions: newProductions });
   };
 
   const isFormValid = isEntreprise ? isEntrepriseValid : isParticulierValid;
@@ -61,6 +66,32 @@ export default function FournisseurForm({ type, initialData, onBack, onNext }: P
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) return;
+
+    if (isEntreprise) {
+      setRegisterDraft({
+        type: "entreprise",
+        nomEntite: formData.nomEntite,
+        localisationEntite: formData.localisationEntite,
+        contactExploitation: formData.contactExploitation,
+        emailContact: formData.emailContact,
+        nif: formData.nif,
+        stat: formData.stat,
+        nomResponsable: formData.nomResponsable,
+        telephoneResponsable: formData.telephoneResponsable,
+        cinResponsable: formData.cinResponsable,
+        productions: selectedProductions,
+      });
+    } else {
+      setRegisterDraft({
+        type: "particulier",
+        nom: formData.nom,
+        prenom: formData.prenom,
+        telephoneParticulier: formData.telephoneParticulier,
+        cinParticulier: formData.cinParticulier,
+        localisationParticulier: formData.localisationParticulier,
+        productions: selectedProductions,
+      });
+    }
 
     const dataToSubmit: FournisseurDataToSubmit = isEntreprise
       ? {
@@ -83,7 +114,8 @@ export default function FournisseurForm({ type, initialData, onBack, onNext }: P
       : {
           type: "particulier",
           profil: {
-            nom_complet: formData.nomParticulier,
+            nom: formData.nom,
+            prenom: formData.prenom,
             telephone: formData.telephoneParticulier.replace(/\s/g, ""),
             cin: formData.cinParticulier.replace(/\s/g, ""),
             localisation: formData.localisationParticulier,

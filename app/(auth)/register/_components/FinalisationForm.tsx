@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import { Camera, ChevronLeft, Check, Info } from 'lucide-react';
-
-// Importations des composants racines Shadcn
 import { Stepper } from "@/components/ui/stepper";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -15,7 +13,6 @@ interface Props {
 }
 
 export default function FinalisationForm({ role, initialData, onBack, onFinish }: Props) {
-  // Initialisation des états avec les données déjà existantes dans le parent
   const [imageFile, setImageFile] = useState<File | null>(initialData.image);
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialData.imageUrl);
   const [bio, setBio] = useState<string>(initialData.bio);
@@ -23,30 +20,42 @@ export default function FinalisationForm({ role, initialData, onBack, onFinish }
   const isCollecteur = role === 'collecteur'; 
   const registerSteps = ["Type de profil", "Informations supplémentaires", "Finalisation du profil"];
 
-  // Regroupement des données actuelles à chaque action de navigation
-  const getCurrentData = () => ({
-    image: imageFile,
-    imageUrl: previewUrl,
-    bio: isCollecteur ? '' : bio // Nettoyage de la bio si c'est un collecteur
-  });
+  const getCurrentData = () => {
+    const data = {
+      image: imageFile,
+      imageUrl: previewUrl,
+      bio: isCollecteur ? '' : bio
+    };
+    console.log("🔵 [FinalisationForm] getCurrentData retourne:", data);
+    return data;
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      console.log("🔵 [FinalisationForm] Fichier sélectionné:", file.name);
       setImageFile(file);
       setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
+  const handleFinishClick = () => {
+    const currentData = getCurrentData();
+    console.log("🔵 [FinalisationForm] handleFinishClick - Appel onFinish avec:", currentData);
+    console.log("🔵 [FinalisationForm] role:", role);
+    console.log("🔵 [FinalisationForm] bio:", bio);
+    console.log("🔵 [FinalisationForm] imageFile:", imageFile);
+    console.log("🔵 [FinalisationForm] previewUrl:", previewUrl);
+    onFinish(currentData);
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 h-fit animate-in fade-in duration-500">
       
-      {/* Stepper positionné sur la 3ème et dernière étape */}
       <Stepper steps={registerSteps} currentStep={3} />
 
       <div className="bg-white rounded-[16px] sm:rounded-[20px] shadow-sm border border-separator/10 p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 md:space-y-8">
         
-        {/* Titre centré */}
         <div className="text-center">
           <h2 className="text-base sm:text-xl font-bold text-label uppercase tracking-wider font-manrope">
             Finalisation
@@ -55,7 +64,7 @@ export default function FinalisationForm({ role, initialData, onBack, onFinish }
 
         <div className="space-y-6 sm:space-y-8 md:space-y-10">
           
-          {/* SECTION PHOTO DE PROFIL - Responsive */}
+          {/* SECTION PHOTO DE PROFIL */}
           <div className="space-y-3 sm:space-y-4">
             <h3 className="text-xs sm:text-sm font-bold text-label uppercase tracking-wider border-b border-separator/10 pb-1">
               Photo de profil
@@ -99,7 +108,7 @@ export default function FinalisationForm({ role, initialData, onBack, onFinish }
             </div>
           </div>
 
-          {/* SECTION BIOGRAPHIE / MESSAGE D'INFORMATION - Responsive */}
+          {/* SECTION BIOGRAPHIE */}
           {!isCollecteur ? (
             <div className="space-y-3 sm:space-y-4 animate-in slide-in-from-top-2 duration-400">
               <div className="space-y-1">
@@ -132,11 +141,14 @@ export default function FinalisationForm({ role, initialData, onBack, onFinish }
             </div>
           )}
 
-          {/* NAVIGATION - Responsive */}
+          {/* NAVIGATION */}
           <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-4 sm:pt-6 border-t border-separator/10">
             <button 
               type="button" 
-              onClick={() => onBack(getCurrentData())}
+              onClick={() => {
+                console.log("🔵 [FinalisationForm] Clic Précédent");
+                onBack(getCurrentData());
+              }}
               className="w-full sm:w-auto px-6 sm:px-8 py-2.5 rounded-xl border border-separator/30 text-sm font-bold text-label hover:bg-neutral-50 transition-all flex items-center justify-center space-x-2 cursor-pointer"
             >
               <ChevronLeft size={16} />
@@ -144,11 +156,11 @@ export default function FinalisationForm({ role, initialData, onBack, onFinish }
             </button>
             <button 
               type="button"
-              onClick={() => onFinish(getCurrentData())}
+              onClick={handleFinishClick}
               className="btn-primary w-full sm:w-auto px-6 sm:px-10 py-2.5 text-xs sm:text-sm flex items-center justify-center space-x-2 shadow-lg shadow-primary/10 cursor-pointer"
             >
               <Check size={14} />
-              <span>Terminé</span>
+              <span>Créer mon compte</span>
             </button>
           </div>
         </div>

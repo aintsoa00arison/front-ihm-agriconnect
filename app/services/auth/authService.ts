@@ -87,32 +87,32 @@ logout: () => {
     return null;
   },
 
-  sendVerificationEmail: async (email: string): Promise<{ success: boolean; message: string }> => {
-    try {
-      await apiClient.post(`/auth/email/send?email=${encodeURIComponent(email)}`);
-      return { success: true, message: "Un code de vérification vous a été envoyé." };
-    } catch (error: any) {
-      console.error("Erreur d'envoi:", error.response?.data || error.message);
-      return { 
-        success: false, 
-        message: error.response?.data?.detail || "Erreur lors de l'envoi du code." 
-      };
-    }
-  },
-
-  verifyCode: async (data: { email: string; code: string }): Promise<{ success: boolean; message: string }> => {
-    try {
-      await apiClient.post(
-        `/auth/email/validate?email=${encodeURIComponent(data.email)}&code=${encodeURIComponent(data.code)}`
-      );
-      return { success: true, message: "Code validé avec succès !" };
-    } catch (error: any) {
-      return { 
-        success: false, 
-        message: error.response?.data?.detail || "Code invalide." 
-      };
-    }
-  },
+sendVerificationEmail: async (email: string): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response = await apiClient.post(`/auth/email/send?email=${encodeURIComponent(email)}`);
+    return { success: true, message: "Code de vérification envoyé" };
+  } catch (error: any) {
+    return { 
+      success: false, 
+      message: error.response?.data?.detail || "Erreur lors de l'envoi du code." 
+    };
+  }
+},
 
 
+// Dans authService.ts, assure-toi que verifyCode a cette signature :
+verifyCode: async (userId: string, code: string): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response = await apiClient.post('/auth/email/validate', {
+      user_id: userId,
+      code: code
+    });
+    return { success: true, message: "Code validé avec succès !" };
+  } catch (error: any) {
+    return { 
+      success: false, 
+      message: error.response?.data?.detail || "Code invalide." 
+    };
+  }
+},
 };

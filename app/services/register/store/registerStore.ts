@@ -26,6 +26,7 @@ export interface RegisterStoreData {
   telephoneDirect?: string;
   cin?: string;
   besoins?: string[];
+  description?: string;
 
   // Fournisseur - Entreprise
   nomEntite?: string;
@@ -37,7 +38,8 @@ export interface RegisterStoreData {
   cinResponsable?: string;
 
   // Fournisseur - Particulier
-  nomParticulier?: string;
+  nom?: string;                    // ← AJOUTER (last_name)
+  prenom?: string;                 // ← AJOUTER (first_name)
   telephoneParticulier?: string;
   cinParticulier?: string;
   localisationParticulier?: string;

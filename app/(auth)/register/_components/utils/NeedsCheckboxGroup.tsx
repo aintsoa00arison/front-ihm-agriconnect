@@ -1,4 +1,4 @@
-// components/register/NeedsCheckboxGroup.tsx
+// components/register/utils/NeedsCheckboxGroup.tsx
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,10 +10,25 @@ interface NeedsCheckboxGroupProps {
 }
 
 export default function NeedsCheckboxGroup({ selectedNeeds, onNeedChange }: NeedsCheckboxGroupProps) {
+  const handleChange = (need: string, checked: boolean) => {
+    // 🔥 Si on coche une nouvelle case, on désactive les autres
+    if (checked) {
+      // Désactiver toutes les autres catégories et activer celle-ci
+      NEEDS.forEach(n => {
+        if (n !== need && selectedNeeds.includes(n)) {
+          onNeedChange(n, false);
+        }
+      });
+      onNeedChange(need, true);
+    } else {
+      onNeedChange(need, false);
+    }
+  };
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-neutral-50 p-3 sm:p-4 rounded-xl border border-separator/10">
       <span className="text-[9px] sm:text-[10px] font-bold text-label uppercase text-center sm:text-left">
-        Besoin :
+        Catégorie principale :
       </span>
       <div className="flex flex-wrap justify-center sm:justify-end gap-3 sm:gap-6">
         {NEEDS.map((item) => (
@@ -21,7 +36,7 @@ export default function NeedsCheckboxGroup({ selectedNeeds, onNeedChange }: Need
             <Checkbox
               id={`need-${item}`}
               checked={selectedNeeds.includes(item)}
-              onCheckedChange={(checked) => onNeedChange(item, checked as boolean)}
+              onCheckedChange={(checked) => handleChange(item, checked as boolean)}
             />
             <label
               htmlFor={`need-${item}`}
@@ -32,6 +47,9 @@ export default function NeedsCheckboxGroup({ selectedNeeds, onNeedChange }: Need
           </div>
         ))}
       </div>
+      <p className="text-[10px] text-muted-foreground text-center sm:text-left mt-2 sm:mt-0">
+        Sélectionnez une seule catégorie principale
+      </p>
     </div>
   );
 }

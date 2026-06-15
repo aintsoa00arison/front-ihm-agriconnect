@@ -5,10 +5,10 @@ export const REGEX_PATTERNS = {
   phone: /^\d{10}$/,          // 10 chiffres (Madagascar)
   nif: /^\d{10}$/,            // 10 chiffres
   cin: /^\d{11}[1-2]$/,       // 12 chiffres et doit se terminer par 1 ou 2 au total, le dernier est obligatoirement 1 ou 2
-  stat: /^.{5,}$/             // Minimum 5 caractères
+  stat: /^\d{17}$/            // 🔥 17 chiffres exactement (pour le STAT malgache)
 };
 
-// --- FONCTIONS DE FORMATAGE EN TEMPS RÉEL (À utiliser dans tes onChange) ---
+// --- FONCTIONS DE FORMATAGE EN TEMPS RÉEL ---
 
 export const formatPhone = (value: string): string => {
   const digits = value.replace(/\D/g, "");
@@ -27,14 +27,14 @@ export const formatCin = (value: string): string => {
   return blocks.join(" ");
 };
 
-// --- FONCTIONS DE VALIDATION (Nettoient les espaces avant vérification) ---
+// --- FONCTIONS DE VALIDATION ---
 
 export const validateEmail = (email: string): boolean => 
   email === '' || REGEX_PATTERNS.email.test(email.trim());
 
 export const validatePhone = (phone: string): boolean => {
   if (phone === '') return true;
-  const cleanPhone = phone.replace(/\s/g, ''); // Enlève les espaces visuels
+  const cleanPhone = phone.replace(/\s/g, '');
   return REGEX_PATTERNS.phone.test(cleanPhone);
 };
 
@@ -50,14 +50,14 @@ export const validateCin = (cin: string): boolean => {
   return REGEX_PATTERNS.cin.test(cleanCin);
 };
 
-export const validateStat = (stat: string): boolean => 
-  stat === '' || REGEX_PATTERNS.stat.test(stat.trim());
+export const validateStat = (stat: string): boolean => {
+  if (stat === '') return true;
+  const cleanStat = stat.replace(/\s/g, '');
+  return REGEX_PATTERNS.stat.test(cleanStat);
+};
 
 // --- ANALYSE PRÉCISE DES ERREURS D'EMAIL ---
 
-/**
- * Analyse un email invalide et retourne un message d'erreur textuel précis.
- */
 export const analyzeEmailError = (email: string): string => {
   const trimmed = email.trim();
   
@@ -125,7 +125,7 @@ export const getCinError = (cin: string): string | null => {
 
 export const getStatError = (stat: string): string | null => {
   if (!stat) return "Le STAT est requis";
-  if (!validateStat(stat)) return "Minimum 5 caractères";
+  if (!validateStat(stat)) return "17 chiffres requis";
   return null;
 };
 
@@ -134,7 +134,7 @@ export const getRequiredError = (value: string, fieldName: string): string | nul
   return null;
 };
 
-// --- VALIDATEUR DE FORMULAIRE (pour simplifier l'utilisation) ---
+// --- VALIDATEUR DE FORMULAIRE ---
 
 export const validateFormField = {
   required: (value: string, fieldName: string): string | null => {

@@ -1,7 +1,7 @@
-// components/auth/RegisterForm.tsx
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,33 +13,19 @@ import EmailField from "./Fields/EmailField";
 import PasswordField from "./Fields/PasswordField";
 
 interface RegisterFormProps {
-  onCodeSent: (email: string, password: string) => void;
   onSubmit?: (data: any) => void;
 }
 
-export default function RegisterForm({ onCodeSent, onSubmit }: RegisterFormProps) {
+export default function RegisterForm({ onSubmit }: RegisterFormProps) {
+  const router = useRouter();
   const setRegisterDraft = useRegisterStore((state) => state.setRegisterDraft);
-  const { sendVerificationEmail, isLoading } = useAuth();
+  const { isLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const isPasswordMismatch = confirmPassword.length > 0 && password !== confirmPassword;
-
-  // Fonction pour vérifier la disponibilité de l'email
-  const checkEmailAvailability = async (email: string): Promise<boolean> => {
-    try {
-      const response = await sendVerificationEmail(email);
-      return response;
-    } catch (error: any) {
-      if (error.response?.status === 409) {
-        toast.error("Cet email est déjà utilisé.");
-        return false;
-      }
-      return true;
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,16 +44,13 @@ export default function RegisterForm({ onCodeSent, onSubmit }: RegisterFormProps
       return;
     }
 
-    const isEmailAvailable = await checkEmailAvailability(cleanEmail);
-    if (!isEmailAvailable) return;
-
-    const success = await sendVerificationEmail(cleanEmail);
+    // Sauvegarder les données dans le store
+    setRegisterDraft({ email: cleanEmail, password });
+    onSubmit?.({ email: cleanEmail, password, mode: "register_draft" });
     
-    if (success) {
-      setRegisterDraft({ email: cleanEmail, password });
-      onSubmit?.({ email: cleanEmail, password, mode: "register_draft" });
-      onCodeSent(cleanEmail, password);
-    }
+    // Rediriger vers le choix du rôle
+    toast.success("Email enregistré ! Veuillez choisir votre rôle.");
+    router.push("/register");
   };
 
   return (

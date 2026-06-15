@@ -1,4 +1,3 @@
-// components/register/CollectorFormContent.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -51,6 +50,7 @@ export default function CollectorFormContent({
   const errors = {
     raisonSociale: touched.raisonSociale && !formData.raisonSociale ? "La raison sociale est requise" : undefined,
     siegeSocial: touched.siegeSocial && !formData.siegeSocial ? "Le siège social est requis" : undefined,
+    description: touched.description && !formData.description ? "La description est requise" : undefined,
     telephonePro: touched.telephonePro && formData.telephonePro && !validatePhone(formData.telephonePro) 
       ? "Requis : 10 chiffres" 
       : touched.telephonePro && !formData.telephonePro ? "Le téléphone est requis" : undefined,
@@ -68,7 +68,7 @@ export default function CollectorFormContent({
       ? "Requis : 10 chiffres" 
       : touched.telephoneDirect && !formData.telephoneDirect ? "Le téléphone est requis" : undefined,
     cin: touched.cin && formData.cin && !validateCin(formData.cin) 
-      ? "Requis : 12 chiffres et  doit se terminer par 1 ou 2 " 
+      ? "Requis : 12 chiffres (doit se terminer par 1 ou 2)" 
       : touched.cin && !formData.cin ? "Le CIN est requis" : undefined,
   };
 
@@ -76,6 +76,7 @@ export default function CollectorFormContent({
   const isValid = Object.values(errors).every((error) => !error) &&
     formData.raisonSociale !== "" &&
     formData.siegeSocial !== "" &&
+    formData.description !== "" &&
     formData.nomComplet !== "";
 
   useEffect(() => {
@@ -120,6 +121,16 @@ export default function CollectorFormContent({
             required
           />
           <FormInput
+            label="Description de l'entreprise"
+            value={formData.description || ""}
+            onChange={(v) => handleChange("description", v)}
+            onBlur={() => markAsTouched("description")}
+            placeholder="Description de votre activité..."
+            icon={<FileText size={16} />}
+            error={errors.description}
+            required
+          />
+          <FormInput
             label="Téléphone pro"
             value={formData.telephonePro}
             onChange={(v) => handleChange("telephonePro", v)}
@@ -128,7 +139,6 @@ export default function CollectorFormContent({
             icon={<Phone size={16} />}
             error={errors.telephonePro}
             maxLength={13}
-           
             required
           />
           <FormInput
@@ -162,7 +172,7 @@ export default function CollectorFormContent({
             placeholder="Stats ID"
             icon={<FileText size={16} />}
             error={errors.stat}
-            numeric={true}
+            
             required
           />
         </div>
@@ -191,7 +201,6 @@ export default function CollectorFormContent({
             icon={<Phone size={16} />}
             error={errors.telephoneDirect}
             maxLength={13}
-          
             required
           />
           <FormInput
@@ -203,7 +212,6 @@ export default function CollectorFormContent({
             icon={<CreditCard size={16} />}
             error={errors.cin}
             maxLength={15}
-          
             required
           />
         </div>

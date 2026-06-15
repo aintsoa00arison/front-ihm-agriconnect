@@ -9,7 +9,9 @@ export interface CollectorFormData {
   nomComplet: string;
   telephoneDirect: string;
   cin: string;
+  description: string; // Ajouté pour la description du collecteur
 }
+
 
 export interface CollectorDataToSubmit {
   entreprise: {
@@ -19,6 +21,7 @@ export interface CollectorDataToSubmit {
     email_pro: string;
     nif: string;
     stat: string;
+    description: string;  // ← Ajoute cette ligne
   };
   representant_legal: {
     nom_complet: string;

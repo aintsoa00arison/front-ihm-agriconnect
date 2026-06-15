@@ -5,20 +5,21 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { validateEmail, analyzeEmailError } from "../../../utils/validation";
-import { authService } from "../../../services/auth/authService";
+import { useAuth } from "../../../services/hooks/useAuth";
 import EmailField from "./Fields/EmailField";
 
 interface ForgotPasswordFormProps {
-  onCodeSent: (email: string) => void;
   onCancel: () => void;
 }
 
-export default function ForgotPasswordForm({ onCodeSent, onCancel }: ForgotPasswordFormProps) {
+export default function ForgotPasswordForm({ onCancel }: ForgotPasswordFormProps) {
+  const { sendVerificationEmail, isLoading } = useAuth();
   const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [codeSent, setCodeSent] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const { verifyCode } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendCode = async () => {
     const cleanEmail = email.trim().toLowerCase();
 
     if (!validateEmail(cleanEmail)) {
@@ -26,27 +27,73 @@ export default function ForgotPasswordForm({ onCodeSent, onCancel }: ForgotPassw
       return;
     }
 
-    setIsLoading(true);
-    try {
-      // Appel réel à l'API pour envoyer l'email de validation
-      const response = await authService.sendVerificationEmail(cleanEmail);
-      
-      if (response.success) {
-        toast.success(response.message);
-        onCodeSent(cleanEmail);
-      } else {
-        toast.error(response.message);
-      }
-    } catch (error: any) {
-      console.error("Erreur d'envoi:", error);
-      toast.error(error.response?.data?.detail || "Erreur lors de l'envoi du code.");
-    } finally {
-      setIsLoading(false);
+    const success = await sendVerificationEmail(cleanEmail);
+    if (success) {
+      setCodeSent(true);
+      toast.success("Code de vérification envoyé à votre email.");
     }
   };
 
+  const handleVerifyCode = async () => {
+    const cleanEmail = email.trim().toLowerCase();
+    const success = await verifyCode(cleanEmail, verificationCode);
+    
+    if (success) {
+      toast.success("Code validé ! Redirection vers la réinitialisation...");
+      // Rediriger vers le formulaire de réinitialisation
+      setTimeout(() => {
+        window.location.href = `/reset-password?email=${encodeURIComponent(cleanEmail)}`;
+      }, 1500);
+    }
+  };
+
+  if (codeSent) {
+    return (
+      <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleVerifyCode(); }}>
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-foreground/80">
+            Code de vérification
+          </label>
+          <input
+            type="text"
+            placeholder="XXXXXX"
+            value={verificationCode}
+            onChange={(e) => setVerificationCode(e.target.value)}
+            className="w-full bg-muted/30 border-border rounded-xl h-11 px-4 text-center text-lg tracking-widest font-mono"
+            maxLength={6}
+            required
+          />
+        </div>
+        <Button
+          type="submit"
+          disabled={isLoading || verificationCode.length !== 6}
+          className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-semibold"
+        >
+          {isLoading ? "Vérification..." : "Vérifier le code"}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={handleSendCode}
+          className="w-full text-xs font-bold text-gray-500 hover:text-primary"
+          disabled={isLoading}
+        >
+          Renvoyer le code
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => setCodeSent(false)}
+          className="w-full text-xs font-bold text-gray-500 hover:text-primary"
+        >
+          Retour
+        </Button>
+      </form>
+    );
+  }
+
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
+    <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSendCode(); }}>
       <EmailField
         value={email}
         onChange={(e) => setEmail(e.target.value)}
@@ -56,7 +103,7 @@ export default function ForgotPasswordForm({ onCodeSent, onCancel }: ForgotPassw
       <Button
         type="submit"
         disabled={isLoading}
-        className="w-full h-10 sm:h-12 bg-primary hover:bg-primary/90 text-white font-semibold"
+        className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-semibold"
       >
         {isLoading ? "Envoi en cours..." : "Envoyer le code"}
       </Button>

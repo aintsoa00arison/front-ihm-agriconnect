@@ -19,7 +19,7 @@ export interface FournisseurFormData {
   cinParticulier: string;
   localisationParticulier: string;
 }
-
+// services/register/types/fournisseur.ts
 export interface FournisseurDataToSubmit {
   type: UserType;
   structure?: {
@@ -36,7 +36,8 @@ export interface FournisseurDataToSubmit {
     cin: string;
   };
   profil?: {
-    nom_complet: string;
+    nom: string;
+    prenom: string;
     telephone: string;
     cin: string;
     localisation: string;

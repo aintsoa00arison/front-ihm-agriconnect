@@ -1,12 +1,11 @@
-// components/auth/AuthForm.tsx
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import AuthTabs from "./AuthTabs";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
 import ForgotPasswordForm from "./ForgotPasswordForm";
-import VerificationForm from "./VerificationForm";
 import ResetPasswordForm from "./ResetPasswordForm";
 
 interface AuthFormProps {
@@ -14,50 +13,21 @@ interface AuthFormProps {
   onSubmit?: (data: any) => void;
 }
 
-type ViewState = "login" | "register" | "forgot" | "verify" | "reset";
+type ViewState = "login" | "register" | "forgot" | "reset";
 
 export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps) {
+  const router = useRouter();
   const [view, setView] = useState<ViewState>("login");
-  const [tempEmail, setTempEmail] = useState("");
-  const [tempPassword, setTempPassword] = useState("");
-  const [verifyMode, setVerifyMode] = useState<"register" | "reset">("register");
 
   useEffect(() => {
     setView(initialMode === "register" ? "register" : "login");
   }, [initialMode]);
 
-  // Pour l'inscription : après envoi du code
-  const handleRegisterCodeSent = (email: string, password: string) => {
-    setTempEmail(email);
-    setTempPassword(password);
-    setVerifyMode("register");
-    setView("verify");
-  };
-
-  // Pour le reset password : après envoi du code
-  const handleResetCodeSent = (email: string) => {
-    setTempEmail(email);
-    setVerifyMode("reset");
-    setView("verify");
-  };
-
-  const handleVerified = () => {
-    if (verifyMode === "reset") {
-      setView("reset");
-    }
-    // Pour register, on redirige directement dans VerificationForm
-  };
-
-  const handleResetComplete = () => {
-    setView("login");
-  };
-
   const getTitle = () => {
     switch (view) {
       case "login": return "Bon retour. Veuillez entrer vos identifiants de connexion.";
-      case "register": return "Bienvenue ! Veuillez fournir les informations demandées.";
+      case "register": return "Bienvenue ! Créez votre compte.";
       case "forgot": return "Récupération de compte. Saisissez votre email pour recevoir un code.";
-      case "verify": return "Vérification du code. Entrez le code envoyé à votre adresse email.";
       case "reset": return "Nouveau mot de passe";
       default: return "";
     }
@@ -65,7 +35,6 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
 
   const getHeaderTitle = () => {
     switch (view) {
-      case "verify": return "Saisissez le code de vérification";
       case "reset": return "Nouveau mot de passe";
       default: return "Tsena";
     }
@@ -101,30 +70,20 @@ export default function AuthForm({ mode: initialMode, onSubmit }: AuthFormProps)
 
         {view === "register" && (
           <RegisterForm
-            onCodeSent={handleRegisterCodeSent}
             onSubmit={onSubmit}
           />
         )}
 
         {view === "forgot" && (
           <ForgotPasswordForm
-            onCodeSent={handleResetCodeSent}
             onCancel={() => setView("login")}
-          />
-        )}
-
-        {view === "verify" && (
-          <VerificationForm
-            email={tempEmail}
-            mode={verifyMode}
-            onVerified={handleVerified}
           />
         )}
 
         {view === "reset" && (
           <ResetPasswordForm
-            email={tempEmail}
-            onResetComplete={handleResetComplete}
+            email=""
+            onResetComplete={() => setView("login")}
             onSubmit={onSubmit}
           />
         )}

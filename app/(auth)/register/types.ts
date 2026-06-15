@@ -28,7 +28,8 @@ export interface RegisterStoreData {
   nomComplet?: string;         // Représentant légal collecteur
   telephoneDirect?: string;    // Représentant légal collecteur
   cin?: string;                // Représentant légal collecteur
-  besoins?: string[];          // Tableau ['Végétale', 'Elevage'...]
+  besoins?: string[]; 
+           // Tableau ['Végétale', 'Elevage'...]
 
   // 2. Inputs du Fournisseur - Entreprise (FournisseurForm)
   nomEntite?: string;

@@ -8,7 +8,8 @@ import { formatPhone, formatCin, validatePhone, validateCin } from "../../../../
 
 interface ParticulierFormProps {
   formData: {
-    nomParticulier: string;
+    nom: string;        // last_name
+    prenom: string;     // first_name
     telephoneParticulier: string;
     cinParticulier: string;
     localisationParticulier: string;
@@ -24,21 +25,20 @@ export default function ParticulierForm({ formData, onInputChange, onValidationC
     setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
-  // Calcul des erreurs en temps réel
   const errors = {
-    nomParticulier: touched.nomParticulier && !formData.nomParticulier ? "Le nom est requis" : undefined,
+    nom: touched.nom && !formData.nom ? "Le nom est requis" : undefined,
+    prenom: touched.prenom && !formData.prenom ? "Le prénom est requis" : undefined,
     telephoneParticulier: touched.telephoneParticulier && formData.telephoneParticulier && !validatePhone(formData.telephoneParticulier)
       ? "Requis : 10 chiffres"
       : touched.telephoneParticulier && !formData.telephoneParticulier ? "Le téléphone est requis" : undefined,
     cinParticulier: touched.cinParticulier && formData.cinParticulier && !validateCin(formData.cinParticulier)
-      ? "Requis : 12 chiffres et  doit se terminer par 1 ou 2"
+      ? "Requis : 12 chiffres (doit se terminer par 1 ou 2)"
       : touched.cinParticulier && !formData.cinParticulier ? "Le CIN est requis" : undefined,
-    localisationParticulier: touched.localisationParticulier && !formData.localisationParticulier ? "La localisation est requise" : undefined,
+    localisationParticulier: touched.localisationParticulier && !formData.localisationParticulier ? "L'adresse est requise" : undefined,
   };
 
-  // Validation globale
-  const isValid = !errors.nomParticulier && !errors.telephoneParticulier && !errors.cinParticulier && !errors.localisationParticulier &&
-    formData.nomParticulier !== "" && formData.localisationParticulier !== "";
+  const isValid = !errors.nom && !errors.prenom && !errors.telephoneParticulier && !errors.cinParticulier && !errors.localisationParticulier &&
+    formData.nom !== "" && formData.prenom !== "" && formData.localisationParticulier !== "";
 
   useEffect(() => {
     onValidationChange?.(isValid);
@@ -57,16 +57,28 @@ export default function ParticulierForm({ formData, onInputChange, onValidationC
 
   return (
     <div className="max-w-2xl mx-auto space-y-4 sm:space-y-5 animate-in slide-in-from-bottom-2 duration-300">
-      <FormInput
-        label="Nom et prénom(s)"
-        value={formData.nomParticulier}
-        onChange={(v) => handleChange("nomParticulier", v)}
-        onBlur={() => markAsTouched("nomParticulier")}
-        placeholder="Votre nom complet"
-        icon={<User size={16} />}
-        error={errors.nomParticulier}
-        required
-      />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <FormInput
+          label="Nom"
+          value={formData.nom}
+          onChange={(v) => handleChange("nom", v)}
+          onBlur={() => markAsTouched("nom")}
+          placeholder="RAKOTO"
+          icon={<User size={16} />}
+          error={errors.nom}
+          required
+        />
+        <FormInput
+          label="Prénom"
+          value={formData.prenom}
+          onChange={(v) => handleChange("prenom", v)}
+          onBlur={() => markAsTouched("prenom")}
+          placeholder="Jean"
+          icon={<User size={16} />}
+          error={errors.prenom}
+          required
+        />
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <FormInput
@@ -74,11 +86,11 @@ export default function ParticulierForm({ formData, onInputChange, onValidationC
           value={formData.telephoneParticulier}
           onChange={(v) => handleChange("telephoneParticulier", v)}
           onBlur={() => markAsTouched("telephoneParticulier")}
-          placeholder="03x xx xxx xx"
+          placeholder="034 xx xxx xx"
           icon={<Phone size={16} />}
           error={errors.telephoneParticulier}
           maxLength={13}
-           
+         
           required
         />
         <FormInput
@@ -90,13 +102,13 @@ export default function ParticulierForm({ formData, onInputChange, onValidationC
           icon={<CreditCard size={16} />}
           error={errors.cinParticulier}
           maxLength={15}
-         
+          
           required
         />
       </div>
 
       <FormInput
-        label="Adresse postale / Localisation"
+        label="Adresse"
         value={formData.localisationParticulier}
         onChange={(v) => handleChange("localisationParticulier", v)}
         onBlur={() => markAsTouched("localisationParticulier")}
