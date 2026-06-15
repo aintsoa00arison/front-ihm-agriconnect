@@ -15,15 +15,15 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 
-interface SidebarCollecteurProps {
+interface SidebarFournisseurProps {
   userSlug: string;
   userName: string;
 }
 
-export default function MobileSidebarCollecteur({
+export default function MobileSidebarFournisseur({
   userSlug,
   userName,
-}: SidebarCollecteurProps) {
+}: SidebarFournisseurProps) {
   const pathname = usePathname();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -35,21 +35,21 @@ export default function MobileSidebarCollecteur({
   };
 
   const navItems = [
-    { label: "Catalogue", href: "/c", icon: Store, exact: true },
+    { label: "Catalogue", href: "/f", icon: Store, exact: true },
     {
       label: "Messages",
-      href: "/c/messages",
+      href: "/f/messages",
       icon: MessageCircle,
       badgeCount: 3,
     },
     {
       label: "Mon profil",
-      href: `/c/profile/${userSlug}?tab=annonces`,
+      href: `/f/profile/${userSlug}?tab=annonces`,
       icon: User,
     },
     {
-      label: "Les Fournisseurs",
-      href: `/c/annuaire`,
+      label: "Les Collecteurs",
+      href: `/f/annuaire`,
       icon: Star,
     },
   ];
@@ -80,7 +80,7 @@ export default function MobileSidebarCollecteur({
             <Button
               onClick={() => {
                 setIsDrawerOpen(false);
-                window.location.href = "/c?action=new";
+                window.location.href = "/f?action=new";
               }}
               className="w-full h-12 mt-4 shadow-sm font-bold gap-2 bg-[#0D631B] hover:bg-[#094713] text-white transition-all"
             >

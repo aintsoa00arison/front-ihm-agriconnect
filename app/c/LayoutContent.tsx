@@ -1,4 +1,3 @@
-// app/c/LayoutContent.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
