@@ -4,11 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import ProfileHeader from "./ProfileHeader";
-import ProfileReviews from "./ProfileReviews"; 
+import ProfileReviews from "./ProfileReviews";
 import EditCollectorProfileForm from "./Edit/EditCollectorProfileForm";
 import EditSupplierProfileForm from "./Edit/EditSupplierProfileForm";
-import ProfileAds from "./ProfileAds"; 
-import AdForm from "@/components/annonces/AddForm"; 
+import ProfileAds from "./ProfileAds";
+import AdForm from "@/components/annonces/AddForm";
 import { useProfile } from "../../app/services/hooks/useProfile";
 import { getUserId } from "../../app/services/lib/auth";
 import AboutSection from "./ProfileAbout";
@@ -20,14 +20,20 @@ interface ProfileViewProps {
 export default function ProfileView({ slug }: ProfileViewProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const tabFromUrl = searchParams?.get("tab") || "annonces";
   const [activeTab, setActiveTabState] = useState(tabFromUrl);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editingAd, setEditingAd] = useState<any | null>(null);
-  
-  const { profile, loading, error, updateCollectorProfile, updateFournisseurProfile } = useProfile(slug);
-  
+
+  const {
+    profile,
+    loading,
+    error,
+    updateCollectorProfile,
+    updateFournisseurProfile,
+  } = useProfile(slug);
+
   // Vérifier si c'est le profil de l'utilisateur connecté
   const currentUserId = getUserId();
   const isOwner = profile?.id === currentUserId || slug === "me";
@@ -49,7 +55,7 @@ export default function ProfileView({ slug }: ProfileViewProps) {
     } else {
       result = await updateFournisseurProfile(data);
     }
-    
+
     if (result.success) {
       setIsEditing(false);
       toast.success("Profil mis à jour avec succès !");
@@ -72,8 +78,8 @@ export default function ProfileView({ slug }: ProfileViewProps) {
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-500">{error || "Profil non trouvé"}</p>
-          <button 
-            onClick={() => router.push('/login')}
+          <button
+            onClick={() => router.push("/login")}
             className="mt-4 text-primary hover:underline"
           >
             Retour à la connexion
@@ -114,18 +120,23 @@ export default function ProfileView({ slug }: ProfileViewProps) {
         />
       ) : (
         <div className="space-y-6 animate-in fade-in duration-300">
-         <ProfileHeader
-          user={profileWithOwner}
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-          onEditClick={() => setIsEditing(true)}
-          isLoading={loading}
-        />
-          
+          <ProfileHeader
+            user={profileWithOwner}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            onEditClick={() => setIsEditing(true)}
+            isLoading={loading}
+          />
+
           <div className="max-w-7xl mx-auto px-4">
             {activeTab === "annonces" && <ProfileAds onEditAd={setEditingAd} />}
             {activeTab === "apropos" && <AboutSection profile={profile} />}
-            {activeTab === "avis" && <ProfileReviews rating={profile.rating} reviews={profile.reviews || []} />}
+            {activeTab === "avis" && (
+              <ProfileReviews
+                rating={profile.rating}
+                reviews={profile.reviews || []}
+              />
+            )}
           </div>
         </div>
       )}

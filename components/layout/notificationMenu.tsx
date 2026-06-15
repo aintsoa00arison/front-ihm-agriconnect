@@ -9,7 +9,6 @@ import { Bell, X, Handshake, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-
 const notifications = [
   {
     id: 1,
@@ -100,10 +99,7 @@ export function NotificationMenu() {
                   </div>
                 ) : (
                   <Avatar>
-                    <AvatarImage
-                      src={notif.avatar}
-                      alt="shadcn"
-                    />
+                    <AvatarImage src={notif.avatar} alt="shadcn" />
                     <AvatarFallback>LR</AvatarFallback>
                   </Avatar>
                 )}
