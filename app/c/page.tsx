@@ -5,11 +5,18 @@ import { Store, Plus, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AdForm from "@/components/annonces/AddForm"; 
 import CataloguePage from "@/components/catalogues/CataloguePage"; 
+import { getUserRole } from "../services/lib/auth";
 
 function CollecteurContent() {
   const [isCreatingNew, setIsCreatingNew] = useState<boolean>(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
+    // Récupérer le rôle directement
+    const role = getUserRole();
+    setUserRole(role);
+    console.log("Rôle récupéré:", role);
+    
     const handleUrlChange = () => {
       if (typeof window !== "undefined") {
         const params = new URLSearchParams(window.location.search);
@@ -43,9 +50,19 @@ function CollecteurContent() {
     }
   };
 
-  const hasProducts = true; 
+  const hasProducts = true;
 
-  // --- MODIFICATION ICI : Ajout de min-h-screen et bg-white ---
+  if (!userRole) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-pulse text-center">
+          <div className="w-12 h-12 bg-slate-200 rounded-full mx-auto mb-4"></div>
+          <div className="h-4 bg-slate-200 rounded w-32 mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {isCreatingNew ? (
@@ -55,7 +72,7 @@ function CollecteurContent() {
       ) : (
         <>
           {hasProducts ? (
-            <CataloguePage userRole="collecteur" />
+            <CataloguePage userRole={userRole === "collector" ? "collecteur" : "fournisseur"} />
           ) : (
             <div className="space-y-6 p-4 md:p-6 lg:p-8 animate-in fade-in duration-300">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
@@ -68,6 +85,13 @@ function CollecteurContent() {
                     Explorez les offres de récoltes et produits disponibles chez les fournisseurs.
                   </p>
                 </div>
+                <Button 
+                  onClick={triggerNewForm}
+                  className="font-bold gap-2 shadow-sm h-11 px-6 bg-[#0D631B] hover:bg-[#094713] text-white"
+                >
+                  <Plus size={20} strokeWidth={2.5} />
+                  Nouvelle demande
+                </Button>
               </div>
 
               <div className="flex flex-col items-center justify-center text-center p-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200 shadow-sm min-h-[400px]">
@@ -76,7 +100,7 @@ function CollecteurContent() {
                 </div>
                 <h3 className="text-lg font-bold text-slate-900">Aucune annonce ou demande disponible</h3>
                 <p className="text-sm text-slate-500 max-w-sm mt-1 mb-6 font-medium">
-                  Il n'y a actuellement aucune publication sur le marché. Soyez le premier à publier un besoin pour lancer les échanges.
+                  Il n'y a actuellement aucune publication sur le marché.
                 </p>
                 <Button 
                   onClick={triggerNewForm}
@@ -97,8 +121,11 @@ function CollecteurContent() {
 export default function CollecteurPage() {
   return (
     <Suspense fallback={
-      <div className="flex h-64 w-full items-center justify-center text-slate-400 font-medium animate-pulse">
-     
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-pulse">
+          <div className="w-12 h-12 bg-slate-200 rounded-full mx-auto mb-4"></div>
+          <div className="h-4 bg-slate-200 rounded w-32 mx-auto"></div>
+        </div>
       </div>
     }>
       <CollecteurContent />

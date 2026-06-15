@@ -2,11 +2,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { validateEmail, analyzeEmailError } from "../../../utils/validation";
-import { mockLoginService } from  "../services/authService";
+import { useAuth } from "../../../services/hooks/useAuth";
 import EmailField from "./Fields/EmailField";
 import PasswordField from "./Fields/PasswordField";
 
@@ -16,13 +15,17 @@ interface LoginFormProps {
 }
 
 export default function LoginForm({ onForgotPassword, onSubmit }: LoginFormProps) {
-  const router = useRouter();
+  const { login, isLoading, user } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+
+  console.log("🔵 LoginForm rendu"); // Debug
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("🔵 handleSubmit appelé"); // Debug
+    console.log("🔵 Email:", email, "Password:", password); // Debug
+    
     const cleanEmail = email.trim().toLowerCase();
 
     if (!validateEmail(cleanEmail)) {
@@ -30,24 +33,16 @@ export default function LoginForm({ onForgotPassword, onSubmit }: LoginFormProps
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const response = await mockLoginService({ email: cleanEmail, password });
-      if (response.success && response.user) {
-        toast.success("Connexion réussie ! Redirection en cours...");
-        onSubmit?.({ email: cleanEmail, mode: "login", role: response.user.role });
-        setTimeout(() => {
-          if (response.user?.role === "collecteur") router.push("/c");
-          else if (response.user?.role === "fournisseur") router.push("/f");
-          else router.push("/");
-        }, 1500);
-      } else {
-        toast.error(response.message || "Une erreur est survenue.");
-        setIsLoading(false);
-      }
-    } catch (error: any) {
-      toast.error(error.message || "Impossible de joindre le serveur.");
-      setIsLoading(false);
+    console.log("🔵 Appel de login..."); // Debug
+    const result = await login({ email: cleanEmail, password });
+    console.log("🔵 Résultat du login:", result); // Debug
+    
+    if (result.success) {
+      onSubmit?.({ 
+        email: cleanEmail, 
+        mode: "login", 
+        role: result.role 
+      });
     }
   };
 

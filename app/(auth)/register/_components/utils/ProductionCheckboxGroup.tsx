@@ -3,7 +3,7 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tractor } from "lucide-react";
-import { PRODUCTION_TYPES, ProductionType } from "../../types/fournisseur";
+import { PRODUCTION_TYPES, ProductionType } from "../../../../services/register/types/fournisseur";
 
 interface ProductionCheckboxGroupProps {
   selectedProductions: ProductionType[];

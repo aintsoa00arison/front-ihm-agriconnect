@@ -23,7 +23,7 @@ import {
 import FormInput from "./FormInput";
 import NeedsCheckboxGroup from "./NeedsCheckboxGroup";
 import SectionHeader from "./SectionHeader";
-import { CollectorFormData } from "../../types/collector";
+import { CollectorFormData } from "../../../../services/register/types/collector";
 
 interface CollectorFormContentProps {
   formData: CollectorFormData;

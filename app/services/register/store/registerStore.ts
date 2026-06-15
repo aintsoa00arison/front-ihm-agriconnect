@@ -62,3 +62,5 @@ export const useRegisterStore = create<RegisterState>((set) => ({
   })),
   resetRegisterDraft: () => set({ registerDraft: {} })
 }));
+
+export const PRODUCTION_TYPES: ProductionType[] = ["Végétale", "Elevage", "Rente"];

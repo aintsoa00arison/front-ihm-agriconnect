@@ -3,13 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { XCircle, Loader2, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Importation des types et du store d'inscription
-import { RegisterStoreData } from './types'; 
-import { useRegisterStore } from './registerStore'; 
-
-// Importation du service d'inscription
-import { registerAccountService } from './services/registerService';
+import { useRegisterStore } from '../../services/register/store/registerStore';
+import { useRegister } from '../../services/hooks/useRegister';
 
 // Importation des sous-composants des étapes
 import RegisterProfileSelection from './_components/ProfileSelection';
@@ -19,20 +17,20 @@ import FinalisationForm from './_components/FinalisationForm';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [step, setStep] = useState(1);
+  const { registerCollector, registerFournisseur, isLoading: isRegistering } = useRegister();
   
-  // Récupération des données du premier écran (Zustand) et du reset
-  const { registerDraft, resetRegisterDraft } = useRegisterStore();
+  // Récupération des données du store et du reset
+  const { registerDraft, setRegisterDraft, resetRegisterDraft } = useRegisterStore();
   
   // 1. États de configuration du profil
   const [role, setRole] = useState<'fournisseur' | 'collecteur'>('fournisseur');
   const [fournisseurType, setFournisseurType] = useState<'particulier' | 'entreprise'>('particulier');
 
-  // 2. États de mémoire pour l'Étape 2 (Sauvegarde typée des formulaires)
+  // 2. États de mémoire pour l'Étape 2
   const [collectorData, setCollectorData] = useState<Record<string, any> | null>(null);
   const [fournisseurData, setFournisseurData] = useState<Record<string, any> | null>(null);
 
-  // 3. État de mémoire pour l'Étape 3 (Sauvegarde de la finalisation)
+  // 3. État de mémoire pour l'Étape 3
   const [finalizationData, setFinalizationData] = useState<{
     image: File | null;
     imageUrl: string | null;
@@ -56,7 +54,7 @@ export default function RegisterPage() {
     selectedRole: 'fournisseur' | 'collecteur', 
     selectedSubType: 'particulier' | 'entreprise'
   ) => {
-    // Si l'utilisateur change radicalement d'avis sur le type de compte, on wipe les steps suivants
+    // Si l'utilisateur change radicalement d'avis, on wipe les steps suivants
     if (selectedRole !== role || selectedSubType !== fournisseurType) {
       setCollectorData(null);
       setFournisseurData(null);
@@ -64,49 +62,67 @@ export default function RegisterPage() {
     }
     setRole(selectedRole);
     setFournisseurType(selectedSubType);
+    
+    // Mettre à jour le store avec le rôle
+    setRegisterDraft({ role: selectedRole, type: selectedSubType });
     setStep(2);
   };
 
+  const [step, setStep] = useState(1);
+
   // Traitement et envoi final au backend
-  const handleFinish = async (step3Data: typeof finalizationData) => {
-    setFinalizationData(step3Data);
-    setIsSubmitting(true);
-    setSubmitStatus('idle');
+// Dans RegisterPage.tsx, remplacer l'ancien handleFinish par :
 
-    const step2Fields = role === 'collecteur' ? collectorData : fournisseurData;
+const handleFinish = async (step3Data: typeof finalizationData) => {
+  setFinalizationData(step3Data);
+  setIsSubmitting(true);
+  setSubmitStatus('idle');
 
-    // Construction du payload global conforme à ton interface de données
-    const completePayload: RegisterStoreData = {
-      email: registerDraft.email,
-      password: registerDraft.password,
-      code: registerDraft.code,
-      role,
-      ...(role === 'fournisseur' && { type: fournisseurType }),
-      ...step2Fields, 
-      bio: step3Data.bio,
-      photo: step3Data.image 
-    };
+  // Mettre à jour le store avec les données de finalisation
+  setRegisterDraft({ 
+    bio: step3Data.bio, 
+    photo: step3Data.image 
+  });
 
-    setRegisteredEmail(registerDraft.email || '');
+  setRegisteredEmail(registerDraft.email || '');
 
-    try {
-      const response = await registerAccountService(completePayload);
-      
-      if (response.success) {
-        setSubmitStatus('success');
-        setApiMessage(response.message);
-        resetRegisterDraft(); // Clear du store Zustand uniquement si succès complet
-      } else {
-        setSubmitStatus('error');
-        setApiMessage(response.message || "Une erreur est survenue lors de la validation.");
+  try {
+    let success = false;
+    
+    if (role === 'collecteur') {
+      // Mettre à jour le store avec les données du collecteur
+      if (collectorData) {
+        setRegisterDraft({
+          ...collectorData,
+          besoins: collectorData.besoins,
+        });
       }
-    } catch (error) {
-      setSubmitStatus('error');
-      setApiMessage("Une erreur technique est survenue lors de la communication avec le serveur.");
-    } finally {
-      setIsSubmitting(false);
+      // Appel réel à l'API via le hook
+      success = await registerCollector();
+    } else {
+      // Mettre à jour le store avec les données du fournisseur
+      if (fournisseurData) {
+        setRegisterDraft(fournisseurData);
+      }
+      // Appel réel à l'API via le hook
+      success = await registerFournisseur(step3Data.bio, step3Data.image);
     }
-  };
+    
+    if (success) {
+      setSubmitStatus('success');
+      resetRegisterDraft();
+    } else {
+      setSubmitStatus('error');
+      setApiMessage("Une erreur est survenue lors de l'inscription.");
+    }
+  } catch (error: any) {
+    console.error("Erreur d'inscription:", error);
+    setSubmitStatus('error');
+    setApiMessage(error.response?.data?.detail || "Une erreur technique est survenue.");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   // --- RENDU : CHARGEMENT OU FEEDBACKS INTERMÉDIAIRES ---
   if (isSubmitting || submitStatus !== 'idle') {
@@ -114,18 +130,18 @@ export default function RegisterPage() {
       <div className="min-h-screen w-full bg-neutral-50 flex items-center justify-center px-4 py-8 sm:px-6">
         <div className="w-full max-w-xl bg-white rounded-[20px] sm:rounded-[24px] shadow-xl border border-separator/10 p-4 sm:p-6 md:p-8 text-center space-y-4 sm:space-y-6 animate-in fade-in zoom-in-95 duration-300">
           
-          {/* ÉCRAN A : CHARGEMENT - Responsive */}
+          {/* ÉCRAN A : CHARGEMENT */}
           {isSubmitting && (
             <div className="space-y-3 sm:space-y-4 py-6 sm:py-8 flex flex-col items-center">
               <Loader2 size={40} className="sm:size-12 text-primary animate-spin" />
               <h3 className="text-base sm:text-lg font-bold text-label">Création de votre compte en cours...</h3>
               <p className="text-[11px] sm:text-xs text-input-element max-w-xs sm:max-w-sm">
-                Veuillez patienter pendant la configuration de votre profil. Cela peut prendre quelques instants en fonction de votre connexion et du serveur. Merci de votre compréhension.
+                Veuillez patienter pendant la configuration de votre profil. Cela peut prendre quelques instants.
               </p>
             </div>
           )}
 
-          {/* ÉCRAN B : INSCRIPTION RÉUSSIE - Responsive */}
+          {/* ÉCRAN B : INSCRIPTION RÉUSSIE */}
           {submitStatus === 'success' && (
             <div className="space-y-4 sm:space-y-6 py-4 flex flex-col items-center">
               <div className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-green-50 rounded-full border border-green-100">
@@ -154,7 +170,7 @@ export default function RegisterPage() {
             </div>
           )}
 
-          {/* ÉCRAN C : ERREUR API - Responsive */}
+          {/* ÉCRAN C : ERREUR API */}
           {submitStatus === 'error' && (
             <div className="space-y-4 sm:space-y-6 py-4 flex flex-col items-center">
               <div className="p-2 sm:p-3 bg-red-50 rounded-full text-red-500 border border-red-100">

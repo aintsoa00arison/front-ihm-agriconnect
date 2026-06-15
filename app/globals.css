@@ -287,14 +287,32 @@ body {
 }
 
 /* globals.css */
-[data-sonner-toaster] [data-close-button] {
-  position: absolute !important;
-  right: 12px !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  left: auto !important;
+/* globals.css - Ajoute ceci à la fin du fichier */
+
+/* Styles personnalisés pour Sonner toasts */
+[data-sonner-toast][data-type="success"] {
+  background: #e8f5e9 !important;
+  border-color: rgba(46, 125, 50, 0.3) !important;
+  color: #1b5e20 !important;
 }
 
-[data-sonner-toaster] [data-content] {
-  padding-right: 32px !important;
+[data-sonner-toast][data-type="error"] {
+  background: #fef2f2 !important;
+  border-color: #fecaca !important;
+  color: #991b1b !important;
+}
+
+[data-sonner-toast][data-type="info"] {
+  background: #fffbeb !important;
+  border-color: #fde68a !important;
+  color: #92400e !important;
+}
+
+[data-sonner-toast] {
+  padding: 1rem !important;
+  border-radius: 1rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  border: 1px solid !important;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1) !important;
 }
