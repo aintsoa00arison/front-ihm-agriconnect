@@ -63,7 +63,7 @@ export default function MobileSidebarFournisseur({
       >
         {/* Menu Hamburger */}
         <DrawerTrigger asChild>
-          <Button variant="outline" size="icon" className="shrink-0 md:hidden">
+          <Button variant="outline" size="icon" className="shrink-0 lg:hidden">
             <Menu className="w-5 h-5" />
             <span className="sr-only">Ouvrir le menu</span>
           </Button>

@@ -1,4 +1,3 @@
-// app/catalogue/CatalogueFilters.tsx
 "use client";
 
 import { SlidersHorizontal } from "lucide-react";
@@ -21,13 +20,13 @@ export default function CatalogueFilters({
   onRatingChange 
 }: CatalogueFiltersProps) {
   return (
-    <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-3">
+    <div className="bg-card p-4 rounded-lg border border-border shadow-sm space-y-1">
       <h3 className="text-xs font-bold text-foreground flex items-center gap-1.5 border-b border-border pb-1.5">
         <SlidersHorizontal size={14} /> Filtres
       </h3>
       <div className="space-y-2">
         <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Types</label>
-        <div className="grid grid-cols-3 gap-1">
+        <div className="grid md:grid-cols-3 md:grid-rows-1 grid-cols-2 grid-rows-2 gap-1">
           {PRODUCTION_TYPES.map((type) => (
             <div key={type} className="flex items-center space-x-1.5">
               <Checkbox 
@@ -43,10 +42,10 @@ export default function CatalogueFilters({
           ))}
         </div>
       </div>
-      <div className="space-y-1">
-        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Note minimale</label>
+      <div className="space-y-2">
+        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-2">Note minimale</label>
         <Select value={minRating} onValueChange={onRatingChange}>
-          <SelectTrigger className="h-8 text-xs rounded-xl bg-muted/50 border-border">
+          <SelectTrigger className="h-8 text-xs rounded-lg bg-muted/50 border-border">
             <SelectValue placeholder="Sélectionner..." />
           </SelectTrigger>
           <SelectContent>

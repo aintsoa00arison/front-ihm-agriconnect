@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, SlidersHorizontal } from "lucide-react";
 import AnnuairePage from "./AnnuairePage";
 import CatalogueHeader from "./CatalogueHeader";
 import CatalogueFilters from "./CatalogueFilters";
@@ -10,6 +10,8 @@ import TopSuppliers from "./Top";
 import AdCard from "./AdCard";
 import { HeaderSkeleton, Top5Skeleton, AdSkeleton } from "./CatalogueSkeletons";
 import type { Ad, Supplier, UserRole } from "./types/catalogue";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Button } from "../ui/button";
 
 interface CataloguePageProps {
   userRole: UserRole;
@@ -431,12 +433,36 @@ export default function CataloguePage({ userRole }: CataloguePageProps) {
           {isLoading ? (
             <HeaderSkeleton />
           ) : (
-            <CatalogueHeader
-              userRole={userRole}
-              totalResults={adsToDisplay.length}
-              totalItems={allAds.length}
-              searchQuery={searchQuery}
-            />
+            <div className="flex items-center justify-between mb-4">
+              <CatalogueHeader
+                userRole={userRole}
+                totalResults={adsToDisplay.length}
+                totalItems={allAds.length}
+                searchQuery={searchQuery}
+              />
+              {/* Filtre sur mobile */}
+              <div className="lg:hidden shrink-0">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="icon">
+                      <SlidersHorizontal className="size-4.5 text-muted-foreground ring-0" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={8}
+                    className="w-75 p-0 border-none shadow-none bg-transparent"
+                  >
+                    <CatalogueFilters
+                      selectedTypes={selectedTypes}
+                      onTypeChange={handleTypeChange}
+                      minRating={minRating}
+                      onRatingChange={setMinRating}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
           )}
 
           <div
@@ -472,7 +498,7 @@ export default function CataloguePage({ userRole }: CataloguePageProps) {
         </div>
 
         {/* COLONNE DROITE */}
-        <div className="hidden lg:flex flex-col h-full overflow-y-auto pr-3 shrink-0 space-y-6 pb-10">
+        <div className="hidden lg:flex flex-col h-full overflow-y-auto pr-3 shrink-0 space-y-6 pb-10 max-w-sm">
           <CatalogueFilters
             selectedTypes={selectedTypes}
             onTypeChange={handleTypeChange}

@@ -31,10 +31,10 @@ export default function SidebarFournisseur({ userSlug, userName }: SidebarFourni
 
   return (
     <>
-      <nav className="w-[292px] flex-shrink-0 bg-white border-r border-border shadow-sm flex flex-col pb-3 h-full overflow-y-auto">
+      <nav className="w-70  shrink-0 bg-white border-r border-border shadow-sm hidden lg:flex flex-col pb-3 h-full overflow-y-auto">
         <div className="px-4 py-4 mb-6 border-b border-border">
-          <Button 
-            onClick={() => window.location.href = "/f?action=new"}
+          <Button
+            onClick={() => (window.location.href = "/f?action=new")}
             className="w-full h-12 shadow-sm font-bold gap-2 bg-[#0D631B] hover:bg-[#094713] text-white transition-all"
           >
             <Plus className="w-6 h-6" strokeWidth={2.5} />
@@ -45,17 +45,19 @@ export default function SidebarFournisseur({ userSlug, userName }: SidebarFourni
         <div className="flex flex-col grow justify-between">
           <div className="flex flex-col gap-1">
             {navItems.map((item) => {
-              const isActive = item.exact 
-                ? pathname === item.href 
-                : pathname.startsWith(item.href.split('?')[0]);
-              
+              const isActive = item.exact
+                ? pathname === item.href
+                : pathname.startsWith(item.href.split("?")[0]);
+
               return (
                 <a
                   key={item.href}
                   href={item.href}
                   className={cn(
                     "group flex items-center pl-6 pr-2 py-4 transition-all duration-200 relative",
-                    isActive ? "bg-light-bg text-[#0D631B]" : "text-label hover:bg-neutral",
+                    isActive
+                      ? "bg-light-bg text-[#0D631B]"
+                      : "text-label hover:bg-neutral",
                   )}
                 >
                   <item.icon
@@ -65,7 +67,12 @@ export default function SidebarFournisseur({ userSlug, userName }: SidebarFourni
                     )}
                     strokeWidth={1.8}
                   />
-                  <span className={cn("font-bold grow", isActive ? "text-[#0D631B]" : "text-label")}>
+                  <span
+                    className={cn(
+                      "font-bold grow",
+                      isActive ? "text-[#0D631B]" : "text-label",
+                    )}
+                  >
                     {item.label}
                   </span>
                   {item.badgeCount && item.badgeCount > 0 && (

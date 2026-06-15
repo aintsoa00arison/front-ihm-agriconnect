@@ -1,13 +1,15 @@
+// app/c/LayoutContent.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
 import { NotificationMenu } from "@/components/layout/notificationMenu";
 import SidebarCollecteur from "@/components/layout/sidebarCollecteur";
+import MobileSidebarCollecteur from "@/components/layout/MobileSidebarCollecteur";
 import Link from "next/link";
 import { Search, ArrowUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { usePathname, useSearchParams } from "next/navigation";
-import MobileSidebarCollecteur from "@/components/layout/MobileSidebarCollecteur";
+
 
 interface LayoutContentProps {
   children: React.ReactNode;
@@ -22,9 +24,12 @@ export default function LayoutContent({
 }: LayoutContentProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [showScrollButton, setShowScrollButton] = useState(false);
   const mainRef = useRef<HTMLDivElement>(null);
+
+
 
   const isCataloguePage = pathname === "/c";
   const isProfilePage = pathname?.startsWith("/c/profile/") ?? false;
@@ -45,6 +50,8 @@ export default function LayoutContent({
       );
     }
   };
+
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -83,17 +90,19 @@ export default function LayoutContent({
         </div>
 
         {showSearchBar && (
-          <div className="w-full md:w-auto md:flex-1 max-w-none md:max-w-md mx-0 md:mx-8 order-3 md:order-2">
-            <div className="relative">
+          <div className="w-full md:w-auto md:flex-1 max-w-none md:max-w-md mx-0 md:mx-8 order-3 md:order-2 flex items-center gap-2">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
               <Input
                 type="text"
-                placeholder="Rechercher une annonce, un produit..."
+                placeholder="Rechercher une annonce..."
                 value={searchQuery}
                 onChange={handleSearch}
                 className="pl-10 bg-muted/30 border-border rounded-xl h-10 text-sm focus-visible:ring-primary w-full text-ellipsis"
               />
             </div>
+
+            
           </div>
         )}
       </header>
@@ -102,15 +111,7 @@ export default function LayoutContent({
         <div className="hidden md:block h-full">
           <SidebarCollecteur userSlug={userSlug} userName={userName} />
         </div>
-
-        <main
-          ref={mainRef}
-          className={`grow relative mt-2 md:mt-0 ${
-            isCataloguePage
-              ? "overflow-hidden h-full"
-              : "overflow-y-auto min-h-full" 
-          }`}
-        >
+        <main ref={mainRef} className="grow overflow-y-auto h-full relative">
           {children}
         </main>
       </div>
