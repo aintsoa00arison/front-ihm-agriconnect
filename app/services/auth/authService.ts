@@ -14,18 +14,16 @@ export const decodeToken = (token: string): any => {
 };
 
 // Extraire le rôle du token
-
 export const getRoleFromToken = (token: string): string | null => {
   try {
     const payload = token.split('.')[1];
     const decoded = JSON.parse(atob(payload));
     
-    // Affiche TOUT le contenu du token
     console.log("===== CONTENU COMPLET DU TOKEN =====");
     console.log(decoded);
     console.log("====================================");
     
-    // Essaie de trouver le rôle par différents noms possibles
+    // 🔥 Le rôle est dans 'user_type'
     const role = decoded?.user_type || decoded?.role || decoded?.type || null;
     console.log("Rôle trouvé:", role);
     
@@ -36,28 +34,42 @@ export const getRoleFromToken = (token: string): string | null => {
   }
 };
 
-export const authService = {
-  
- // services/auth/authService.ts
-login: async (credentials: { email: string; password: string }): Promise<TokenOutput> => {
-  const response = await apiClient.post<TokenOutput>(API_ENDPOINTS.LOGIN, credentials);
-  
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('access_token', response.data.access_token);
-    // Stocker aussi dans un cookie pour le middleware
-    document.cookie = `access_token=${response.data.access_token}; path=/; max-age=3600`;
+// Extraire l'ID utilisateur du token
+export const getUserIdFromToken = (token: string): string | null => {
+  try {
+    const decoded = decodeToken(token);
+    return decoded?.sub || null;
+  } catch {
+    return null;
   }
-  
-  return response.data;
-},
+};
 
-logout: () => {
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem('access_token');
-    document.cookie = 'access_token=; path=/; max-age=0';
-  }
-},
-  // Rafraîchir le token (amélioré)
+export const authService = {
+  login: async (credentials: { email: string; password: string }): Promise<TokenOutput> => {
+    const response = await apiClient.post<TokenOutput>(API_ENDPOINTS.LOGIN, credentials);
+    
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('access_token', response.data.access_token);
+      document.cookie = `access_token=${response.data.access_token}; path=/; max-age=3600`;
+      
+      // 🔥 Stocker le rôle dans localStorage pour un accès rapide
+      const role = getRoleFromToken(response.data.access_token);
+      if (role) {
+        localStorage.setItem('user_role', role);
+      }
+    }
+    
+    return response.data;
+  },
+
+  logout: () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_role');
+      document.cookie = 'access_token=; path=/; max-age=0';
+    }
+  },
+
   refreshToken: async (): Promise<string | null> => {
     try {
       const accessToken = localStorage.getItem('access_token');
@@ -78,41 +90,43 @@ logout: () => {
     }
   },
 
-  // Récupérer le rôle
   getUserRole: (): string | null => {
     if (typeof window !== 'undefined') {
+      // 🔥 D'abord essayer de récupérer du localStorage (plus rapide)
+      const storedRole = localStorage.getItem('user_role');
+      if (storedRole) return storedRole;
+      
+      // Sinon, extraire du token
       const token = localStorage.getItem('access_token');
       if (token) return getRoleFromToken(token);
     }
     return null;
   },
 
-sendVerificationEmail: async (email: string): Promise<{ success: boolean; message: string }> => {
-  try {
-    const response = await apiClient.post(`/auth/email/send?email=${encodeURIComponent(email)}`);
-    return { success: true, message: "Code de vérification envoyé" };
-  } catch (error: any) {
-    return { 
-      success: false, 
-      message: error.response?.data?.detail || "Erreur lors de l'envoi du code." 
-    };
-  }
-},
+  sendVerificationEmail: async (email: string): Promise<{ success: boolean; message: string }> => {
+    try {
+      const response = await apiClient.post(`/auth/email/send?email=${encodeURIComponent(email)}`);
+      return { success: true, message: "Code de vérification envoyé" };
+    } catch (error: any) {
+      return { 
+        success: false, 
+        message: error.response?.data?.detail || "Erreur lors de l'envoi du code." 
+      };
+    }
+  },
 
-
-// Dans authService.ts, assure-toi que verifyCode a cette signature :
-verifyCode: async (userId: string, code: string): Promise<{ success: boolean; message: string }> => {
-  try {
-    const response = await apiClient.post('/auth/email/validate', {
-      user_id: userId,
-      code: code
-    });
-    return { success: true, message: "Code validé avec succès !" };
-  } catch (error: any) {
-    return { 
-      success: false, 
-      message: error.response?.data?.detail || "Code invalide." 
-    };
-  }
-},
+  verifyCode: async (userId: string, code: string): Promise<{ success: boolean; message: string }> => {
+    try {
+      const response = await apiClient.post('/auth/email/validate', {
+        user_id: userId,
+        code: code
+      });
+      return { success: true, message: "Code validé avec succès !" };
+    } catch (error: any) {
+      return { 
+        success: false, 
+        message: error.response?.data?.detail || "Code invalide." 
+      };
+    }
+  },
 };

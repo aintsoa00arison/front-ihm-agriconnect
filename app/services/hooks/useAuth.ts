@@ -1,3 +1,4 @@
+// services/hooks/useAuth.ts
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -7,7 +8,8 @@ import {
   setUserRole, 
   deduceRoleFromEmail, 
   logout as authLogout,
-  getUserId 
+  getUserId,
+  getUserFromToken
 } from '../lib/auth';
 import type { UserLoginDTO } from '../auth/types';
 
@@ -32,8 +34,10 @@ export const useAuth = () => {
         password: data.password,
       });
       
-      let role = getUserRole();
+      // 🔥 Récupérer le rôle depuis le token (maintenant avec user_type)
+      let role = authService.getUserRole();
       
+      // Si pas de rôle, déduire de l'email
       if (!role) {
         role = deduceRoleFromEmail(data.email);
         if (role) {
@@ -41,12 +45,21 @@ export const useAuth = () => {
         }
       }
       
-      setUser({ email: data.email, role: role || undefined, id: response.access_token });
+      // Extraire l'ID du token
+      const userInfo = getUserFromToken();
+      
+      setUser({ 
+        email: data.email, 
+        role: role || undefined, 
+        id: userInfo?.id || response.access_token 
+      });
+      
       toast.success("Connexion réussie !");
       
-      if (role === "collector") {
+      // 🔥 Redirection basée sur le rôle avec user_type
+      if (role === "collector" || role === "collecteur") {
         router.push('/c');
-      } else if (role === "fournisseur") {
+      } else if (role === "fournisseur" || role === "provider") {
         router.push('/f');
       } else {
         router.push('/catalogue');
