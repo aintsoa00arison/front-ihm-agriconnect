@@ -1,7 +1,8 @@
-// components/ad/AdPreview.tsx
 "use client";
 
-import { Eye, Scale, MapPin, AlertCircle } from "lucide-react";
+import { useState } from "react";
+import { Eye, Scale, MapPin, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { AdFormMode, ProductionType } from "./types/ad";
 
 interface AdPreviewProps {
@@ -25,6 +26,15 @@ export default function AdPreview({
   description,
   mediaPreview,
 }: AdPreviewProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const hasLongDescription = description && description.length > 150;
+  const displayDescription = description || "La description du produit s'affichera ici...";
+  
+  // Tronquer la description si elle est longue et non expansée
+  const truncatedDescription = hasLongDescription && !isExpanded
+    ? displayDescription.slice(0, 150) + "..."
+    : displayDescription;
+
   return (
     <div className="space-y-6">
       <div className="p-4 bg-amber-50 border border-amber-200/60 rounded-2xl flex items-start gap-3">
@@ -65,9 +75,32 @@ export default function AdPreview({
               </span>
             </div>
           </div>
-          <p className="text-xs font-medium text-slate-500 leading-relaxed line-clamp-4">
-            {description || "La description du produit s'affichera ici..."}
-          </p>
+          
+          {/* Description avec gestion du défilement */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-slate-500 leading-relaxed whitespace-pre-wrap break-words">
+              {truncatedDescription}
+            </p>
+            
+            {hasLongDescription && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+              >
+                {isExpanded ? (
+                  <>
+                    <ChevronUp size={14} />
+                    <span>Voir moins</span>
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown size={14} />
+                    <span>Voir plus</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

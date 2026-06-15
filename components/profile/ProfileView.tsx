@@ -1,4 +1,3 @@
-// app/profile/ProfileView.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -65,20 +64,12 @@ export default function ProfileView({ slug }: ProfileViewProps) {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-center">
-          <div className="w-32 h-32 bg-slate-200 rounded-full mx-auto mb-4"></div>
-          <div className="h-6 bg-slate-200 rounded w-48 mx-auto mb-2"></div>
-          <div className="h-4 bg-slate-200 rounded w-64 mx-auto"></div>
-        </div>
-      </div>
-    );
+    return null; // Ne rien afficher pendant le chargement
   }
 
   if (error || !profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-500">{error || "Profil non trouvé"}</p>
           <button 
@@ -98,7 +89,7 @@ export default function ProfileView({ slug }: ProfileViewProps) {
   const isCollector = profile.role === "collecteur";
 
   return (
-    <div className="relative min-h-screen pb-12">
+    <div className="relative min-h-screen bg-white pb-12">
       {isEditing ? (
         isCollector ? (
           <EditCollectorProfileForm
@@ -123,12 +114,13 @@ export default function ProfileView({ slug }: ProfileViewProps) {
         />
       ) : (
         <div className="space-y-6 animate-in fade-in duration-300">
-          <ProfileHeader
-            user={profileWithOwner}
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-            onEditClick={() => setIsEditing(true)}
-          />
+         <ProfileHeader
+          user={profileWithOwner}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          onEditClick={() => setIsEditing(true)}
+          isLoading={loading}
+        />
           
           <div className="max-w-7xl mx-auto px-4">
             {activeTab === "annonces" && <ProfileAds onEditAd={setEditingAd} />}
