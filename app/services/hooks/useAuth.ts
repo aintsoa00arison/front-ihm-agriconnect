@@ -2,52 +2,63 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { authService, getRoleFromToken } from '../auth/authService';
+import { authService } from '../auth/authService';
+import { 
+  getUserRole, 
+  setUserRole, 
+  deduceRoleFromEmail, 
+  logout as authLogout,
+  getUserId 
+} from '../lib/auth';
 import type { UserLoginDTO } from '../auth/types';
 
 export const useAuth = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [user, setUser] = useState<{ email: string; role?: string } | null>(null);
+  const [user, setUser] = useState<{ email: string; role?: string; id?: string } | null>(null);
 
-  // Vérifier le token au montage
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      const role = getRoleFromToken(token);
-      if (role) {
-        setUser({ email: '', role });
-      }
+    // Vérifier si l'utilisateur est déjà connecté
+    const userId = getUserId();
+    const role = getUserRole();
+    if (userId) {
+      setUser({ email: '', role: role || undefined, id: userId });
     }
   }, []);
 
-const login = async (data: UserLoginDTO) => {
-  console.log("🔵 useAuth.login appelé avec:", data); // Debug
-  setIsLoading(true);
-  try {
-    const response = await authService.login({
-      email: data.email,
-      password: data.password,
-    });
-    console.log("🔵 Réponse reçue:", response); // Debug
-    console.log("Réponse login:", response);
-    console.log("Access token:", response.access_token);
-    
-    // Extraire le rôle depuis le token
-    const role = getRoleFromToken(response.access_token);
-    
-    console.log("Rôle extrait:", role);
-    // Redirection basée sur le rôle - avec les bonnes valeurs
-    if (role === "collector") {  // "collector" et non "collecteur"
-      router.push('/c');
-    } else if (role === "fournisseur" || role === "provider") {  // "fournisseur" ou "provider"
-      router.push('/f');
-    } else {
-      console.warn("Rôle inconnu, redirection vers la page d'accueil");
-    }
-    
-    return { success: true, user: response, role };
-
+  const login = async (data: UserLoginDTO) => {
+    setIsLoading(true);
+    try {
+      const response = await authService.login({
+        email: data.email,
+        password: data.password,
+      });
+      
+      // Essayer d'extraire le rôle du token
+      let role = getUserRole();
+      
+      // Si pas de rôle dans le token, le déduire de l'email
+      if (!role) {
+        role = deduceRoleFromEmail(data.email);
+        if (role) {
+          setUserRole(role);
+        }
+      }
+      
+      // Mettre à jour l'état utilisateur (sans response.user qui n'existe pas)
+      setUser({ email: data.email, role: role || undefined, id: response.access_token });
+      toast.success("Connexion réussie !");
+      
+      // Redirection basée sur le rôle
+      if (role === "collector") {
+        router.push('/c');
+      } else if (role === "fournisseur") {
+        router.push('/f');
+      } else {
+        router.push('/catalogue');
+      }
+      
+      return { success: true, role };
     } catch (error: any) {
       console.error("Erreur de connexion:", error);
       toast.error(error.response?.data?.detail || "Email ou mot de passe incorrect");
@@ -96,17 +107,10 @@ const login = async (data: UserLoginDTO) => {
   };
 
   const logout = () => {
-    authService.logout();
+    authLogout();
     setUser(null);
     toast.success("Déconnecté avec succès");
     router.push('/');
-  };
-
-  const isAuthenticated = (): boolean => {
-    if (typeof window !== 'undefined') {
-      return !!localStorage.getItem('access_token');
-    }
-    return false;
   };
 
   return {
@@ -116,6 +120,5 @@ const login = async (data: UserLoginDTO) => {
     logout,
     isLoading,
     user,
-    isAuthenticated: isAuthenticated(),
   };
 };
