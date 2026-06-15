@@ -60,7 +60,7 @@ export default function LayoutContent({ children, userSlug, userName }: LayoutCo
 
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden bg-neutral">
-      <header className="flex-shrink-0 flex justify-between items-center px-4 py-2 h-16 bg-card shadow-sm border-b border-border z-10">
+      <header className="shrink-0 flex justify-between items-center px-4 py-2 h-16 bg-card shadow-sm border-b border-border z-10">
         <Link href="/">
           <h1 className="hover:text-primary text-label duration-300 transition-colors font-bold text-2xl flex gap-1 items-center">
             Tsena

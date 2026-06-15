@@ -89,13 +89,20 @@ export default function ProfileView({ slug }: ProfileViewProps) {
             onTabChange={handleTabChange}
             onEditClick={() => setIsEditing(true)}
           />
-          
+
           {/* Contenu affiché seulement si le profil existe */}
           {profile && (
-            <div className="max-w-7xl mx-auto px-4">
-              {activeTab === "annonces" && <ProfileAds onEditAd={setEditingAd} />}
+            <div className="max-w-7xl mx-auto px-4 h-full">
+              {activeTab === "annonces" && (
+                <ProfileAds onEditAd={setEditingAd} />
+              )}
               {activeTab === "apropos" && <AboutSection profile={profile} />}
-              {activeTab === "avis" && <ProfileReviews rating={profile.rating} reviews={profile.reviews} />}
+              {activeTab === "avis" && (
+                <ProfileReviews
+                  rating={profile.rating}
+                  reviews={profile.reviews}
+                />
+              )}
             </div>
           )}
         </div>
