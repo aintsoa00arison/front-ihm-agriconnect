@@ -1,3 +1,4 @@
+// app/f/profile/[slug]/page.tsx
 import { use } from "react";
 import ProfileView from "@/components/profile/ProfileView";
 

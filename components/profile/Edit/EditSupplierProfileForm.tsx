@@ -15,8 +15,8 @@ import ProductionPreferencesSection from "./utils/ProductionPreferencesSection";
 import AvatarSection from "./utils/AvatarSection";
 import BioSection from "./utils/BioSection";
 import { validateFormField } from "../../../app/utils/validation";
-import type { FournisseurType, ProductionKey, ProductionTypesState } from "../types/supplierProfile";
-import { PRODUCTION_MAPPING } from "../types/supplierProfile";
+import type { FournisseurType, ProductionKey, ProductionTypesState } from "../../../app/services/profile/types/supplierProfile";
+import { PRODUCTION_MAPPING } from "../../../app/services/profile/types/supplierProfile";
 
 interface EditSupplierProfileFormProps {
   type: FournisseurType;

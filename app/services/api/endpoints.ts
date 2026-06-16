@@ -17,5 +17,11 @@ export const API_ENDPOINTS = {
   PUBLICATION_ALL: '/publication/all/{user_id}',
   PUBLICATION_USER: '/publication/user/{user_id}',
   PUBLICATION_FILTERED: '/publication/filtered/{user_id}',
-  PUBLICATION_UPDATE: '/publication/update/{publication_id}',
+ 
+
+  // User / Profile
+  USER_GET: '/user/{user_id}',
+  USER_UPDATE_INDIVIDUAL: '/user/individual',
+  USER_UPDATE_ENTREPRISE: '/user/entreprise',
+  USER_SEARCH: '/user/name/{name}',
 } as const;

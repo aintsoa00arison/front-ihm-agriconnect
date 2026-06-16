@@ -35,11 +35,12 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
   const userId = getUserId();
   const { createPublication, updatePublication } = usePublications(userId || undefined);
 
-  // 🔥 États du formulaire - utiliser les valeurs backend directement
+  // 🔥 États du formulaire
   const [productionType, setProductionType] = useState<ProductionType>("VEGETAL");
   const [productName, setProductName] = useState<string>("");
   const [quantityValue, setQuantityValue] = useState<string>("");
   const [quantityUnit, setQuantityUnit] = useState<QuantityUnit>("tonnes");
+  const [price, setPrice] = useState<string>(""); // 🔥 NOUVEAU: Prix
   const [location, setLocation] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -54,9 +55,9 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
 
   useEffect(() => {
     if (initialData) {
-      // 🔥 La valeur est déjà en format backend
       setProductionType(initialData.productionType || "VEGETAL");
       setProductName(initialData.productName || "");
+      setPrice(initialData.price || ""); // 🔥 Charger le prix
       setLocation(initialData.location || "");
       setDescription(initialData.description || "");
       if (initialData.mediaUrl) setMediaPreview(initialData.mediaUrl);
@@ -85,6 +86,18 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
     reader.readAsDataURL(file);
   };
 
+  // 🔥 Fonction pour formater le prix
+  const formatPriceInput = (value: string): string => {
+    // Ne garder que les chiffres
+    const cleaned = value.replace(/[^0-9]/g, '');
+    return cleaned;
+  };
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPriceInput(e.target.value);
+    setPrice(formatted);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -102,13 +115,16 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
 
     try {
       // 🔥 productionType est déjà au format backend
+      const priceNumber = price ? parseFloat(price) : 0;
+      
       const publicationData = {
         sender_id: userId,
         titre: productName,
         description: description,
-        category: productionType, // Déjà en format backend
+        category: productionType,
         localisation: location,
         quantity: `${quantityValue} ${quantityUnit}`,
+        price: priceNumber, // 🔥 NOUVEAU: Prix en nombre
         photo: imageFile || undefined,
       };
 
@@ -122,18 +138,18 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
       }
 
       if (result.success) {
-        // 🔥 Pour l'affichage, convertir en valeur display
         const displayType = convertToDisplay(productionType);
         
         onSave({
           id: initialData?.id,
           mode,
-          productionType: productionType, // Backend
-          productionTypeDisplay: displayType, // Display pour l'affichage
+          productionType: productionType,
+          productionTypeDisplay: displayType,
           productName,
           quantityValue,
           quantityUnit,
           quantity: `${quantityValue} ${quantityUnit}`,
+          price: price || "0", // 🔥 Sauvegarder le prix
           location,
           description,
           mediaUrl: mediaPreview,
@@ -213,6 +229,31 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
                   <LocationInput mode={mode} value={location} onChange={setLocation} />
                 </div>
 
+                {/* 🔥 NOUVEAU: Champ Prix */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-bold text-slate-800">
+                      Prix <span className="font-normal text-slate-400">(en Ar)</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
+                        Ar
+                      </span>
+                      <input
+                        type="text"
+                        value={price}
+                        onChange={handlePriceChange}
+                        placeholder="Ex: 15000"
+                        className="w-full bg-slate-50/50 border border-slate-200/80 rounded-xl h-11 pl-9 pr-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0D631B]"
+                      />
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-medium">
+                      Laissez vide pour indiquer "Gratuit"
+                    </p>
+                  </div>
+                  <div />
+                </div>
+
                 <DescriptionTextarea value={description} onChange={setDescription} />
                 <MediaUpload onFileSelect={handleFileSelect} />
               </div>
@@ -245,11 +286,11 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
           ) : (
             <AdPreview
               mode={mode}
-              // 🔥 Convertir en valeur d'affichage pour l'aperçu
               productionType={convertToDisplay(productionType)}
               productName={productName}
               quantityValue={quantityValue}
               quantityUnit={quantityUnit}
+              price={price} // 🔥 NOUVEAU: Passer le prix à l'aperçu
               location={location}
               description={description}
               mediaPreview={mediaPreview}

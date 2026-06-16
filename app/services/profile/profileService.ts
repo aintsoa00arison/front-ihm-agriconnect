@@ -1,133 +1,217 @@
 // services/profile/profileService.ts
+import { apiClient } from '../api/client';
+import { API_ENDPOINTS } from '../api/endpoints';
 import { getUserFromToken, getUserRole, getUserId } from '../lib/auth';
-
-// Types
-export interface ProfileData {
-  id: string;
-  name: string;
-  role: 'collecteur' | 'fournisseur';
-  rating: number;
-  bio: string;
-  avatarUrl: string;
-  bannerUrl: string;
-  email: string;
-  phone: string;
-  reviews: any[];
-  isOwner: boolean;
-  type?: 'particulier' | 'entreprise';
-}
-
-// Données mockées en attendant le backend
-const MOCK_PROFILES: Record<string, Partial<ProfileData>> = {
-  'collecteur': {
-    name: 'Collecteur Test',
-    bio: 'Entreprise de collecte de produits agricoles',
-    avatarUrl: '/images/default-avatar.png',
-  },
-  'fournisseur': {
-    name: 'Fournisseur Test',
-    bio: 'Producteur de fruits et légumes bio',
-    avatarUrl: '/images/default-avatar.png',
-  },
-};
+import { 
+  ProfileData, 
+  UserResponse, 
+  transformUserResponse 
+} from './types/profile';
 
 export const profileService = {
-  // Récupérer le profil depuis le token (pas d'appel API)
+  getUserById: async (userId: string): Promise<ProfileData | null> => {
+    try {
+      console.log('🔍 getUserById - userId:', userId);
+      
+      const url = API_ENDPOINTS.USER_GET.replace('{user_id}', userId);
+      console.log('🔍 getUserById - URL:', url);
+      
+      const response = await apiClient.get<UserResponse>(url);
+      
+      console.log('📦 getUserById - Réponse brute du backend:', JSON.stringify(response.data, null, 2));
+      
+      // 🔥 Log spécifique pour le rating
+      console.log('⭐ getUserById - Rating dans la réponse brute:', {
+        rating: response.data?.rating,
+        average_rating: response.data?.average_rating,
+        averageRating: response.data?.averageRating,
+        note: response.data?.note,
+        user_rating: response.data?.user_rating,
+        user: response.data?.user?.rating,
+        data_rating: response.data?.data?.rating,
+      });
+      
+      const transformed = transformUserResponse(response.data);
+      
+      console.log('🔄 getUserById - Données transformées:', JSON.stringify(transformed, null, 2));
+      console.log('⭐ getUserById - Rating après transformation:', transformed?.rating);
+      
+      return transformed;
+    } catch (error: any) {
+      console.error("❌ Erreur récupération profil:", error);
+      if (error.response) {
+        console.error('📦 Réponse erreur:', {
+          status: error.response.status,
+          data: error.response.data,
+        });
+      }
+      return null;
+    }
+  },
+
+  getMyProfile: async (): Promise<ProfileData | null> => {
+    console.log('🔍 getMyProfile - Début');
+    const userId = getUserId();
+    console.log('🔍 getMyProfile - userId:', userId);
+    
+    if (!userId) {
+      console.log('⚠️ getMyProfile - Pas de userId trouvé');
+      return null;
+    }
+    
+    const result = await profileService.getUserById(userId);
+    console.log('🔍 getMyProfile - Résultat:', result);
+    return result;
+  },
+
+  updateIndividualProfile: async (data: {
+    id: string;
+    password?: string;
+    phone?: string[];
+    product_category?: string[];
+    last_name?: string;
+    first_name?: string;
+    address?: string;
+    description?: string;
+  }): Promise<{ success: boolean; message: string }> => {
+    try {
+      console.log('🔍 updateIndividualProfile - Données:', data);
+      const response = await apiClient.patch(API_ENDPOINTS.USER_UPDATE_INDIVIDUAL, data);
+      console.log('✅ updateIndividualProfile - Succès:', response.data);
+      return { 
+        success: true, 
+        message: response.data?.message || "Profil mis à jour avec succès" 
+      };
+    } catch (error: any) {
+      console.error("❌ Erreur mise à jour profil individuel:", error);
+      if (error.response) {
+        console.error('📦 Réponse erreur:', {
+          status: error.response.status,
+          data: error.response.data,
+        });
+      }
+      return { 
+        success: false, 
+        message: error.response?.data?.detail || "Erreur lors de la mise à jour" 
+      };
+    }
+  },
+
+  updateEntrepriseProfile: async (data: {
+    id: string;
+    password?: string;
+    phone?: string[];
+    product_category?: string[];
+    legal_name?: string;
+    registered_office?: string;
+    rep_last_name?: string;
+    rep_first_name?: string;
+    rep_cin_number?: string;
+    company_description?: string;
+  }): Promise<{ success: boolean; message: string }> => {
+    try {
+      console.log('🔍 updateEntrepriseProfile - Données:', data);
+      const response = await apiClient.patch(API_ENDPOINTS.USER_UPDATE_ENTREPRISE, data);
+      console.log('✅ updateEntrepriseProfile - Succès:', response.data);
+      return { 
+        success: true, 
+        message: response.data?.message || "Profil mis à jour avec succès" 
+      };
+    } catch (error: any) {
+      console.error("❌ Erreur mise à jour profil entreprise:", error);
+      if (error.response) {
+        console.error('📦 Réponse erreur:', {
+          status: error.response.status,
+          data: error.response.data,
+        });
+      }
+      return { 
+        success: false, 
+        message: error.response?.data?.detail || "Erreur lors de la mise à jour" 
+      };
+    }
+  },
+
+  searchUsersByName: async (name: string): Promise<ProfileData[]> => {
+    try {
+      console.log('🔍 searchUsersByName - name:', name);
+      const url = API_ENDPOINTS.USER_SEARCH.replace('{name}', encodeURIComponent(name));
+      const response = await apiClient.get<UserResponse[]>(url);
+      console.log('📦 searchUsersByName - Réponse:', response.data);
+      
+      const results = response.data.map(user => transformUserResponse(user)).filter(Boolean) as ProfileData[];
+      console.log('🔄 searchUsersByName - Résultats transformés:', results.length);
+      
+      return results;
+    } catch (error: any) {
+      console.error("❌ Erreur recherche utilisateurs:", error);
+      return [];
+    }
+  },
+
   getProfileFromToken: (): ProfileData | null => {
+    console.log('🔍 getProfileFromToken - Début');
+    
     const user = getUserFromToken();
     const role = getUserRole();
     const userId = getUserId();
     
-    if (!user || !userId) return null;
+    console.log('🔍 getProfileFromToken - Token info:', { user, role, userId });
     
-    // Récupérer depuis localStorage les données sauvegardées
+    if (!user || !userId) {
+      console.log('⚠️ getProfileFromToken - Pas d\'utilisateur ou userId');
+      return null;
+    }
+    
     const savedName = localStorage.getItem('profile_name');
     const savedBio = localStorage.getItem('profile_bio');
     const savedAvatar = localStorage.getItem('profile_avatar');
     const savedType = localStorage.getItem('profile_type') as 'particulier' | 'entreprise' | null;
     
-    const userRole = role === 'collector' ? 'collecteur' : 'fournisseur';
-    const mock = MOCK_PROFILES[userRole] || {};
+    console.log('🔍 getProfileFromToken - Saved data:', { savedName, savedBio, savedAvatar, savedType });
     
-    return {
+    const userRole = role === 'collector' ? 'collecteur' : 'fournisseur';
+    
+    const profileData: ProfileData = {
       id: userId,
-      name: savedName || mock.name || (userRole === 'collecteur' ? 'Collecteur' : 'Fournisseur'),
+      name: savedName || (userRole === 'collecteur' ? 'Collecteur' : 'Fournisseur'),
       role: userRole,
-      rating: 4.5,
-      bio: savedBio || mock.bio || 'Aucune description pour le moment',
-      avatarUrl: savedAvatar || mock.avatarUrl || '/images/default-avatar.png',
+      rating: 4.5, // 🔥 Valeur par défaut, à remplacer par la vraie note
+      bio: savedBio || 'Aucune description pour le moment',
+      avatarUrl: savedAvatar || '/images/default-avatar.png',
       bannerUrl: '/images/auth/champ.jpeg',
       email: user.email || '',
-      phone: '',
+      phone: [],
       reviews: [],
       isOwner: true,
       type: savedType || 'particulier',
     };
+    
+    console.log('🔍 getProfileFromToken - ProfileData créé:', profileData);
+    return profileData;
   },
 
-  // Récupérer un profil par slug (à remplacer par appel API plus tard)
-  getProfileBySlug: async (slug: string): Promise<ProfileData | null> => {
-    // TODO: Remplacer par appel API réel quand disponible
-    // const response = await apiClient.get(`/profile/${slug}`);
-    // return transformProfileData(response.data);
+  updateProfile: async (data: Partial<ProfileData>): Promise<{ success: boolean; message: string }> => {
+    console.log('🔍 updateProfile - Données reçues:', data);
     
-    console.log('🔵 getProfileBySlug appelé avec slug:', slug);
-    
-    // Pour l'instant, retourner le profil du token si le slug correspond
-    const currentProfile = profileService.getProfileFromToken();
-    if (currentProfile && (slug === currentProfile.id || slug === 'me')) {
-      return currentProfile;
+    if (data.name) {
+      localStorage.setItem('profile_name', data.name);
+      console.log('💾 updateProfile - Nom sauvegardé:', data.name);
+    }
+    if (data.bio) {
+      localStorage.setItem('profile_bio', data.bio);
+      console.log('💾 updateProfile - Bio sauvegardée:', data.bio);
+    }
+    if (data.avatarUrl) {
+      localStorage.setItem('profile_avatar', data.avatarUrl);
+      console.log('💾 updateProfile - Avatar sauvegardé:', data.avatarUrl);
+    }
+    if (data.type) {
+      localStorage.setItem('profile_type', data.type);
+      console.log('💾 updateProfile - Type sauvegardé:', data.type);
     }
     
-    // Sinon, retourner un profil mocké
-    return {
-      id: slug,
-      name: 'Utilisateur',
-      role: 'collecteur',
-      rating: 4.0,
-      bio: 'Aucune description disponible',
-      avatarUrl: '/images/default-avatar.png',
-      bannerUrl: '/images/auth/champ.jpeg',
-      email: '',
-      phone: '',
-      reviews: [],
-      isOwner: false,
-    };
-  },
-
-  // Mettre à jour le profil (localStorage pour l'instant)
-  updateProfile: async (data: Partial<ProfileData>): Promise<{ success: boolean; message: string }> => {
-    // TODO: Remplacer par appel API réel quand disponible
-    // const response = await apiClient.put('/profile/me', data);
-    
-    if (data.name) localStorage.setItem('profile_name', data.name);
-    if (data.bio) localStorage.setItem('profile_bio', data.bio);
-    if (data.avatarUrl) localStorage.setItem('profile_avatar', data.avatarUrl);
-    if (data.type) localStorage.setItem('profile_type', data.type);
-    
+    console.log('✅ updateProfile - Profil mis à jour avec succès');
     return { success: true, message: 'Profil mis à jour avec succès' };
-  },
-
-  // Mettre à jour le profil collecteur (spécifique)
-  updateCollectorProfile: async (data: any): Promise<{ success: boolean; message: string }> => {
-    // TODO: Remplacer par appel API réel
-    // const response = await apiClient.put('/profile/collector', data);
-    
-    if (data.company?.name) localStorage.setItem('profile_name', data.company.name);
-    if (data.bio) localStorage.setItem('profile_bio', data.bio);
-    
-    return { success: true, message: 'Profil collecteur mis à jour' };
-  },
-
-  // Mettre à jour le profil fournisseur (spécifique)
-  updateFournisseurProfile: async (data: any): Promise<{ success: boolean; message: string }> => {
-    // TODO: Remplacer par appel API réel
-    // const response = await apiClient.put('/profile/fournisseur', data);
-    
-    if (data.company?.name) localStorage.setItem('profile_name', data.company.name);
-    if (data.bio) localStorage.setItem('profile_bio', data.bio);
-    if (data.type) localStorage.setItem('profile_type', data.type);
-    
-    return { success: true, message: 'Profil fournisseur mis à jour' };
   },
 };

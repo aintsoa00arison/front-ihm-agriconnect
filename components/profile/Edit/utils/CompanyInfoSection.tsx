@@ -4,7 +4,7 @@
 import { Building2, MapPin, Mail, Phone, FileText } from "lucide-react";
 import FormInput from "./FormInput";
 import SectionHeader from "./SectionHeader";
-import type { CompanyData } from "../../types/collectorProfile";
+import type { CompanyData } from "../../../../app/services/profile/types/collectorProfile";
 
 interface CompanyInfoSectionProps {
   data: CompanyData;

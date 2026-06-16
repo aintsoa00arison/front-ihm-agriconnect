@@ -6,12 +6,13 @@ import {
   ProductionTypeDisplay, 
   ProductionType,
   convertToBackend,
-  convertToDisplay
+  convertToDisplay,
+  formatPrice
 } from './types';
 
 // 🔥 Ré-exporter pour compatibilité
 export type { ProductionType, ProductionTypeBackend, ProductionTypeDisplay };
-export { convertToBackend, convertToDisplay };
+export { convertToBackend, convertToDisplay, formatPrice };
 
 // 🔥 Types spécifiques au formulaire
 export type AdFormMode = "annonce" | "demande";
@@ -25,6 +26,8 @@ export interface AdData {
   quantityValue?: string;
   quantityUnit?: QuantityUnit;
   quantity?: string;
+  price?: string; // 🔥 NOUVEAU: Prix en string pour le formulaire
+  priceNumber?: number; // 🔥 NOUVEAU: Prix en nombre pour le backend
   location: string;
   description: string;
   mediaUrl?: string;

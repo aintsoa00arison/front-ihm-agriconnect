@@ -29,8 +29,6 @@ export const PRODUCTION_TYPE_OPTIONS: { label: ProductionTypeDisplay; value: Pro
 // 🔥 Pour le formulaire, on utilise la valeur backend
 export type ProductionType = ProductionTypeBackend;
 
-
-
 export interface Publication {
   id: string;
   sender: string;
@@ -40,6 +38,7 @@ export interface Publication {
   localisation: string;
   quantity: string | null;
   photo: string | null;
+  price?: number | null; // 🔥 NOUVEAU: Prix
   createdAt?: string;
 }
 
@@ -50,6 +49,7 @@ export interface CreatePublicationData {
   category: ProductionTypeBackend;
   localisation: string;
   quantity?: string;
+  price?: number; // 🔥 NOUVEAU: Prix en nombre
   photo?: File | null;
 }
 
@@ -59,12 +59,15 @@ export interface UpdatePublicationData {
   category?: ProductionTypeBackend;
   localisation?: string;
   quantity?: string;
+  price?: number; // 🔥 NOUVEAU: Prix en nombre
   photo?: File | null;
 }
 
 export interface PublicationParams {
   titre_or_description?: string;
   category?: string;
+  price_min?: number; // 🔥 NOUVEAU: Filtre prix min
+  price_max?: number; // 🔥 NOUVEAU: Filtre prix max
 }
 
 // 🔥 Utilitaires de conversion
@@ -74,4 +77,10 @@ export const convertToBackend = (displayValue: ProductionTypeDisplay): Productio
 
 export const convertToDisplay = (backendValue: ProductionTypeBackend): ProductionTypeDisplay => {
   return PRODUCTION_TYPE_REVERSE_MAPPING[backendValue] || 'Végétale';
+};
+
+// 🔥 Fonction utilitaire pour formater le prix
+export const formatPrice = (price: number | null | undefined): string => {
+  if (price === null || price === undefined || price === 0) return 'Gratuit';
+  return `${price.toLocaleString()} Ar`;
 };

@@ -15,8 +15,8 @@ import type {
   ProductionTypesState, 
   ProductionKey,
   CollectorProfileFormData 
-} from "../types/collectorProfile";
-import { PRODUCTION_MAPPING } from "../types/collectorProfile";
+} from "../../../app/services/profile/types/collectorProfile";
+import { PRODUCTION_MAPPING } from "../../../app/services/profile/types/collectorProfile";
 
 interface EditCollectorProfileFormProps {
   initialData?: any;

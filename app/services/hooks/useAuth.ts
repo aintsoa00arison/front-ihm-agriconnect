@@ -1,4 +1,6 @@
 // services/hooks/useAuth.ts
+"use client"; // 🔥 Ajouter "use client" en haut
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -17,8 +19,11 @@ export const useAuth = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<{ email: string; role?: string; id?: string } | null>(null);
+  const [mounted, setMounted] = useState(false);
 
+  // 🔥 Ne s'exécute qu'après le montage côté client
   useEffect(() => {
+    setMounted(true);
     const userId = getUserId();
     const role = getUserRole();
     if (userId) {

@@ -2,7 +2,7 @@
 "use client";
 
 import { Diamond } from "lucide-react";
-import { ProductionTypesState, ProductionKey, PRODUCTION_KEYS, PRODUCTION_LABELS } from "../../types/supplierProfile";
+import { ProductionTypesState, ProductionKey, PRODUCTION_KEYS, PRODUCTION_LABELS } from "../../../../app/services/profile/types/supplierProfile";
 
 interface ProductionPreferencesSectionProps {
   productionTypes: ProductionTypesState;
