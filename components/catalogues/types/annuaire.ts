@@ -1,19 +1,20 @@
-// types/annuaire.ts
-export type TargetRole = "fournisseurs" | "collecteurs";
+// app/catalogue/types/annuaire.ts
+
+export type UserRole = "fournisseurs" | "collecteurs";
 
 export interface UserProfile {
   id: string;
   name: string;
-  role: TargetRole;
+  role: UserRole;
   location: string;
   type: string;
   rating: number;
   avatar: string;
-  description: string;
+  description?: string;
 }
 
 export interface FilterState {
-  location: string;
+  location: string; // Gardé pour compatibilité mais non utilisé
   type: string;
   rating: string;
 }

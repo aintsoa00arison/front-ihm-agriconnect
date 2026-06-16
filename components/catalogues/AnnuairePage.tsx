@@ -1,3 +1,4 @@
+// app/catalogue/AnnuairePage.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -6,42 +7,51 @@ import AnnuaireFilters from "./AnnuaireFilters";
 import AnnuaireCard from "./AnnuaireCard";
 import { AnnuaireCardSkeleton } from "./AnnuaireSkeletons";
 import AnnuaireEmptyState from "./AnnuaireEmptyState";
-import type { TargetRole, UserProfile, FilterState } from "./types/annuaire";
+import type { UserProfile, FilterState } from "./types/annuaire";
 import { profileService } from "../../app/services/profile/profileService";
 import { getUserId } from "../../app/services/lib/auth";
 
 interface AnnuairePageProps {
-  type: TargetRole;
   onBack: () => void;
 }
 
+// 🔥 Mapping des types de production backend -> affichage
+const PRODUCTION_TYPE_MAP: Record<string, string> = {
+  'VEGETAL': 'Végétale',
+  'ANIMAL': 'Elevage',
+  'CEREAL': 'Rente'
+};
+
 // 🔥 Fonction pour transformer ProfileData en UserProfile
 const transformProfileToUser = (profile: any): UserProfile => {
-  // Déterminer le rôle
   const role = profile.role === 'collecteur' || profile.role === 'collector' 
     ? 'collecteurs' 
     : 'fournisseurs';
   
-  // Déterminer le type de production (premier élément ou "Non spécifié")
-  const productionType = profile.product_category && profile.product_category.length > 0
+  // 🔥 Convertir la valeur backend en valeur d'affichage
+  const rawType = profile.product_category && profile.product_category.length > 0
     ? profile.product_category[0]
     : "Non spécifié";
+  
+  const displayType = PRODUCTION_TYPE_MAP[rawType] || rawType;
   
   return {
     id: profile.id,
     name: profile.name || "Utilisateur",
     role: role,
     location: profile.address || profile.registered_office || "Non spécifié",
-    type: productionType,
+    type: displayType, // 🔥 Utiliser la valeur d'affichage
+   
     rating: profile.rating || 0,
     avatar: profile.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
     description: profile.bio || profile.company_description || profile.description || "",
   };
 };
 
-export default function AnnuairePage({ type, onBack }: AnnuairePageProps) {
+export default function AnnuairePage({ onBack }: AnnuairePageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [users, setUsers] = useState<UserProfile[]>([]);
+  const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterState>({
     location: "all",
@@ -56,22 +66,21 @@ export default function AnnuairePage({ type, onBack }: AnnuairePageProps) {
     const fetchUsers = async () => {
       setIsLoading(true);
       try {
-        // 🔥 Récupérer tous les utilisateurs via searchUsersByName avec une chaîne vide
-        // pour obtenir tous les utilisateurs
-        const results = await profileService.searchUsersByName("");
-        console.log('📦 Utilisateurs récupérés:', results);
+        const results = await profileService.getAllUsers();
+        console.log('📦 Utilisateurs récupérés:', results.length);
+        console.log('📦 Premier utilisateur:', results[0]);
         
-        // 🔥 Filtrer pour exclure l'utilisateur connecté
         const filteredUsers = results.filter(user => user.id !== currentUserId);
-        console.log('📦 Utilisateurs après filtrage (exclu current):', filteredUsers);
-        
-        // 🔥 Transformer en UserProfile
         const transformedUsers = filteredUsers.map(transformProfileToUser);
-        console.log('📦 Utilisateurs transformés:', transformedUsers);
         
+        console.log('📦 Utilisateurs transformés:', transformedUsers.length);
+        console.log('📦 Types de production:', transformedUsers.map(u => u.type));
+        
+        setAllUsers(transformedUsers);
         setUsers(transformedUsers);
       } catch (error) {
         console.error('❌ Erreur chargement des utilisateurs:', error);
+        setAllUsers([]);
         setUsers([]);
       } finally {
         setIsLoading(false);
@@ -81,7 +90,40 @@ export default function AnnuairePage({ type, onBack }: AnnuairePageProps) {
     fetchUsers();
   }, [currentUserId]);
 
-  // Écouter les événements de recherche depuis le header
+  // 🔥 Appliquer les filtres sur la liste complète
+  useEffect(() => {
+    let filtered = [...allUsers];
+
+    console.log('🔍 Filtres appliqués:', filters);
+    console.log('🔍 Nombre d\'utilisateurs avant filtrage:', filtered.length);
+
+    // 🔥 Filtrer par type de production
+    if (filters.type !== "all") {
+      filtered = filtered.filter(user => {
+        const match = user.type === filters.type;
+        console.log(`🔍 User ${user.name} type=${user.type}, filtre=${filters.type}, match=${match}`);
+        return match;
+      });
+    }
+
+    // 🔥 Filtrer par rating
+    if (filters.rating !== "all") {
+      const minRating = parseInt(filters.rating);
+      filtered = filtered.filter(user => user.rating >= minRating);
+    }
+
+    // 🔥 Filtrer par recherche
+    if (searchQuery.trim() !== "") {
+      filtered = filtered.filter(user =>
+        user.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    console.log('🔍 Nombre d\'utilisateurs après filtrage:', filtered.length);
+    setUsers(filtered);
+  }, [allUsers, filters, searchQuery]);
+
+  // 🔥 Recherche depuis le header
   useEffect(() => {
     const handleSearchEvent = (event: CustomEvent) => {
       setSearchQuery(event.detail);
@@ -96,7 +138,6 @@ export default function AnnuairePage({ type, onBack }: AnnuairePageProps) {
   useEffect(() => {
     let count = 0;
     if (searchQuery !== "") count++;
-    if (filters.location !== "all") count++;
     if (filters.type !== "all") count++;
     if (filters.rating !== "all") count++;
     setActiveFiltersCount(count);
@@ -106,81 +147,51 @@ export default function AnnuairePage({ type, onBack }: AnnuairePageProps) {
     setSearchQuery("");
     setFilters({ location: "all", type: "all", rating: "all" });
     window.dispatchEvent(new CustomEvent("catalogueSearch", { detail: "" }));
+    setUsers(allUsers);
   };
 
   const updateFilter = (key: keyof FilterState, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  // 🔥 Filtrer les utilisateurs
-  const filteredUsers = users.filter((user) => {
-    // Filtrer par rôle (type: 'fournisseurs' ou 'collecteurs')
-    if (user.role !== type) return false;
-
-    // Filtrer par recherche
-    const matchesSearch =
-      searchQuery === "" ||
-      user.name.toLowerCase().includes(searchQuery.toLowerCase());
-
-    // Filtrer par localisation
-    const matchesLocation =
-      filters.location === "all" || user.location === filters.location;
-
-    // Filtrer par type de production
-    const matchesType =
-      filters.type === "all" || user.type === filters.type;
-
-    // Filtrer par rating
-    const matchesRating =
-      filters.rating === "all" || user.rating >= parseInt(filters.rating);
-
-    return matchesSearch && matchesLocation && matchesType && matchesRating;
-  });
-
   return (
     <div className="w-full h-full overflow-y-auto bg-neutral p-4 md:p-6 lg:p-8 animate-in fade-in duration-300">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* En-tête avec fil d'Ariane */}
-        <AnnuaireHeader type={type} onBack={onBack} />
+        <AnnuaireHeader onBack={onBack} />
 
-        {/* Filtres - toujours visibles (pas de skeleton) */}
         <AnnuaireFilters
           searchQuery={searchQuery}
-          filterLocation={filters.location}
           filterType={filters.type}
           filterRating={filters.rating}
           activeFiltersCount={activeFiltersCount}
-          onLocationChange={(value) => updateFilter("location", value)}
           onTypeChange={(value) => updateFilter("type", value)}
           onRatingChange={(value) => updateFilter("rating", value)}
           onResetFilters={resetFilters}
         />
 
-        {/* Compteur de résultats */}
-        {!isLoading && filteredUsers.length > 0 && (
+        {!isLoading && users.length > 0 && (
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               <span className="font-bold text-foreground">
-                {filteredUsers.length}
+                {users.length}
               </span>{" "}
-              {filteredUsers.length === 1
-                ? "professionnel trouvé"
-                : "professionnels trouvés"}
+              {users.length === 1
+                ? "membre trouvé"
+                : "membres trouvés"}
               {searchQuery && ` pour "${searchQuery}"`}
             </p>
           </div>
         )}
 
-        {/* Grille des résultats avec skeleton */}
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[...Array(4)].map((_, index) => (
               <AnnuaireCardSkeleton key={index} />
             ))}
           </div>
-        ) : filteredUsers.length > 0 ? (
+        ) : users.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredUsers.map((user) => (
+            {users.map((user) => (
               <AnnuaireCard key={user.id} user={user} />
             ))}
           </div>

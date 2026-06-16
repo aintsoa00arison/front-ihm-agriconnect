@@ -1,115 +1,110 @@
 // app/catalogue/components/AnnuaireFilters.tsx
 "use client";
 
-import { SlidersHorizontal, MapPin, Tag, Star, X } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { X, Filter } from "lucide-react";
+import { useState } from "react";
 
 interface AnnuaireFiltersProps {
   searchQuery: string;
-  filterLocation: string;
   filterType: string;
   filterRating: string;
   activeFiltersCount: number;
-  onLocationChange: (value: string) => void;
   onTypeChange: (value: string) => void;
   onRatingChange: (value: string) => void;
   onResetFilters: () => void;
 }
 
-const LOCATIONS = ["Antananarivo", "Antsirabe", "Fianarantsoa", "Toliara", "Mahajanga"];
-const PRODUCTION_TYPES = ["Végétale", "Élevage", "Rente"];
+const PRODUCTION_TYPES = ["Végétale", "Elevage", "Rente"];
+const RATINGS = [
+  { label: "Toutes les notes", value: "all" },
+  { label: "4 et plus", value: "4" },
+  { label: "3 et plus", value: "3" },
+  { label: "2 et plus", value: "2" },
+  { label: "1 et plus", value: "1" },
+];
 
 export default function AnnuaireFilters({
-  filterLocation,
+  searchQuery,
   filterType,
   filterRating,
   activeFiltersCount,
-  onLocationChange,
   onTypeChange,
   onRatingChange,
   onResetFilters,
 }: AnnuaireFiltersProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
-      <div className="p-4 bg-muted/30 border-b border-border flex items-center justify-between">
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-6 space-y-4">
+      {/* En-tête des filtres */}
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal size={16} className="text-primary" />
-          <h3 className="text-sm font-bold text-foreground">Filtres</h3>
+          <Filter size={16} className="text-slate-400" />
+          <span className="text-sm font-bold text-slate-700">Filtres</span>
           {activeFiltersCount > 0 && (
-            <span className="text-xs font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+            <span className="text-xs font-bold text-white bg-primary px-2 py-0.5 rounded-full">
               {activeFiltersCount}
             </span>
           )}
         </div>
-        {activeFiltersCount > 0 && (
-          <button 
-            onClick={onResetFilters}
-            className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
-          >
-            <X size={12} />
-            Réinitialiser
-          </button>
-        )}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          {isExpanded ? "Réduire" : "Développer"}
+        </button>
       </div>
-      
-      <div className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Filtre Localisation */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-            <MapPin size={12} />
-            Localisation
-          </label>
-          <Select value={filterLocation} onValueChange={onLocationChange}>
-            <SelectTrigger className="h-10 border-border rounded-xl text-sm bg-muted/30 hover:bg-muted/50 transition-colors">
-              <SelectValue placeholder="Toutes les villes" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Toutes les villes</SelectItem>
-              {LOCATIONS.map((loc) => (
-                <SelectItem key={loc} value={loc}>{loc}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
 
-        {/* Filtre Type de production */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-            <Tag size={12} />
-            Type de production
-          </label>
-          <Select value={filterType} onValueChange={onTypeChange}>
-            <SelectTrigger className="h-10 border-border rounded-xl text-sm bg-muted/30 hover:bg-muted/50 transition-colors">
-              <SelectValue placeholder="Tous les types" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous les types</SelectItem>
+      {/* Corps des filtres */}
+      {isExpanded && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+          {/* Type de production */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              Type de production
+            </label>
+            <select
+              value={filterType}
+              onChange={(e) => onTypeChange(e.target.value)}
+              className="w-full bg-slate-50/50 border border-slate-200/80 rounded-xl h-9 px-3 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0D631B] focus:border-transparent"
+            >
+              <option value="all">Tous les types</option>
               {PRODUCTION_TYPES.map((type) => (
-                <SelectItem key={type} value={type}>{type}</SelectItem>
+                <option key={type} value={type}>{type}</option>
               ))}
-            </SelectContent>
-          </Select>
-        </div>
+            </select>
+          </div>
 
-        {/* Filtre Note minimale */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-            <Star size={12} className="text-amber-400" />
-            Note minimale
-          </label>
-          <Select value={filterRating} onValueChange={onRatingChange}>
-            <SelectTrigger className="h-10 border-border rounded-xl text-sm bg-muted/30 hover:bg-muted/50 transition-colors">
-              <SelectValue placeholder="Toutes les notes" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Toutes les notes</SelectItem>
-              <SelectItem value="5">5 étoiles</SelectItem>
-              <SelectItem value="4">4+ étoiles</SelectItem>
-              <SelectItem value="3">3+ étoiles</SelectItem>
-            </SelectContent>
-          </Select>
+          {/* Note minimale */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              Note minimale
+            </label>
+            <select
+              value={filterRating}
+              onChange={(e) => onRatingChange(e.target.value)}
+              className="w-full bg-slate-50/50 border border-slate-200/80 rounded-xl h-9 px-3 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0D631B] focus:border-transparent"
+            >
+              {RATINGS.map((rating) => (
+                <option key={rating.value} value={rating.value}>
+                  {rating.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Bouton Réinitialiser */}
+          <div className="flex items-end">
+            <button
+              onClick={onResetFilters}
+              className="w-full h-9 rounded-xl border border-slate-200 text-xs font-bold text-slate-500 hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5"
+            >
+              <X size={14} />
+              Réinitialiser
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -112,7 +112,6 @@ export default function CataloguePage({ userRole }: CataloguePageProps) {
   const userId = getUserId();
   const currentUserRole = getUserRole();
   
-  // 🔥 Le hook gère maintenant le chargement selon le rôle
   const { publications, loading, isInitialized, refreshPublications } = usePublications(userId || undefined);
 
   useEffect(() => {
@@ -132,12 +131,10 @@ export default function CataloguePage({ userRole }: CataloguePageProps) {
   const filteredAds = useMemo(() => {
     let ads = allAds;
 
-    // 🔥 Filtrer par type de production
     if (selectedTypes.length > 0 && selectedTypes.length < 3) {
       ads = ads.filter(ad => selectedTypes.includes(ad.productionType));
     }
 
-    // 🔥 Filtrer par recherche
     if (searchQuery.trim() !== "") {
       const query = searchQuery.toLowerCase();
       ads = ads.filter(ad =>
@@ -193,10 +190,10 @@ export default function CataloguePage({ userRole }: CataloguePageProps) {
     console.log("Voir profil:", name);
   };
 
+  // 🔥 Correction ici - Appel à AnnuairePage sans paramètre type
   if (view === "annuaire") {
     return (
       <AnnuairePage
-        type={userRole === "fournisseur" ? "collecteurs" : "fournisseurs"}
         onBack={() => setView("catalogue")}
       />
     );

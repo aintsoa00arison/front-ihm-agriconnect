@@ -18,14 +18,12 @@ export const API_ENDPOINTS = {
   PUBLICATION_ALL: '/publication/all/{user_id}',
   PUBLICATION_USER: '/publication/user/{user_id}',
   PUBLICATION_FILTERED: '/publication/filtered/{user_id}',
-  
-  // 🔥 NOUVEAUX ENDPOINTS - Directement depuis le backend
-  PUBLICATION_PROVIDER_ALL: '/publication/provider/all',    
-  PUBLICATION_COLLECTOR_ALL: '/publication/collector/all', 
+  PUBLICATION_PROVIDER_ALL: '/publication/provider/all',
+  PUBLICATION_COLLECTOR_ALL: '/publication/collector/all',
 
   // User / Profile
   USER_GET: '/user/{user_id}',
-  USER_ALL: '/user/all',
+  USER_ALL: '/user/all', // 🔥 Nouvel endpoint pour tous les utilisateurs
   USER_UPDATE_INDIVIDUAL: '/user/individual',
   USER_UPDATE_ENTREPRISE: '/user/entreprise',
   USER_SEARCH: '/user/name/{name}',
