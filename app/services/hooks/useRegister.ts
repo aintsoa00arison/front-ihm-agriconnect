@@ -50,23 +50,41 @@ export const useRegister = () => {
   };
 
   const registerCollector = async (): Promise<{ success: boolean; userId?: string }> => {
+    console.log("🔵 registerCollector - === DÉBUT ===");
     setIsLoading(true);
     try {
       const { email, password } = registerDraft;
+      console.log("🔵 email:", email);
+      console.log("🔵 password:", password ? "***" : "MANQUANT");
+      
       if (!email || !password) {
+        console.warn("⚠️ Données manquantes:", { email: !!email, password: !!password });
         toast.error("Données d'inscription manquantes");
         return { success: false };
       }
 
       const payload = registerService.prepareCollectorData(registerDraft);
+      console.log("🔵 payload préparé:", JSON.stringify(payload, null, 2));
+      
       if (!payload) {
         toast.error("Données du formulaire incomplètes");
         return { success: false };
       }
 
       const response = await registerService.registerCollector(payload, email, password);
-      return response;
-    } catch (error) {
+      console.log("🔵 Réponse reçue:", response);
+      
+      if (response.success) {
+        toast.success(response.message);
+        console.log("🔵 userId retourné:", response.userId);
+        return { success: true, userId: response.userId };
+      } else {
+        toast.error(response.message);
+        return { success: false };
+      }
+    } catch (error: any) {
+      console.error("🔴 Erreur inscription collecteur:", error);
+      toast.error(error.response?.data?.detail || "Erreur lors de l'inscription");
       return { success: false };
     } finally {
       setIsLoading(false);
@@ -75,20 +93,12 @@ export const useRegister = () => {
 
   const registerFournisseur = async (bio?: string, photo?: File | string | null): Promise<{ success: boolean; userId?: string }> => {
     console.log("🔵 registerFournisseur - === DÉBUT ===");
-    console.log("🔵 bio:", bio);
-    console.log("🔵 photo:", photo ? "présente" : "absente");
-    console.log("🔵 registerDraft:", JSON.stringify(registerDraft, null, 2));
-    
     setIsLoading(true);
     try {
       const { email, password, type } = registerDraft;
       
-      console.log("🔵 email:", email);
-      console.log("🔵 password:", password ? "***" : "MANQUANT");
-      console.log("🔵 type:", type);
-      
       if (!email || !password || !type) {
-        console.error("🔴 Données manquantes:", { email: !!email, password: !!password, type: !!type });
+        console.warn("⚠️ Données manquantes:", { email: !!email, password: !!password, type: !!type });
         toast.error("Données d'inscription manquantes");
         return { success: false };
       }
@@ -105,10 +115,6 @@ export const useRegister = () => {
       
       if (type === "entreprise") {
         console.log("🔵 Appel registerEntrepriseProvider");
-        if (!('legal_name' in fournisseurData)) {
-          toast.error("Données entreprise invalides");
-          return { success: false };
-        }
         response = await registerService.registerEntrepriseProvider(
           fournisseurData as EntrepriseProviderPayload,
           email,
@@ -118,10 +124,6 @@ export const useRegister = () => {
         );
       } else {
         console.log("🔵 Appel registerIndividualProvider");
-        if (!('last_name' in fournisseurData)) {
-          toast.error("Données particulier invalides");
-          return { success: false };
-        }
         response = await registerService.registerIndividualProvider(
           fournisseurData as IndividualProviderPayload,
           email,
@@ -135,6 +137,7 @@ export const useRegister = () => {
       
       if (response.success) {
         toast.success(response.message);
+        console.log("🔵 userId retourné:", response.userId);
         return { success: true, userId: response.userId };
       } else {
         toast.error(response.message);
@@ -142,7 +145,6 @@ export const useRegister = () => {
       }
     } catch (error: any) {
       console.error("🔴 Erreur inscription fournisseur:", error);
-      console.error("🔴 Détails erreur:", error.response?.data);
       toast.error(error.response?.data?.detail || "Erreur lors de l'inscription");
       return { success: false };
     } finally {

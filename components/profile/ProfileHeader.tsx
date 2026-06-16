@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import Image from "next/image";
-import { Star, Pencil, Camera, Loader2 } from "lucide-react";
+import { Star, Pencil, Camera, Loader2, Building2, User, Store, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import { getUserRole } from "../../app/services/lib/auth";
 
 interface ProfileHeaderProps {
   user: {
@@ -23,6 +24,11 @@ interface ProfileHeaderProps {
     avatarUrl?: string;
     bannerUrl?: string;
     isOwner?: boolean;
+    legal_name?: string;
+    company_name?: string;
+    first_name?: string;
+    last_name?: string;
+    user_type?: string;
   } | null;
   activeTab: string;
   onTabChange: (value: string) => void;
@@ -30,12 +36,14 @@ interface ProfileHeaderProps {
   isLoading?: boolean;
 }
 
+// 🔥 Formatage du rating
 const formatRating = (rating: number | string | null | undefined): string => {
   if (rating === null || rating === undefined) return '0.0';
   
   let numRating: number;
   if (typeof rating === 'string') {
-    const cleaned = rating.replace(/[^0-9.]/g, '');
+    const normalized = rating.replace(',', '.');
+    const cleaned = normalized.replace(/[^0-9.]/g, '');
     numRating = parseFloat(cleaned);
   } else {
     numRating = rating;
@@ -46,19 +54,58 @@ const formatRating = (rating: number | string | null | undefined): string => {
   return clampedRating.toFixed(1);
 };
 
-const getFullStars = (rating: number | string | null | undefined): number => {
-  if (rating === null || rating === undefined) return 0;
-  
+// 🔥 Fonction pour rendre les étoiles
+const renderStars = (rating: number | string | null | undefined) => {
   let numRating: number;
-  if (typeof rating === 'string') {
-    const cleaned = rating.replace(/[^0-9.]/g, '');
-    numRating = parseFloat(cleaned);
+  if (rating === null || rating === undefined) {
+    numRating = 0;
+  } else if (typeof rating === 'string') {
+    const normalized = rating.replace(',', '.');
+    const cleaned = normalized.replace(/[^0-9.]/g, '');
+    numRating = parseFloat(cleaned) || 0;
   } else {
     numRating = rating;
   }
   
-  if (typeof numRating !== 'number' || isNaN(numRating)) return 0;
-  return Math.floor(Math.min(Math.max(numRating, 0), 5));
+  const clamped = Math.min(Math.max(numRating, 0), 5);
+  const fullStars = Math.floor(clamped);
+  const hasHalfStar = clamped % 1 >= 0.5;
+  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+  
+  const stars = [];
+  
+  for (let i = 0; i < fullStars; i++) {
+    stars.push(
+      <Star 
+        key={`full-${i}`} 
+        size={16} 
+        className="fill-amber-400 text-amber-400"
+      />
+    );
+  }
+  
+  if (hasHalfStar) {
+    stars.push(
+      <div key="half" className="relative inline-block">
+        <Star size={16} className="text-slate-200 fill-slate-200" />
+        <div className="absolute top-0 left-0 overflow-hidden w-1/2">
+          <Star size={16} className="fill-amber-400 text-amber-400" />
+        </div>
+      </div>
+    );
+  }
+  
+  for (let i = 0; i < emptyStars; i++) {
+    stars.push(
+      <Star 
+        key={`empty-${i}`} 
+        size={16} 
+        className="text-slate-200 fill-slate-200"
+      />
+    );
+  }
+  
+  return stars;
 };
 
 function ProfileHeaderSkeleton() {
@@ -106,17 +153,59 @@ export default function ProfileHeader({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  // 🔥 Log pour déboguer
+  // 🔥 Récupérer le rôle depuis le token une seule fois avec useMemo
+  const tokenRole = useMemo(() => {
+    const role = getUserRole();
+    console.log('🔍 ProfileHeader - rôle depuis le token:', role);
+    return role;
+  }, []); // ✅ Dépendance vide pour ne s'exécuter qu'une fois
+
   useEffect(() => {
     if (user) {
-      console.log('📊 ProfileHeader - user.rating:', user.rating);
-      console.log('📊 ProfileHeader - user complet:', user);
+      console.log('📊 ProfileHeader - user:', user);
+      console.log('📊 ProfileHeader - rating:', user.rating);
+      console.log('📊 ProfileHeader - role depuis le token:', tokenRole);
     }
-  }, [user]);
+  }, [user]); // ✅ Retirer tokenRole des dépendances
 
   if (isLoading || !user) {
     return <ProfileHeaderSkeleton />;
   }
+
+  const displayName = user.name || 'Utilisateur';
+  const displayInitial = displayName.charAt(0).toUpperCase();
+  
+  // 🔥 Utiliser le rôle du token ou celui du user
+  const userRole = tokenRole || user.role || 'fournisseur';
+  const isProvider = userRole === 'fournisseur' || userRole === 'provider';
+  const isCollector = userRole === 'collecteur' || userRole === 'collector';
+
+  // 🔥 Configuration du badge
+  const getBadgeConfig = () => {
+    if (isProvider) {
+      return {
+        label: "Fournisseur",
+        icon: <Store size={12} className="mr-1" />,
+        className: "border-green-500/20 bg-green-50 text-green-700"
+      };
+    } else if (isCollector) {
+      return {
+        label: "Collecteur",
+        icon: <Truck size={12} className="mr-1" />,
+        className: "border-amber-500/20 bg-amber-50 text-amber-700"
+      };
+    }
+    return {
+      label: "Utilisateur",
+      icon: <User size={12} className="mr-1" />,
+      className: "border-slate-500/20 bg-slate-50 text-slate-700"
+    };
+  };
+
+  const badgeConfig = getBadgeConfig();
+
+  const ratingValue = user.rating ?? 0;
+  const formattedRating = formatRating(ratingValue);
 
   const getTabValue = (label: string) => {
     switch (label) {
@@ -152,13 +241,6 @@ export default function ProfileHeader({
     }
   };
 
-  // 🔥 Récupérer le rating
-  const ratingValue = user.rating ?? 0;
-  const formattedRating = formatRating(ratingValue);
-  const fullStars = getFullStars(ratingValue);
-
-  console.log('⭐ Rating affiché:', { ratingValue, formattedRating, fullStars });
-
   return (
     <TooltipProvider>
       <div className="w-full bg-white">
@@ -182,13 +264,13 @@ export default function ProfileHeader({
                 {user.avatarUrl ? (
                   <img 
                     src={user.avatarUrl} 
-                    alt={user.name} 
+                    alt={displayName} 
                     className="w-full h-full rounded-full object-cover" 
                   />
                 ) : (
                   <div className="w-full h-full rounded-full bg-gradient-to-br from-[#0D631B] to-[#2D6A36] flex items-center justify-center">
                     <span className="text-white text-3xl font-bold">
-                      {user.name.charAt(0).toUpperCase()}
+                      {displayInitial}
                     </span>
                   </div>
                 )}
@@ -226,20 +308,21 @@ export default function ProfileHeader({
               {/* Infos utilisateur */}
               <div className="mb-2">
                 <div className="flex flex-wrap items-center gap-3">
-                  <h1 className="text-xl sm:text-2xl font-bold text-slate-900">{user.name}</h1>
-                  <span className="px-3 py-1 rounded-full border border-[#0D631B]/20 bg-[#E8F5E7] text-[#0D631B] text-[10px] sm:text-xs font-bold capitalize">
-                    {user.role === "collecteur" ? "Collecteur" : "Fournisseur"}
+                  <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
+                    {displayName}
+                  </h1>
+                  
+                  {/* 🔥 Badge dynamique */}
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full border text-[10px] sm:text-xs font-bold ${badgeConfig.className}`}>
+                    {badgeConfig.icon}
+                    {badgeConfig.label}
                   </span>
                 </div>
+                
+                {/* Étoiles */}
                 <div className="flex items-center gap-1.5 mt-1">
-                  <div className="flex text-amber-400">
-                    {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        size={14} 
-                        className={i < fullStars ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200"}
-                      />
-                    ))}
+                  <div className="flex items-center">
+                    {renderStars(ratingValue)}
                   </div>
                   <span className="text-sm font-bold text-slate-600">
                     {formattedRating}

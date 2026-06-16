@@ -5,12 +5,10 @@ import { useRouter } from 'next/navigation';
 import { XCircle, Loader2, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Importation des types et du store d'inscription
 import { useRegisterStore } from '../../services/register/store/registerStore';
 import { useRegister } from '../../services/hooks/useRegister';
 import { useAuth } from '../../services/hooks/useAuth';
 
-// Importation des sous-composants des étapes
 import RegisterProfileSelection from './_components/ProfileSelection';
 import CollectorForm from './_components/CollectorForm';
 import FournisseurForm from './_components/FournisseurForm';
@@ -42,9 +40,10 @@ export default function RegisterPage() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [apiMessage, setApiMessage] = useState('');
   const [showVerification, setShowVerification] = useState(false);
-  const [tempUserId, setTempUserId] = useState<string>('');  // 🔥 Stocker userId
+  const [tempUserId, setTempUserId] = useState<string>('');
   const [registeredEmail, setRegisteredEmail] = useState('');
   const [step, setStep] = useState(1);
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleProfileSelection = (
     selectedRole: 'fournisseur' | 'collecteur', 
@@ -71,43 +70,45 @@ export default function RegisterPage() {
       photo: step3Data.image 
     });
 
-    setRegisteredEmail(registerDraft.email || '');
+    const email = registerDraft.email || '';
+    setRegisteredEmail(email);
 
     try {
       let success = false;
       let userId = '';
-     
-// RegisterPage.tsx - Dans handleFinish
-if (role === 'collecteur') {
-  const result = await registerCollector();
-  success = result.success;
-  userId = result.userId || '';
-} else {
-  const result = await registerFournisseur(step3Data.bio, step3Data.image);
-  success = result.success;
-  userId = result.userId || '';
-}
 
-console.log("🔵 Résultat:", { success, userId });
+      console.log("🔵 Inscription en cours...");
+      
+      if (role === 'collecteur') {
+        const result = await registerCollector();
+        success = result.success;
+        userId = result.userId || '';
+        console.log("🔵 Résultat inscription collecteur:", { success, userId });
+      } else {
+        const result = await registerFournisseur(step3Data.bio, step3Data.image);
+        success = result.success;
+        userId = result.userId || '';
+        console.log("🔵 Résultat inscription fournisseur:", { success, userId });
+      }
 
-// 🔥 Si succès, on continue même sans userId (on utilisera l'email)
-if (success) {
-  console.log("✅ Compte créé avec succès!");
-  
-  // Si on a un userId, l'utiliser, sinon utiliser l'email
-  const identifier = userId || registeredEmail;
-  console.log("🔵 Identifiant pour vérification:", identifier);
-  
-  setTempUserId(identifier);
-  setIsSubmitting(false);
-  setShowVerification(true);
-  toast.success("Compte créé ! Veuillez vérifier votre email.");
-} else {
-  console.error("🔴 Échec de la création du compte");
-  setSubmitStatus('error');
-  setApiMessage("Une erreur est survenue lors de l'inscription.");
-  setIsSubmitting(false);
-}
+      if (success) {
+        console.log("✅ Compte créé avec succès!");
+        console.log("📧 Email pour vérification:", email);
+        console.log("🆔 userId:", userId);
+        
+        // 🔥 NE PAS envoyer l'email ici - laisser VerificationForm le faire
+        // setEmailSent(false); // Réinitialiser
+        
+        setTempUserId(userId);
+        setIsSubmitting(false);
+        setShowVerification(true);
+        toast.success("Compte créé ! Veuillez vérifier votre email.");
+      } else {
+        console.error("🔴 Échec de la création du compte");
+        setSubmitStatus('error');
+        setApiMessage("Une erreur est survenue lors de l'inscription.");
+        setIsSubmitting(false);
+      }
 
     } catch (error: any) {
       console.error("🔴 Exception:", error);
@@ -128,7 +129,8 @@ if (success) {
     return (
       <div className="min-h-screen w-full bg-neutral-50 flex items-center justify-center px-4 py-8 sm:px-6">
         <VerificationForm
-          userId={tempUserId}  // 🔥 Passer userId au lieu d'email
+          userId={tempUserId}
+          email={registeredEmail}
           mode="register"
           onVerified={handleVerificationComplete}
         />
@@ -175,7 +177,7 @@ if (success) {
                 className="btn-primary px-6 sm:px-8 h-10 sm:h-12 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 rounded-xl shadow-md w-full max-w-xs cursor-pointer"
               >
                 <span>Accéder à la connexion</span>
-                <ArrowRight size={14} className="sm:size-16" />
+                <ArrowRight size={14}  />
               </button>
             </div>
           )}
