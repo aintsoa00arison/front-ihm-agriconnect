@@ -13,7 +13,19 @@ export interface ProfileData {
   reviews?: any[];
   isOwner?: boolean;
   type?: 'particulier' | 'entreprise';
-  product_category?: string[]; // 🔥 AJOUTER CE CHAMP
+  product_category?: string[];
+  // 🔥 Nouveaux champs pour les fournisseurs
+  legal_name?: string;
+  company_name?: string;
+  first_name?: string;
+  last_name?: string;
+  user_type?: string;
+  registered_office?: string;
+  nif?: string;
+  stat?: string;
+  rep_first_name?: string;
+  rep_last_name?: string;
+  company_description?: string;
 }
 
 export interface UserResponse {
@@ -25,7 +37,7 @@ export interface UserResponse {
   score?: {
     value: number;
   };
-  product_category?: string[]; // 🔥 AJOUTER CE CHAMP
+  product_category?: string[];
   description?: string;
   email?: {
     value: string;
@@ -37,16 +49,44 @@ export interface UserResponse {
   };
   avatarUrl?: string;
   bannerUrl?: string;
+  // 🔥 Champs pour les fournisseurs entreprise
+  legal_name?: string;
+  registered_office?: string;
+  nif?: {
+    value: string;
+  };
+  stat?: {
+    value: string;
+  };
+  rep_first_name?: string;
+  rep_last_name?: string;
+  rep_cin_number?: {
+    value: string;
+  };
+  company_description?: string;
   [key: string]: any;
 }
 
 export const transformUserResponse = (data: UserResponse): ProfileData => {
   console.log('🔄 transformUserResponse - Données reçues:', JSON.stringify(data, null, 2));
   
-  // 🔥 Extraire le nom complet
-  const firstName = data.first_name || '';
-  const lastName = data.last_name || '';
-  const fullName = `${firstName} ${lastName}`.trim() || 'Utilisateur';
+  // 🔥 Extraire le nom selon le type d'utilisateur
+  let displayName = '';
+  let isProvider = false;
+  
+  // Vérifier si c'est un fournisseur entreprise (a legal_name)
+  if (data.legal_name) {
+    displayName = data.legal_name;
+    isProvider = true;
+  } else {
+    // Collecteur ou fournisseur particulier : utiliser first_name + last_name
+    const firstName = data.first_name || '';
+    const lastName = data.last_name || '';
+    displayName = `${firstName} ${lastName}`.trim() || 'Utilisateur';
+  }
+  
+  console.log('🔍 transformUserResponse - Nom affiché:', displayName);
+  console.log('🔍 transformUserResponse - isProvider:', isProvider);
   
   // 🔥 Extraire le rating
   const ratingValue = data.score?.value ?? 0;
@@ -62,26 +102,46 @@ export const transformUserResponse = (data: UserResponse): ProfileData => {
     : [];
   
   // 🔥 Extraire le rôle
-  const role = data.role || data.user_type || 'fournisseur';
+  const role = data.role || data.user_type || (isProvider ? 'fournisseur' : 'collecteur');
   const userRole = role === 'collector' || role === 'collecteur' ? 'collecteur' : 'fournisseur';
   
-  // 🔥 EXTRAIRE LES TYPES DE PRODUCTION - CORRECTION ICI
+  // 🔥 Extraire les types de production
   const productCategory = data.product_category || [];
-  console.log('🔍 transformUserResponse - product_category extrait:', productCategory);
+  
+  // 🔥 Extraire la description
+  const description = data.description || data.company_description || '';
+  
+  // 🔥 Extraire l'adresse
+  const address = data.address || data.registered_office || '';
+  
+  // 🔥 Extraire le CIN
+  const cinNumber = data.cin_number?.value || data.rep_cin_number?.value || '';
   
   return {
     id: data.id || '',
-    name: fullName,
+    name: displayName, // 🔥 Nom affiché
     role: userRole,
     rating: typeof ratingValue === 'number' ? ratingValue : parseFloat(String(ratingValue)) || 0,
-    bio: data.description || '',
+    bio: description,
     avatarUrl: data.avatarUrl || undefined,
     bannerUrl: data.bannerUrl || '/images/auth/champ.jpeg',
     email: email,
     phone: phones,
     reviews: [],
     isOwner: false,
-    type: 'particulier',
-    product_category: productCategory, // 🔥 AJOUTER CE CHAMP
+    type: isProvider ? 'entreprise' : 'particulier',
+    product_category: productCategory,
+    // 🔥 Stocker les données supplémentaires pour les composants
+    legal_name: data.legal_name,
+    company_name: data.legal_name,
+    first_name: data.first_name,
+    last_name: data.last_name,
+    user_type: data.user_type,
+    registered_office: data.registered_office,
+    nif: data.nif?.value,
+    stat: data.stat?.value,
+    rep_first_name: data.rep_first_name,
+    rep_last_name: data.rep_last_name,
+    company_description: data.company_description,
   };
 };

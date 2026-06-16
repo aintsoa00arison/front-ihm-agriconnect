@@ -29,10 +29,6 @@ export default function AboutSection({ profile, isLoading = false }: AboutSectio
     );
   }
 
-  // 🔥 LOG pour voir le profil complet
-  console.log('🔍 AboutSection - profil complet:', profile);
-  console.log('🔍 AboutSection - product_category:', profile.product_category);
-
   // 🔥 Fonction pour afficher une valeur ou "Non renseigné"
   const displayValue = (value: any): string => {
     if (value === null || value === undefined || value === '') return 'Non renseigné';
@@ -58,8 +54,9 @@ export default function AboutSection({ profile, isLoading = false }: AboutSectio
       .join(', ');
   }
   
-  // 🔥 Adresse
+  // 🔥 Adresse / Siège social
   const address = profile.address || '';
+  const registeredOffice = profile.registered_office || '';
   
   // 🔥 Description
   const description = profile.description || '';
@@ -67,26 +64,25 @@ export default function AboutSection({ profile, isLoading = false }: AboutSectio
   // 🔥 CIN Number
   const cinNumber = profile.cin_number?.value || profile.cin_number || '';
   
-  // 🔥 Types de production - utiliser product_category du profil
+  // 🔥 Types de production
   const productionTypes = profile.product_category || [];
   
-  // 🔥 Log pour vérifier
-  console.log('🔍 productionTypes récupérés:', productionTypes);
+  // 🔥 Détecter si c'est un fournisseur entreprise
+  const isProvider = profile.role === "fournisseur" && !!profile.legal_name;
+  const isCollector = profile.role === "collecteur";
   
-  // 🔥 Détecter automatiquement le type d'utilisateur
-  const hasCompanyInfo = profile.legal_name || 
-                         profile.company?.name || 
-                         profile.company?.legal_name ||
-                         profile.entreprise_name;
-  
-  const isProvider = !!hasCompanyInfo;
-  const isCollector = !isProvider;
-  
+  // 🔥 Nom de l'entreprise
   const companyName = profile.legal_name || 
                       profile.company?.name || 
                       profile.company?.legal_name || 
                       profile.entreprise_name || 
                       '';
+
+  // 🔥 Informations du représentant légal
+  const repFirstName = profile.rep_first_name || '';
+  const repLastName = profile.rep_last_name || '';
+  const repFullName = `${repFirstName} ${repLastName}`.trim() || 'Non renseigné';
+  const repCinNumber = profile.rep_cin_number?.value || profile.rep_cin_number || '';
 
   const profileType = isProvider ? 'entreprise' : 'particulier';
 
@@ -101,7 +97,7 @@ export default function AboutSection({ profile, isLoading = false }: AboutSectio
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-200">
       {/* Colonne gauche : Infos */}
       <div className="lg:col-span-2 space-y-6">
-        {/* Informations personnelles / Représentant */}
+        {/* Représentant légal / Informations personnelles */}
         <div className="p-6 bg-white rounded-2xl shadow-sm border border-slate-100 space-y-4">
           <div className="flex items-center gap-2">
             {isProvider ? (
@@ -114,14 +110,17 @@ export default function AboutSection({ profile, isLoading = false }: AboutSectio
             </h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Nom */}
             <div>
               <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                {isProvider ? 'Nom complet du représentant' : 'Nom complet'}
+                {isProvider ? 'Nom du représentant' : 'Nom complet'}
               </label>
               <p className="text-sm font-bold text-slate-700">
-                {fullName}
+                {isProvider ? repFullName : fullName}
               </p>
             </div>
+            
+            {/* Téléphone */}
             <div>
               <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Téléphone</label>
               <p className="text-sm font-bold text-slate-700 flex items-center gap-2">
@@ -129,6 +128,8 @@ export default function AboutSection({ profile, isLoading = false }: AboutSectio
                 {displayValue(phone)}
               </p>
             </div>
+            
+            {/* Email */}
             <div className="sm:col-span-2">
               <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Email</label>
               <p className="text-sm font-bold text-slate-700 flex items-center gap-2">
@@ -136,14 +137,17 @@ export default function AboutSection({ profile, isLoading = false }: AboutSectio
                 {displayValue(email)}
               </p>
             </div>
-            <div className="sm:col-span-2">
-              <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Adresse</label>
-              <p className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                <MapPin size={14} className="text-slate-400" />
-                {displayValue(address)}
-              </p>
-            </div>
-            {cinNumber && (
+
+            {/* CIN du représentant (pour les fournisseurs) */}
+            {isProvider && repCinNumber && (
+              <div className="sm:col-span-2">
+                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">CIN du représentant</label>
+                <p className="text-sm font-bold text-slate-700">{displayValue(repCinNumber)}</p>
+              </div>
+            )}
+
+            {/* CIN pour les collecteurs */}
+            {!isProvider && cinNumber && (
               <div className="sm:col-span-2">
                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">CIN / NIF</label>
                 <p className="text-sm font-bold text-slate-700">{displayValue(cinNumber)}</p>
@@ -152,7 +156,7 @@ export default function AboutSection({ profile, isLoading = false }: AboutSectio
           </div>
         </div>
 
-        {/* Entreprise - visible seulement si fournisseur */}
+        {/* Entreprise - visible seulement si fournisseur entreprise */}
         {isProvider && (
           <div className="p-6 bg-white rounded-2xl shadow-sm border border-slate-100 space-y-4">
             <div className="flex items-center gap-2">
@@ -171,31 +175,31 @@ export default function AboutSection({ profile, isLoading = false }: AboutSectio
                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Siège social</label>
                 <p className="text-sm font-bold text-slate-700 flex items-center gap-2">
                   <MapPin size={14} className="text-slate-400" />
-                  {displayValue(address)}
+                  {displayValue(registeredOffice || address)}
                 </p>
               </div>
               <div>
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Téléphone</label>
-                <p className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                  <Phone size={14} className="text-slate-400" />
-                  {displayValue(phone)}
+                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">NIF</label>
+                <p className="text-sm font-bold text-slate-700">
+                  {displayValue(profile.nif)}
                 </p>
               </div>
               <div>
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Email</label>
-                <p className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                  <Mail size={14} className="text-slate-400" />
-                  {displayValue(email)}
+                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">STAT</label>
+                <p className="text-sm font-bold text-slate-700">
+                  {displayValue(profile.stat)}
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Bio / Description */}
+        {/* Description */}
         {description && (
           <div className="p-6 bg-white rounded-2xl shadow-sm border border-slate-100 space-y-4">
-            <h3 className="text-base font-bold text-slate-800">À propos</h3>
+            <h3 className="text-base font-bold text-slate-800">
+              {isProvider ? 'Description de l\'entreprise' : 'À propos'}
+            </h3>
             <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
           </div>
         )}

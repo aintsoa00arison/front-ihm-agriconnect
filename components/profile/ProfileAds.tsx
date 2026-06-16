@@ -6,13 +6,18 @@ import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"; // 🔥 Importer Tooltip
+} from "@/components/ui/tooltip";
 import ProfileFilters from "./ProfileFilters";
 import InterestedUsersModal from "./InterestedUsersModal";
 import AdCard from "./AdCard";
@@ -89,7 +94,6 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
   useEffect(() => {
     if (userId) {
       setIsFirstLoad(true);
-      // 🔥 Forcer le chargement avec un délai
       const timer = setTimeout(() => {
         loadUserPublications(true);
         setIsFirstLoad(false);
@@ -178,7 +182,6 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
       if (result.success) {
         setSelectedAdForDelete(null);
         showToast("L'annonce a été supprimée avec succès.", "success");
-        // 🔥 Recharger après suppression
         setTimeout(() => {
           loadUserPublications(true);
         }, 300);
@@ -258,7 +261,7 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
   }
 
   return (
-    <TooltipProvider> {/* 🔥 Wrapper avec TooltipProvider */}
+    <TooltipProvider>
       <div ref={scrollRef} className="space-y-6 relative overflow-y-auto h-full">
         {/* Toasts */}
         <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 w-full max-w-md pointer-events-none">
@@ -295,13 +298,11 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
           ))}
         </div>
 
-        {/* En-tête avec compteur et rafraîchissement */}
+        {/* En-tête */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-bold text-slate-900">Mes annonces</h2>
-            <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-full">
-              {ads.length}
-            </span>
+            
           </div>
           <button
             onClick={handleRefresh}
@@ -362,7 +363,7 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
           ))
         )}
 
-        {/* Modales... */}
+        {/* Modale intéressés */}
         <InterestedUsersModal
           ad={selectedAdForInterested}
           onClose={() => setSelectedAdForInterested(null)}
@@ -370,8 +371,18 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
           onReject={handleRejectInterested}
         />
 
+        {/* 🔥 AlertDialog avec VisuallyHidden corrigé */}
         <AlertDialog open={!!selectedAdForDelete} onOpenChange={() => setSelectedAdForDelete(null)}>
           <AlertDialogContent className="rounded-2xl max-w-md p-6">
+            <VisuallyHidden>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Confirmation de suppression</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Cette action est irréversible
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+            </VisuallyHidden>
+            
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="size-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center">
                 <AlertTriangle size={24} />
@@ -398,7 +409,7 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* 🔥 Bouton scroll avec Tooltip */}
+        {/* Bouton scroll avec Tooltip */}
         {showScrollButton && (
           <div className="fixed bottom-24 right-6 z-50">
             <Tooltip>
