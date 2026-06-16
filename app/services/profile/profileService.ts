@@ -132,23 +132,68 @@ export const profileService = {
     }
   },
 
-  searchUsersByName: async (name: string): Promise<ProfileData[]> => {
+// services/profile/profileService.ts
+
+searchUsersByName: async (name: string): Promise<ProfileData[]> => {
+  try {
+    console.log('🔍 searchUsersByName - name:', name);
+    
+    // 🔥 Utiliser {name} et non (name)
+    const url = API_ENDPOINTS.USER_SEARCH.replace('{name}', encodeURIComponent(name));
+    console.log('🔍 searchUsersByName - URL:', url);
+    
+    const response = await apiClient.get<UserResponse[]>(url);
+    console.log('📦 searchUsersByName - Réponse:', response.data);
+    
+    const results = response.data.map(user => transformUserResponse(user)).filter(Boolean) as ProfileData[];
+    console.log('🔄 searchUsersByName - Résultats transformés:', results.length);
+    
+    return results;
+  } catch (error: any) {
+    console.error("❌ Erreur recherche utilisateurs:", error);
+    if (error.response) {
+      console.error('📦 Réponse erreur:', {
+        status: error.response.status,
+        data: error.response.data,
+      });
+    }
+    return [];
+  }
+},
+
+// 🔥 Nouvelle méthode pour récupérer tous les utilisateurs
+getAllUsers: async (): Promise<ProfileData[]> => {
+  try {
+    console.log('🔍 getAllUsers - Récupération de tous les utilisateurs');
+    
+    // 🔥 Utiliser searchUsersByName avec une chaîne vide
+    // Si le backend supporte la recherche avec une chaîne vide
+    const response = await apiClient.get<UserResponse[]>(API_ENDPOINTS.USER_SEARCH.replace('{name}', ''));
+    console.log('📦 getAllUsers - Réponse brute:', response.data);
+    
+    const results = response.data
+      .map(user => transformUserResponse(user))
+      .filter(Boolean) as ProfileData[];
+    
+    console.log(`🔄 getAllUsers - ${results.length} utilisateurs récupérés`);
+    return results;
+  } catch (error: any) {
+    console.error("❌ Erreur récupération tous les utilisateurs:", error);
+    
+    // 🔥 Fallback: essayer de récupérer via search avec un nom commun
     try {
-      console.log('🔍 searchUsersByName - name:', name);
-      const url = API_ENDPOINTS.USER_SEARCH.replace('{name}', encodeURIComponent(name));
-      const response = await apiClient.get<UserResponse[]>(url);
-      console.log('📦 searchUsersByName - Réponse:', response.data);
-      
-      const results = response.data.map(user => transformUserResponse(user)).filter(Boolean) as ProfileData[];
-      console.log('🔄 searchUsersByName - Résultats transformés:', results.length);
-      
-      return results;
-    } catch (error: any) {
-      console.error("❌ Erreur recherche utilisateurs:", error);
+      const fallbackResponse = await apiClient.get<UserResponse[]>(
+        API_ENDPOINTS.USER_SEARCH.replace('{name}', 'a')
+      );
+      return fallbackResponse.data
+        .map(user => transformUserResponse(user))
+        .filter(Boolean) as ProfileData[];
+    } catch (fallbackError) {
+      console.error("❌ Fallback erreur:", fallbackError);
       return [];
     }
-  },
-
+  }
+},
   getProfileFromToken: (): ProfileData | null => {
     console.log('🔍 getProfileFromToken - Début');
     

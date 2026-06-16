@@ -2,7 +2,7 @@
 "use client";
 
 import { Star } from "lucide-react";
-import type { Supplier, UserRole } from "./types/catalogue";
+import type { Supplier, UserRole } from "../../app/services/publication/catalogue";
 
 interface TopSuppliersProps {
   suppliers: Supplier[];

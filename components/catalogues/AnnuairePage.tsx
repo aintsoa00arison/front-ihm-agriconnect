@@ -1,4 +1,3 @@
-// app/catalogue/AnnuairePage.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -8,87 +7,41 @@ import AnnuaireCard from "./AnnuaireCard";
 import { AnnuaireCardSkeleton } from "./AnnuaireSkeletons";
 import AnnuaireEmptyState from "./AnnuaireEmptyState";
 import type { TargetRole, UserProfile, FilterState } from "./types/annuaire";
+import { profileService } from "../../app/services/profile/profileService";
+import { getUserId } from "../../app/services/lib/auth";
 
 interface AnnuairePageProps {
   type: TargetRole;
   onBack: () => void;
 }
 
-// Liste complète fictive des profils
-const usersDatabase: UserProfile[] = [
-  {
-    id: "u1",
-    name: "John Doe",
-    role: "fournisseurs",
-    location: "Antananarivo",
-    type: "Végétale",
-    rating: 5,
-    avatar:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
-    description:
-      "Producteur spécialisé en céréales de province et cultures maraîchères.",
-  },
-  {
-    id: "u2",
-    name: "Jane Cooper",
-    role: "fournisseurs",
-    location: "Antsirabe",
-    type: "Végétale",
-    rating: 4,
-    avatar:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
-    description:
-      "Exploitation spécialisée en pommes de terre de table et carottes.",
-  },
-  {
-    id: "u3",
-    name: "Rova Centrale",
-    role: "collecteurs",
-    location: "Fianarantsoa",
-    type: "Rente",
-    rating: 5,
-    avatar:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&q=80",
-    description:
-      "Centrale d'achat et approvisionnement pour grossistes régionaux.",
-  },
-  {
-    id: "u4",
-    name: "Jenny Wilson",
-    role: "fournisseurs",
-    location: "Toliara",
-    type: "Rente",
-    rating: 4,
-    avatar:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
-    description: "Exportateur de maïs jaune sec et cultures de rente locales.",
-  },
-  {
-    id: "u5",
-    name: "Marie Claire",
-    role: "fournisseurs",
-    location: "Antananarivo",
-    type: "Élevage",
-    rating: 5,
-    avatar:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80",
-    description: "Élevage de volailles et production d'œufs bio.",
-  },
-  {
-    id: "u6",
-    name: "Paul Raso",
-    role: "collecteurs",
-    location: "Mahajanga",
-    type: "Végétale",
-    rating: 4,
-    avatar:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
-    description: "Collecteur de fruits et légumes pour la grande distribution.",
-  },
-];
+// 🔥 Fonction pour transformer ProfileData en UserProfile
+const transformProfileToUser = (profile: any): UserProfile => {
+  // Déterminer le rôle
+  const role = profile.role === 'collecteur' || profile.role === 'collector' 
+    ? 'collecteurs' 
+    : 'fournisseurs';
+  
+  // Déterminer le type de production (premier élément ou "Non spécifié")
+  const productionType = profile.product_category && profile.product_category.length > 0
+    ? profile.product_category[0]
+    : "Non spécifié";
+  
+  return {
+    id: profile.id,
+    name: profile.name || "Utilisateur",
+    role: role,
+    location: profile.address || profile.registered_office || "Non spécifié",
+    type: productionType,
+    rating: profile.rating || 0,
+    avatar: profile.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+    description: profile.bio || profile.company_description || profile.description || "",
+  };
+};
 
 export default function AnnuairePage({ type, onBack }: AnnuairePageProps) {
   const [isLoading, setIsLoading] = useState(true);
+  const [users, setUsers] = useState<UserProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterState>({
     location: "all",
@@ -96,12 +49,37 @@ export default function AnnuairePage({ type, onBack }: AnnuairePageProps) {
     rating: "all",
   });
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
+  const currentUserId = getUserId();
 
-  // Simuler le chargement initial
+  // 🔥 Charger tous les utilisateurs depuis le backend
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
+    const fetchUsers = async () => {
+      setIsLoading(true);
+      try {
+        // 🔥 Récupérer tous les utilisateurs via searchUsersByName avec une chaîne vide
+        // pour obtenir tous les utilisateurs
+        const results = await profileService.searchUsersByName("");
+        console.log('📦 Utilisateurs récupérés:', results);
+        
+        // 🔥 Filtrer pour exclure l'utilisateur connecté
+        const filteredUsers = results.filter(user => user.id !== currentUserId);
+        console.log('📦 Utilisateurs après filtrage (exclu current):', filteredUsers);
+        
+        // 🔥 Transformer en UserProfile
+        const transformedUsers = filteredUsers.map(transformProfileToUser);
+        console.log('📦 Utilisateurs transformés:', transformedUsers);
+        
+        setUsers(transformedUsers);
+      } catch (error) {
+        console.error('❌ Erreur chargement des utilisateurs:', error);
+        setUsers([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchUsers();
+  }, [currentUserId]);
 
   // Écouter les événements de recherche depuis le header
   useEffect(() => {
@@ -109,15 +87,9 @@ export default function AnnuairePage({ type, onBack }: AnnuairePageProps) {
       setSearchQuery(event.detail);
     };
 
-    window.addEventListener(
-      "catalogueSearch",
-      handleSearchEvent as EventListener,
-    );
+    window.addEventListener("catalogueSearch", handleSearchEvent as EventListener);
     return () =>
-      window.removeEventListener(
-        "catalogueSearch",
-        handleSearchEvent as EventListener,
-      );
+      window.removeEventListener("catalogueSearch", handleSearchEvent as EventListener);
   }, []);
 
   // Compter les filtres actifs
@@ -140,22 +112,31 @@ export default function AnnuairePage({ type, onBack }: AnnuairePageProps) {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  const filteredUsers = usersDatabase.filter((user) => {
+  // 🔥 Filtrer les utilisateurs
+  const filteredUsers = users.filter((user) => {
+    // Filtrer par rôle (type: 'fournisseurs' ou 'collecteurs')
     if (user.role !== type) return false;
 
+    // Filtrer par recherche
     const matchesSearch =
       searchQuery === "" ||
       user.name.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // Filtrer par localisation
     const matchesLocation =
       filters.location === "all" || user.location === filters.location;
-    const matchesType = filters.type === "all" || user.type === filters.type;
+
+    // Filtrer par type de production
+    const matchesType =
+      filters.type === "all" || user.type === filters.type;
+
+    // Filtrer par rating
     const matchesRating =
       filters.rating === "all" || user.rating >= parseInt(filters.rating);
 
     return matchesSearch && matchesLocation && matchesType && matchesRating;
   });
 
-  // AnnuairePage.tsx
   return (
     <div className="w-full h-full overflow-y-auto bg-neutral p-4 md:p-6 lg:p-8 animate-in fade-in duration-300">
       <div className="max-w-6xl mx-auto space-y-6">

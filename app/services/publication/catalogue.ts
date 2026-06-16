@@ -19,6 +19,10 @@ export interface Ad {
   description: string;
   image: string;
   author: Author;
+  // 🔥 Nouveaux champs
+  type?: 'Vente' | 'Demande'; // Type d'annonce
+  sender_id?: string; // ID de l'auteur
+  sender_type?: 'fournisseur' | 'collecteur' | string; // Type de l'auteur
 }
 
 export interface Supplier {

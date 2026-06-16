@@ -1,7 +1,7 @@
 // app/catalogue/CatalogueHeader.tsx
 "use client";
 
-import type { UserRole } from "./types/catalogue";
+import type { UserRole } from "../../app/services/publication/catalogue";
 
 interface CatalogueHeaderProps {
   userRole: UserRole;

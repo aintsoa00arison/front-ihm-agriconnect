@@ -28,19 +28,25 @@ export const PRODUCTION_TYPE_OPTIONS: { label: ProductionTypeDisplay; value: Pro
 
 // 🔥 Pour le formulaire, on utilise la valeur backend
 export type ProductionType = ProductionTypeBackend;
+// services/publication/types.ts
 
 export interface Publication {
   id: string;
-  sender: string;
+  sender_id: string;
+  sender?: string; // Nom du sender
   titre: string;
   description: string;
   category: ProductionTypeBackend;
   localisation: string;
   quantity: string | null;
   photo: string | null;
-  price?: number | null; // 🔥 NOUVEAU: Prix
+  price?: number | null;
   createdAt?: string;
+  
+  sender_type?: 'fournisseur' | 'collecteur';
 }
+
+// services/publication/types.ts
 
 export interface CreatePublicationData {
   sender_id: string;
@@ -49,7 +55,7 @@ export interface CreatePublicationData {
   category: ProductionTypeBackend;
   localisation: string;
   quantity?: string;
-  price?: number; // 🔥 NOUVEAU: Prix en nombre
+  prix?: string | number; // 🔥 Ajouter prix (string ou number)
   photo?: File | null;
 }
 
