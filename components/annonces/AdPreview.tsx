@@ -1,16 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, Scale, MapPin, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { AdFormMode, ProductionType } from "./types/ad";
+import { Eye, Scale, MapPin, AlertCircle, ChevronDown, ChevronUp, Tag } from "lucide-react";
+import { AdFormMode } from "../../app/services/publication/ad";
+import { ProductionTypeDisplay, formatPrice } from "../../app/services/publication/types";
 
 interface AdPreviewProps {
   mode: AdFormMode;
-  productionType: ProductionType;
+  productionType: ProductionTypeDisplay;
   productName: string;
   quantityValue: string;
   quantityUnit: string;
+  price?: string; // 🔥 NOUVEAU: Prix
   location: string;
   description: string;
   mediaPreview: string;
@@ -22,6 +23,7 @@ export default function AdPreview({
   productName,
   quantityValue,
   quantityUnit,
+  price,
   location,
   description,
   mediaPreview,
@@ -30,10 +32,14 @@ export default function AdPreview({
   const hasLongDescription = description && description.length > 150;
   const displayDescription = description || "La description du produit s'affichera ici...";
   
-  // Tronquer la description si elle est longue et non expansée
   const truncatedDescription = hasLongDescription && !isExpanded
     ? displayDescription.slice(0, 150) + "..."
     : displayDescription;
+
+  // 🔥 Formater le prix pour l'affichage
+  const displayPrice = price && parseFloat(price) > 0 
+    ? `${parseFloat(price).toLocaleString()} Ar`
+    : "Gratuit";
 
   return (
     <div className="space-y-6">
@@ -73,10 +79,14 @@ export default function AdPreview({
                 <MapPin size={13} />
                 {location || "Antananarivo, Madagascar"}
               </span>
+              {/* 🔥 NOUVEAU: Affichage du prix */}
+              <span className="flex items-center gap-1 text-[#ffa000]">
+                <Tag size={13} />
+                {displayPrice}
+              </span>
             </div>
           </div>
           
-          {/* Description avec gestion du défilement */}
           <div className="space-y-2">
             <p className="text-xs font-medium text-slate-500 leading-relaxed whitespace-pre-wrap break-words">
               {truncatedDescription}

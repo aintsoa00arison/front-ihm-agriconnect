@@ -26,12 +26,13 @@ export default function SidebarCollecteur({ userSlug, userName }: SidebarCollect
   const navItems = [
     { label: "Catalogue", href: "/c", icon: Store, exact: true },
     { label: "Messages", href: "/c/messages", icon: MessageCircle, badgeCount: 3 },
-    { label: "Mon profil", href: `/c/profile/${userSlug}?tab=annonces`, icon: User },
+    // 🔥 Utiliser "me" pour le profil de l'utilisateur connecté
+    { label: "Mon profil", href: `/c/profile/me?tab=annonces`, icon: User },
   ];
 
   return (
     <>
-      <nav className="w-70 hidden  shrink-0 bg-white border-r border-border shadow-sm lg:flex flex-col pb-3 h-full overflow-y-auto">
+      <nav className="w-70 hidden shrink-0 bg-white border-r border-border shadow-sm lg:flex flex-col pb-3 h-full overflow-y-auto">
         <div className="px-4 py-4 mb-6 border-b border-border">
           <Button 
             onClick={() => window.location.href = "/c?action=new"}

@@ -2,7 +2,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { QuantityUnit } from "../types/ad";
+import { QuantityUnit } from "../../../app/services/publication/ad";
 
 interface QuantityInputProps {
   value: string;

@@ -26,12 +26,13 @@ export default function SidebarFournisseur({ userSlug, userName }: SidebarFourni
   const navItems = [
     { label: "Catalogue", href: "/f", icon: Store, exact: true },
     { label: "Messages", href: "/f/messages", icon: MessageCircle, badgeCount: 3 },
-    { label: "Mon profil", href: `/f/profile/${userSlug}?tab=annonces`, icon: User },
+    // 🔥 Utiliser "me" pour le profil de l'utilisateur connecté
+    { label: "Mon profil", href: `/f/profile/me?tab=annonces`, icon: User },
   ];
 
   return (
     <>
-      <nav className="w-70  shrink-0 bg-white border-r border-border shadow-sm hidden lg:flex flex-col pb-3 h-full overflow-y-auto">
+      <nav className="w-70 shrink-0 bg-white border-r border-border shadow-sm hidden lg:flex flex-col pb-3 h-full overflow-y-auto">
         <div className="px-4 py-4 mb-6 border-b border-border">
           <Button
             onClick={() => (window.location.href = "/f?action=new")}

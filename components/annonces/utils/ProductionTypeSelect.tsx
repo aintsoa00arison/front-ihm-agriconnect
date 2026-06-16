@@ -1,7 +1,7 @@
-// components/ad/ProductionTypeSelect.tsx
+// components/ad/utils/ProductionTypeSelect.tsx
 "use client";
 
-import { ProductionType } from "../types/ad";
+import { ProductionType, PRODUCTION_TYPE_OPTIONS } from '../../../app/services/publication/types';
 
 interface ProductionTypeSelectProps {
   value: ProductionType;
@@ -9,12 +9,17 @@ interface ProductionTypeSelectProps {
   disabled?: boolean;
 }
 
-const PRODUCTION_TYPES: ProductionType[] = ["Végétale", "Élevage", "Rente"];
-
-export default function ProductionTypeSelect({ value, onChange, disabled }: ProductionTypeSelectProps) {
+export default function ProductionTypeSelect({ 
+  value, 
+  onChange, 
+  disabled 
+}: ProductionTypeSelectProps) {
+  // ✅ IMPORTANT: retourner du JSX
   return (
     <div className="space-y-1.5">
-      <label className="text-sm font-bold text-slate-800">Type de production</label>
+      <label className="text-sm font-bold text-slate-800">
+        Type de production
+      </label>
       <div className="relative">
         <select
           value={value}
@@ -22,8 +27,10 @@ export default function ProductionTypeSelect({ value, onChange, disabled }: Prod
           disabled={disabled}
           className="w-full bg-slate-50/50 border border-slate-200/80 rounded-xl h-11 px-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0D631B] focus:border-transparent appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {PRODUCTION_TYPES.map((type) => (
-            <option key={type} value={type}>{type}</option>
+          {PRODUCTION_TYPE_OPTIONS.map((type) => (
+            <option key={type.value} value={type.value}>
+              {type.label}
+            </option>
           ))}
         </select>
         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-500">

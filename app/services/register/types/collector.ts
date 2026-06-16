@@ -1,4 +1,4 @@
-// types/collector.ts
+// services/register/types/collector.ts
 export interface CollectorFormData {
   raisonSociale: string;
   siegeSocial: string;
@@ -6,12 +6,12 @@ export interface CollectorFormData {
   emailPro: string;
   nif: string;
   stat: string;
-  nomComplet: string;
+  nom: string;
+  prenom: string;
   telephoneDirect: string;
   cin: string;
-  description: string; // Ajouté pour la description du collecteur
+  description?: string;
 }
-
 
 export interface CollectorDataToSubmit {
   entreprise: {
@@ -21,10 +21,11 @@ export interface CollectorDataToSubmit {
     email_pro: string;
     nif: string;
     stat: string;
-    description: string;  // ← Ajoute cette ligne
+    description: string;
   };
   representant_legal: {
-    nom_complet: string;
+    nom: string;
+    prenom: string;
     telephone_direct: string;
     cin: string;
   };

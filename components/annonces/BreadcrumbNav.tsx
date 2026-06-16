@@ -9,7 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { AdFormMode } from "./types/ad";
+import { AdFormMode } from "../../app/services/publication/ad";
 
 interface BreadcrumbNavProps {
   mode: AdFormMode;

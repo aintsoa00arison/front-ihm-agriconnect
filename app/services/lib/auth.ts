@@ -1,4 +1,7 @@
 // lib/auth.ts
+"use client"; // 🔥 Ajouter "use client" en haut
+
+import { decodeToken } from '../auth/authService';
 
 export interface DecodedToken {
   sub: string;
@@ -9,89 +12,110 @@ export interface DecodedToken {
   email?: string;
 }
 
-// Vérifier si on est côté client
-const isBrowser = (): boolean => typeof window !== 'undefined';
+// 🔥 Vérifier si on est côté client
+const isBrowser = typeof window !== 'undefined';
 
-// Décoder le token JWT
-export const decodeToken = (token: string): DecodedToken | null => {
+export const getUserFromToken = () => {
+  // 🔥 Vérifier si on est côté client
+  if (!isBrowser) {
+    return null;
+  }
+  
   try {
-    const payload = token.split('.')[1];
-    const decoded = JSON.parse(atob(payload));
-    return decoded;
+    const token = localStorage.getItem('access_token');
+    if (!token) return null;
+    
+    const decoded = decodeToken(token);
+    if (!decoded) return null;
+    
+    return {
+      id: decoded.sub,
+      userType: decoded.user_type || decoded.role || null,
+      email: decoded.email || null,
+      exp: decoded.exp,
+    };
   } catch (error) {
-    console.error("Erreur décodage token:", error);
+    console.error('Erreur lors de la récupération du token:', error);
     return null;
   }
 };
 
-// Récupérer les informations utilisateur depuis le token
-export const getUserFromToken = () => {
-  if (!isBrowser()) return null;
-  
-  const token = localStorage.getItem('access_token');
-  if (!token) return null;
-  
-  const decoded = decodeToken(token);
-  if (!decoded) return null;
-  
-  return {
-    id: decoded.sub,
-    userType: decoded.user_type || decoded.role || null,
-    email: decoded.email || null,
-    exp: decoded.exp,
-  };
-};
-
-// Récupérer l'ID utilisateur
 export const getUserId = (): string | null => {
-  if (!isBrowser()) return null;
-  return getUserFromToken()?.id || null;
-};
-
-// Récupérer le rôle utilisateur (priorité au token, puis localStorage)
-export const getUserRole = (): string | null => {
-  if (!isBrowser()) return null;
-  
-  const user = getUserFromToken();
-  
-  // Si le token contient le user_type, l'utiliser
-  if (user?.userType) {
-    return user.userType;
+  // 🔥 Vérifier si on est côté client
+  if (!isBrowser) {
+    return null;
   }
   
-  // Sinon, utiliser la valeur stockée dans localStorage
-  return localStorage.getItem('user_role');
+  try {
+    const user = getUserFromToken();
+    return user?.id || null;
+  } catch (error) {
+    console.error('Erreur lors de la récupération de l\'ID utilisateur:', error);
+    return null;
+  }
 };
 
-// Sauvegarder le rôle (solution temporaire)
+export const getUserRole = (): string | null => {
+  // 🔥 Vérifier si on est côté client
+  if (!isBrowser) {
+    return null;
+  }
+  
+  try {
+    // 🔥 D'abord vérifier dans localStorage
+    const storedRole = localStorage.getItem('user_role');
+    if (storedRole) return storedRole;
+    
+    // Sinon, extraire du token
+    const user = getUserFromToken();
+    if (user?.userType) {
+      // Stocker pour la prochaine fois
+      localStorage.setItem('user_role', user.userType);
+      return user.userType;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Erreur lors de la récupération du rôle:', error);
+    return null;
+  }
+};
+
 export const setUserRole = (role: string) => {
-  if (!isBrowser()) return;
-  localStorage.setItem('user_role', role);
+  // 🔥 Vérifier si on est côté client
+  if (!isBrowser) return;
+  
+  try {
+    localStorage.setItem('user_role', role);
+  } catch (error) {
+    console.error('Erreur lors du stockage du rôle:', error);
+  }
 };
 
-// Vérifier si l'utilisateur est authentifié
 export const isAuthenticated = (): boolean => {
-  if (!isBrowser()) return false;
+  // 🔥 Vérifier si on est côté client
+  if (!isBrowser) {
+    return false;
+  }
   
-  const token = localStorage.getItem('access_token');
-  if (!token) return false;
-  
-  const decoded = decodeToken(token);
-  if (!decoded) return false;
-  
-  // Vérifier si le token n'est pas expiré
-  const now = Math.floor(Date.now() / 1000);
-  return decoded.exp > now;
+  try {
+    const token = localStorage.getItem('access_token');
+    if (!token) return false;
+    
+    const decoded = decodeToken(token);
+    if (!decoded) return false;
+    
+    const now = Math.floor(Date.now() / 1000);
+    return decoded.exp > now;
+  } catch (error) {
+    console.error('Erreur lors de la vérification de l\'authentification:', error);
+    return false;
+  }
 };
 
-// Récupérer l'email utilisateur
-export const getUserEmail = (): string | null => {
-  if (!isBrowser()) return null;
-  return getUserFromToken()?.email || null;
-};
-
-// Déduire le rôle à partir de l'email (solution temporaire)
 export const deduceRoleFromEmail = (email: string): string | null => {
+  if (!email) return null;
+  
   const cleanEmail = email.toLowerCase();
   if (cleanEmail.includes("collecteur") || cleanEmail.includes("collector")) {
     return "collector";
@@ -102,32 +126,48 @@ export const deduceRoleFromEmail = (email: string): string | null => {
   return null;
 };
 
-// Sauvegarder les informations du profil
-export const saveProfileInfo = (data: { name?: string; bio?: string; avatarUrl?: string }) => {
-  if (!isBrowser()) return;
-  if (data.name) localStorage.setItem('profile_name', data.name);
-  if (data.bio) localStorage.setItem('profile_bio', data.bio);
-  if (data.avatarUrl) localStorage.setItem('profile_avatar', data.avatarUrl);
+export const isUUID = (str: string): boolean => {
+  if (!str) return false;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
 };
 
-// Récupérer les informations du profil sauvegardées
-export const getProfileInfo = () => {
-  if (!isBrowser()) return { name: null, bio: null, avatarUrl: null };
-  return {
-    name: localStorage.getItem('profile_name'),
-    bio: localStorage.getItem('profile_bio'),
-    avatarUrl: localStorage.getItem('profile_avatar'),
-  };
-};
-
-// Déconnexion complète
 export const logout = () => {
-  if (!isBrowser()) return;
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('user_role');
-  localStorage.removeItem('profile_name');
-  localStorage.removeItem('profile_bio');
-  localStorage.removeItem('profile_avatar');
-  localStorage.removeItem('profile_type');
-  document.cookie = 'access_token=; path=/; max-age=0';
+  // 🔥 Vérifier si on est côté client
+  if (!isBrowser) return;
+  
+  try {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user_role');
+    localStorage.removeItem('profile_name');
+    localStorage.removeItem('profile_bio');
+    localStorage.removeItem('profile_avatar');
+    localStorage.removeItem('profile_type');
+    document.cookie = 'access_token=; path=/; max-age=0';
+  } catch (error) {
+    console.error('Erreur lors de la déconnexion:', error);
+  }
+};
+
+// 🔥 Fonction utilitaire supplémentaire pour récupérer le token
+export const getToken = (): string | null => {
+  if (!isBrowser) return null;
+  
+  try {
+    return localStorage.getItem('access_token');
+  } catch (error) {
+    console.error('Erreur lors de la récupération du token:', error);
+    return null;
+  }
+};
+
+// 🔥 Fonction utilitaire pour stocker le token
+export const setToken = (token: string): void => {
+  if (!isBrowser) return;
+  
+  try {
+    localStorage.setItem('access_token', token);
+  } catch (error) {
+    console.error('Erreur lors du stockage du token:', error);
+  }
 };

@@ -4,7 +4,7 @@
 import { User, Mail, Phone, FileText } from "lucide-react";
 import FormInput from "./FormInput";
 import SectionHeader from "./SectionHeader";
-import type { RepresentativeData } from "../../types/collectorProfile";
+import type { RepresentativeData } from "../../../../app/services/profile/types/collectorProfile";
 
 interface RepresentativeSectionProps {
   data: RepresentativeData;

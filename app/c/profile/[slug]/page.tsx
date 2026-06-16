@@ -1,3 +1,4 @@
+// app/c/profile/[slug]/page.tsx
 import { use } from "react";
 import ProfileView from "@/components/profile/ProfileView";
 
@@ -7,5 +8,6 @@ interface PageProps {
 
 export default function CollecteurProfilePage({ params }: PageProps) {
   const resolvedParams = use(params);
+  // 🔥 Passer le slug directement à ProfileView
   return <ProfileView slug={resolvedParams.slug} />;
 }

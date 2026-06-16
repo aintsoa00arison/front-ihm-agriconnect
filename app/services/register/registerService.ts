@@ -160,49 +160,55 @@ export const registerService = {
     }
   },
 
-  prepareCollectorData: (storeData: RegisterStoreData): CollectorPayload | null => {
-    console.log("🔵 prepareCollectorData - storeData reçu:", JSON.stringify(storeData, null, 2));
-    
-    if (!storeData.raisonSociale || !storeData.siegeSocial || !storeData.nomComplet) {
-      console.error("🔴 Données collecteur manquantes");
-      return null;
-    }
-    
-    const nameParts = storeData.nomComplet.trim().split(" ");
-    const rep_last_name = nameParts[0] || "";
-    const rep_first_name = nameParts.slice(1).join(" ") || "";
-    
-    const product_category = (storeData.besoins || []).map(b => {
-      const cat = b.toLowerCase();
-      if (cat === "végétale") return "VEGETAL";
-      if (cat === "elevage") return "ANIMAL";
-      return "CEREAL";
+prepareCollectorData: (storeData: RegisterStoreData): CollectorPayload | null => {
+  console.log("🔵 prepareCollectorData - storeData reçu:", JSON.stringify(storeData, null, 2));
+  
+  // 🔥 Utiliser les nouveaux champs nom et prenom
+  if (!storeData.raisonSociale || !storeData.siegeSocial || !storeData.nom || !storeData.prenom) {
+    console.error("🔴 Données collecteur manquantes:", {
+      raisonSociale: storeData.raisonSociale,
+      siegeSocial: storeData.siegeSocial,
+      nom: storeData.nom,
+      prenom: storeData.prenom
     });
-    
-    const cleanPhone = storeData.telephonePro?.replace(/\s/g, "") || "0340000000";
-    const phoneNumber = parseInt(cleanPhone, 10);
-    const validStat = "12345678901234567";
-    const validNif = storeData.nif?.replace(/\D/g, "") || "1234567890";
-    const validCin = storeData.cin?.replace(/\D/g, "") || "101123456789";
-    
-    const payload = {
-      email: storeData.email || "",
-      phone: [phoneNumber],
-      password: storeData.password || "",
-      product_category: product_category,
-      legal_name: storeData.raisonSociale,
-      registered_office: storeData.siegeSocial,
-      nif: validNif.slice(0, 10),
-      stat: storeData.stat || validStat,
-      rep_last_name: rep_last_name,
-      rep_first_name: rep_first_name,
-      rep_cin_number: validCin.slice(0, 12),
-      company_description: storeData.description || storeData.bio || "Description",
-    };
-    
-    console.log("🔵 prepareCollectorData - payload généré:", JSON.stringify(payload, null, 2));
-    return payload;
-  },
+    return null;
+  }
+  
+  // 🔥 Ne plus séparer nom et prénom car ils sont déjà séparés
+  const rep_last_name = storeData.nom;
+  const rep_first_name = storeData.prenom;
+  
+  const product_category = (storeData.besoins || []).map(b => {
+    const cat = b.toLowerCase();
+    if (cat === "végétale") return "VEGETAL";
+    if (cat === "elevage") return "ANIMAL";
+    return "CEREAL";
+  });
+  
+  const cleanPhone = storeData.telephonePro?.replace(/\s/g, "") || "0340000000";
+  const phoneNumber = parseInt(cleanPhone, 10);
+  const validStat = "12345678901234567";
+  const validNif = storeData.nif?.replace(/\D/g, "") || "1234567890";
+  const validCin = storeData.cin?.replace(/\D/g, "") || "101123456789";
+  
+  const payload = {
+    email: storeData.email || "",
+    phone: [phoneNumber],
+    password: storeData.password || "",
+    product_category: product_category,
+    legal_name: storeData.raisonSociale,
+    registered_office: storeData.siegeSocial,
+    nif: validNif.slice(0, 10),
+    stat: storeData.stat || validStat,
+    rep_last_name: rep_last_name,
+    rep_first_name: rep_first_name,
+    rep_cin_number: validCin.slice(0, 12),
+    company_description: storeData.description || storeData.bio || "Description",
+  };
+  
+  console.log("🔵 prepareCollectorData - payload généré:", JSON.stringify(payload, null, 2));
+  return payload;
+},
 
   prepareFournisseurData: (storeData: RegisterStoreData): IndividualProviderPayload | EntrepriseProviderPayload | null => {
     console.log("🔵 prepareFournisseurData - storeData reçu:", JSON.stringify(storeData, null, 2));

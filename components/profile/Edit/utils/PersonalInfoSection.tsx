@@ -4,7 +4,7 @@
 import { User, Calendar, MapPin, Phone, Mail, FileText } from "lucide-react";
 import FormInput from "./FormInput";
 import SectionHeader from "./SectionHeader";
-import type { PersonalData } from "../../types/supplierProfile";
+import type { PersonalData } from "../../../../app/services/profile/types/supplierProfile";
 
 interface PersonalInfoSectionProps {
   data: PersonalData;
