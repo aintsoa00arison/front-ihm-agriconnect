@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { Eye, Scale, MapPin, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { AdFormMode, ProductionType } from "./types/ad";
+import { AdFormMode } from "../../app/services/publication/ad";
+// 🔥 Importer le type d'affichage depuis types.ts
+import { ProductionTypeDisplay } from "../../app/services/publication/types";
 
 interface AdPreviewProps {
   mode: AdFormMode;
-  productionType: ProductionType;
+  productionType: ProductionTypeDisplay; // 🔥 Utiliser le type d'affichage
   productName: string;
   quantityValue: string;
   quantityUnit: string;
@@ -55,7 +56,7 @@ export default function AdPreview({
         <div className="relative w-full h-64 bg-slate-100">
           <img src={mediaPreview} alt="Aperçu récoltes" className="w-full h-full object-cover" />
           <span className="absolute top-4 left-4 bg-primary text-white text-[10px] font-extrabold px-3 py-1 rounded-full shadow-md tracking-wider">
-            {productionType}
+            {productionType} {/* ✅ Maintenant c'est une valeur d'affichage */}
           </span>
         </div>
 

@@ -17,6 +17,9 @@ import ProfileFilters from "./ProfileFilters";
 import InterestedUsersModal from "./InterestedUsersModal";
 import AdCard from "./AdCard";
 import { VisuallyHidden } from "@/components/ui/visually-hidden";
+import { usePublications } from "../../app/services/hooks/usePublication";
+import { getUserId } from "../../app/services/lib/auth";
+
 interface InterestedUser {
   id: string;
   name: string;
@@ -50,9 +53,30 @@ interface ProfileAdsProps {
   onEditAd: (ad: AdItem) => void;
 }
 
+
 export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
-  const [ads, setAds] = useState<AdItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const userId = getUserId();
+  const { publications, loading, deletePublication } = usePublications(userId || undefined);
+  
+  // 🔥 S'assurer que publications est un tableau
+  const safePublications = Array.isArray(publications) ? publications : [];
+  
+  // 🔥 Si publications est vide ou que le chargement est terminé
+  const ads: AdItem[] = safePublications.map(pub => ({
+    id: pub.id,
+    productName: pub.titre || "Sans titre",
+    productionType: pub.category || "Non catégorisé",
+    quantity: pub.quantity || "0",
+    location: pub.localisation || "Non spécifié",
+    description: pub.description || "",
+    mediaUrl: pub.photo || "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=800",
+    price: "0 MGA",
+    timeAgo: "il y a 2h",
+    date: new Date(),
+    interestedCount: 0,
+    interestedUsers: [],
+  }));
+
   const [filterType, setFilterType] = useState<string>("all");
   const [filterDate, setFilterDate] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
@@ -64,63 +88,9 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
   const [expandedAdIds, setExpandedAdIds] = useState<Record<string, boolean>>({});
   const [toasts, setToasts] = useState<ToastState[]>([]);
 
-  // Simulation de chargement initial
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setAds([
-        {
-          id: "ad_1",
-          productName: "Blé de province",
-          productionType: "Végétale",
-          quantity: "3 tonnes",
-          location: "Antananarivo, Madagascar",
-          description: "Cultivé sous le soleil de Midi sur des terres préservées, ce blé offre des arômes de noisette et une digestibilité optimale.",
-          mediaUrl: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=800",
-          price: "3000 MGA/kg",
-          timeAgo: "il y a 2h",
-          date: new Date(Date.now() - 2 * 60 * 60 * 1000),
-          interestedCount: 250,
-          interestedUsers: [
-            { id: "u_1", name: "John Doe", role: "Collecteur - Fianarantsoa", rating: 5.0, avatar: "https://api.dicebear.com/9.x/big-ears-neutral/svg?seed=John" },
-            { id: "u_2", name: "Jane Cooper", role: "Producteur - Elevage", rating: 4.2, avatar: "https://api.dicebear.com/9.x/big-ears-neutral/svg?seed=Jane" },
-            { id: "u_3", name: "Jenny Wilson", role: "Grossiste - Rente", rating: 4.5, avatar: "https://api.dicebear.com/9.x/big-ears-neutral/svg?seed=Jenny" },
-          ]
-        },
-        {
-          id: "ad_2",
-          productName: "Maïs Jaune Sec",
-          productionType: "Rente",
-          quantity: "10 tonnes",
-          location: "Fianarantsoa, Madagascar",
-          description: "Maïs de qualité supérieure, idéal pour l'alimentation animale.",
-          mediaUrl: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=800&q=80",
-          price: "1400 MGA/kg",
-          timeAgo: "il y a 5h",
-          date: new Date(Date.now() - 5 * 60 * 60 * 1000),
-          interestedCount: 120,
-          interestedUsers: [
-            { id: "u_4", name: "Paul Raso", role: "Collecteur - Mahajanga", rating: 4.0, avatar: "https://api.dicebear.com/9.x/big-ears-neutral/svg?seed=Paul" },
-          ]
-        },
-        {
-          id: "ad_3",
-          productName: "Pommes de terre",
-          productionType: "Végétale",
-          quantity: "8 tonnes",
-          location: "Antsirabe, Madagascar",
-          description: "Pommes de terre variété Mona Lisa, calibre 40-60mm.",
-          mediaUrl: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=800&q=80",
-          price: "3500 MGA/kg",
-          timeAgo: "il y a 2 jours",
-          date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          interestedCount: 45,
-          interestedUsers: []
-        }
-      ]);
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
+
+
+
 
   // Écouter la recherche depuis le layout
   useEffect(() => {
@@ -172,11 +142,15 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
     setSelectedAdForDelete(ad);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (selectedAdForDelete) {
-      setAds((prev) => prev.filter(ad => ad.id !== selectedAdForDelete.id));
-      setSelectedAdForDelete(null);
-      showToast("L'annonce a été supprimée avec succès.", "success");
+      const result = await deletePublication(selectedAdForDelete.id);
+      if (result.success) {
+        setSelectedAdForDelete(null);
+        showToast("L'annonce a été supprimée avec succès.", "success");
+      } else {
+        showToast(result.message, "error");
+      }
     }
   };
 
@@ -185,36 +159,12 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
       `Vous avez matché avec ${user.name} pour cette annonce. Vous pouvez commencer à discuter.`,
       "success"
     );
-    if (selectedAdForInterested) {
-      const updatedUsers = selectedAdForInterested.interestedUsers.filter(u => u.id !== user.id);
-      setSelectedAdForInterested({
-        ...selectedAdForInterested,
-        interestedUsers: updatedUsers,
-        interestedCount: Math.max(0, selectedAdForInterested.interestedCount - 1)
-      });
-      setAds(prev => prev.map(ad => ad.id === selectedAdForInterested.id ? {
-        ...ad,
-        interestedUsers: updatedUsers,
-        interestedCount: Math.max(0, ad.interestedCount - 1)
-      } : ad));
-    }
+    // Logique à implémenter avec le backend
   };
 
   const handleRejectInterested = (user: InterestedUser) => {
     showToast(`Vous avez rejeté l'intérêt de ${user.name} pour cette annonce.`, "info");
-    if (selectedAdForInterested) {
-      const updatedUsers = selectedAdForInterested.interestedUsers.filter(u => u.id !== user.id);
-      setSelectedAdForInterested({
-        ...selectedAdForInterested,
-        interestedUsers: updatedUsers,
-        interestedCount: Math.max(0, selectedAdForInterested.interestedCount - 1)
-      });
-      setAds(prev => prev.map(ad => ad.id === selectedAdForInterested.id ? {
-        ...ad,
-        interestedUsers: updatedUsers,
-        interestedCount: Math.max(0, ad.interestedCount - 1)
-      } : ad));
-    }
+    // Logique à implémenter avec le backend
   };
 
   // Fonction pour filtrer les annonces
@@ -233,24 +183,9 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
       filtered = filtered.filter(ad => ad.productionType === filterType);
     }
 
+    // Filtre par date à implémenter avec les vraies dates
     if (filterDate !== "all") {
-      const now = new Date();
-      const days7 = 7 * 24 * 60 * 60 * 1000;
-      const days30 = 30 * 24 * 60 * 60 * 1000;
-
-      filtered = filtered.filter(ad => {
-        const diff = now.getTime() - ad.date.getTime();
-        switch (filterDate) {
-          case "today":
-            return ad.date.toDateString() === now.toDateString();
-          case "week":
-            return diff <= days7;
-          case "month":
-            return diff <= days30;
-          default:
-            return true;
-        }
-      });
+      // ...
     }
 
     return filtered;
@@ -327,6 +262,14 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
         onResetFilters={resetFilters}
       />
 
+      {/* Résultat du filtrage */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-slate-500">
+          <span className="font-bold text-slate-800">{filteredAds.length}</span> annonce{filteredAds.length !== 1 ? 's' : ''} trouvée{filteredAds.length !== 1 ? 's' : ''}
+          {searchQuery && ` pour "${searchQuery}"`}
+        </p>
+      </div>
+
       {/* Cartes d'annonces */}
       {filteredAds.length === 0 ? (
         <div className="text-center py-12 text-slate-400 font-medium bg-white rounded-2xl border border-dashed">
@@ -356,42 +299,41 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
         onReject={handleRejectInterested}
       />
 
-      {/* Modale suppression avec AlertDialog de shadcn */}
+      {/* Modale suppression */}
+      <AlertDialog open={!!selectedAdForDelete} onOpenChange={() => setSelectedAdForDelete(null)}>
+        <AlertDialogContent className="rounded-2xl max-w-md p-6">
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="size-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center">
+              <AlertTriangle size={24} />
+            </div>
+            
+            <div className="space-y-2">
+              <h2 className="text-lg font-bold text-slate-900">
+                Supprimer l'annonce ?
+              </h2>
+              <p className="text-xs text-slate-500">
+                Êtes-vous sûr de vouloir supprimer cette annonce ? Cette action est irréversible.
+              </p>
+            </div>
 
-{/* Modale suppression avec AlertDialog de shadcn */}
-<AlertDialog open={!!selectedAdForDelete} onOpenChange={() => setSelectedAdForDelete(null)}>
-  <AlertDialogContent className="rounded-2xl max-w-md p-6">
-    <div className="flex flex-col items-center text-center space-y-4">
-      <div className="size-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center">
-        <AlertTriangle size={24} />
-      </div>
-      
-      <div className="space-y-2">
-        <h2 className="text-lg font-bold text-slate-900">
-          Supprimer l'annonce ?
-        </h2>
-        <p className="text-xs text-slate-500">
-          Êtes-vous sûr de vouloir supprimer cette annonce ? Cette action est irréversible.
-        </p>
-      </div>
+            <div className="flex flex-col sm:flex-row gap-3 w-full pt-2">
+              <button
+                onClick={() => setSelectedAdForDelete(null)}
+                className="flex-1 px-4 py-2.5 rounded-xl font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors text-sm"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 px-4 py-2.5 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white transition-colors text-sm"
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      <div className="flex flex-col sm:flex-row gap-3 w-full pt-2">
-        <button
-          onClick={() => setSelectedAdForDelete(null)}
-          className="flex-1 px-4 py-2.5 rounded-xl font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors text-sm"
-        >
-          Annuler
-        </button>
-        <button
-          onClick={confirmDelete}
-          className="flex-1 px-4 py-2.5 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white transition-colors text-sm"
-        >
-          Supprimer
-        </button>
-      </div>
-    </div>
-  </AlertDialogContent>
-</AlertDialog>
       {/* Flèche de défilement */}
       {showScrollButton && (
         <button
