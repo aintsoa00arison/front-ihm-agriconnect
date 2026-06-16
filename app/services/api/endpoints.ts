@@ -14,6 +14,7 @@ export const API_ENDPOINTS = {
 
   // Publication
   PUBLICATION_CREATE: '/publication/create',
+  PUBLICATION_UPDATE: '/publication/{publication_id}',
   PUBLICATION_DELETE: '/publication/{publication_id}',
   PUBLICATION_ALL: '/publication/all/{user_id}',
   PUBLICATION_USER: '/publication/user/{user_id}',

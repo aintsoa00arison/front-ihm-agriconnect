@@ -23,7 +23,7 @@ import NeedsCheckboxGroup from "./NeedsCheckboxGroup";
 import SectionHeader from "./SectionHeader";
 import { CollectorFormData } from "../../../../services/register/types/collector";
 
-// Validation STAT : 17 chiffres exactement
+// 🔥 Validation STAT : 17 chiffres exactement
 const validateStat = (stat: string): boolean => {
   const cleanStat = stat.replace(/\s/g, "");
   return /^\d{17}$/.test(cleanStat);
@@ -50,13 +50,13 @@ export default function CollectorFormContent({
     setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
-  // Calcul des erreurs en temps réel
+  // 🔥 Calcul des erreurs en temps réel
   const errors = {
     raisonSociale: touched.raisonSociale && !formData.raisonSociale ? "La raison sociale est requise" : undefined,
     siegeSocial: touched.siegeSocial && !formData.siegeSocial ? "Le siège social est requis" : undefined,
     description: touched.description && !formData.description ? "La description est requise" : undefined,
     telephonePro: touched.telephonePro && formData.telephonePro && !validatePhone(formData.telephonePro) 
-      ? "Requis : 10 chiffres" 
+      ? "Le numéro doit commencer par 032, 033 ou 034 et faire 10 chiffres" 
       : touched.telephonePro && !formData.telephonePro ? "Le téléphone est requis" : undefined,
     emailPro: touched.emailPro && formData.emailPro && !validateEmail(formData.emailPro) 
       ? "Adresse e-mail invalide" 
@@ -70,10 +70,10 @@ export default function CollectorFormContent({
     nom: touched.nom && !formData.nom ? "Le nom est requis" : undefined,
     prenom: touched.prenom && !formData.prenom ? "Le prénom est requis" : undefined,
     telephoneDirect: touched.telephoneDirect && formData.telephoneDirect && !validatePhone(formData.telephoneDirect) 
-      ? "Requis : 10 chiffres" 
+      ? "Le numéro doit commencer par 032, 033 ou 034 et faire 10 chiffres" 
       : touched.telephoneDirect && !formData.telephoneDirect ? "Le téléphone est requis" : undefined,
     cin: touched.cin && formData.cin && !validateCin(formData.cin) 
-      ? "Requis : 12 chiffres (doit se terminer par 1 ou 2)" 
+      ? "12 chiffres requis (le 2ème chiffre doit être 0 ou 1)" 
       : touched.cin && !formData.cin ? "Le CIN est requis" : undefined,
   };
 
@@ -215,7 +215,7 @@ export default function CollectorFormContent({
             value={formData.telephoneDirect}
             onChange={(v) => handleChange("telephoneDirect", v)}
             onBlur={() => markAsTouched("telephoneDirect")}
-            placeholder="032 xx xxx xx"
+            placeholder="034 xx xxx xx"
             icon={<Phone size={16} />}
             error={errors.telephoneDirect}
             maxLength={13}

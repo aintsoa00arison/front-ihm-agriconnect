@@ -35,12 +35,12 @@ export default function EntrepriseForm({ formData, onInputChange, onValidationCh
     setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
-  // Calcul des erreurs en temps réel
+  // 🔥 Calcul des erreurs en temps réel
   const errors = {
     nomEntite: touched.nomEntite && !formData.nomEntite ? "Le nom de l'entité est requis" : undefined,
     localisationEntite: touched.localisationEntite && !formData.localisationEntite ? "La localisation est requise" : undefined,
     contactExploitation: touched.contactExploitation && formData.contactExploitation && !validatePhone(formData.contactExploitation)
-      ? "Requis : 10 chiffres"
+      ? "Le numéro doit commencer par 032, 033 ou 034 et faire 10 chiffres"
       : touched.contactExploitation && !formData.contactExploitation ? "Le contact est requis" : undefined,
     emailContact: touched.emailContact && formData.emailContact && !validateEmail(formData.emailContact)
       ? "E-mail invalide"
@@ -53,10 +53,10 @@ export default function EntrepriseForm({ formData, onInputChange, onValidationCh
       : touched.stat && !formData.stat ? "Le STAT est requis" : undefined,
     nomResponsable: touched.nomResponsable && !formData.nomResponsable ? "Le nom du responsable est requis" : undefined,
     telephoneResponsable: touched.telephoneResponsable && formData.telephoneResponsable && !validatePhone(formData.telephoneResponsable)
-      ? "Requis : 10 chiffres"
+      ? "Le numéro doit commencer par 032, 033 ou 034 et faire 10 chiffres"
       : touched.telephoneResponsable && !formData.telephoneResponsable ? "Le téléphone est requis" : undefined,
     cinResponsable: touched.cinResponsable && formData.cinResponsable && !validateCin(formData.cinResponsable)
-      ? "Requis : 12 chiffres (doit se terminer par 1 ou 2)"
+      ? "12 chiffres requis (le 2ème chiffre doit être 0 ou 1)"
       : touched.cinResponsable && !formData.cinResponsable ? "Le CIN est requis" : undefined,
   };
 
@@ -175,7 +175,7 @@ export default function EntrepriseForm({ formData, onInputChange, onValidationCh
             value={formData.telephoneResponsable}
             onChange={(v) => handleChange("telephoneResponsable", v)}
             onBlur={() => markAsTouched("telephoneResponsable")}
-            placeholder="03x xx xxx xx"
+            placeholder="034 xx xxx xx"
             icon={<Phone size={16} />}
             error={errors.telephoneResponsable}
             maxLength={13}
