@@ -1,5 +1,5 @@
 // services/hooks/useAuth.ts
-"use client"; // 🔥 Ajouter "use client" en haut
+"use client";
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -21,7 +21,6 @@ export const useAuth = () => {
   const [user, setUser] = useState<{ email: string; role?: string; id?: string } | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  // 🔥 Ne s'exécute qu'après le montage côté client
   useEffect(() => {
     setMounted(true);
     const userId = getUserId();
@@ -39,10 +38,8 @@ export const useAuth = () => {
         password: data.password,
       });
       
-      // 🔥 Récupérer le rôle depuis le token (maintenant avec user_type)
       let role = authService.getUserRole();
       
-      // Si pas de rôle, déduire de l'email
       if (!role) {
         role = deduceRoleFromEmail(data.email);
         if (role) {
@@ -50,7 +47,6 @@ export const useAuth = () => {
         }
       }
       
-      // Extraire l'ID du token
       const userInfo = getUserFromToken();
       
       setUser({ 
@@ -61,7 +57,6 @@ export const useAuth = () => {
       
       toast.success("Connexion réussie !");
       
-      // 🔥 Redirection basée sur le rôle avec user_type
       if (role === "collector" || role === "collecteur") {
         router.push('/c');
       } else if (role === "fournisseur" || role === "provider") {
@@ -80,7 +75,9 @@ export const useAuth = () => {
     }
   };
 
+  // 🔥 Cette fonction accepte maintenant email OU userId
   const sendVerificationEmail = async (emailOrUserId: string): Promise<boolean> => {
+    console.log("📧 sendVerificationEmail - emailOrUserId:", emailOrUserId);
     setIsLoading(true);
     try {
       const response = await authService.sendVerificationEmail(emailOrUserId);
@@ -92,6 +89,7 @@ export const useAuth = () => {
         return false;
       }
     } catch (error: any) {
+      console.error("❌ Erreur sendVerificationEmail:", error);
       toast.error(error.response?.data?.detail || "Erreur lors de l'envoi du code");
       return false;
     } finally {
@@ -100,6 +98,7 @@ export const useAuth = () => {
   };
 
   const verifyCode = async (userId: string, code: string): Promise<boolean> => {
+    console.log("🔍 verifyCode - userId:", userId, "code:", code);
     setIsLoading(true);
     try {
       const response = await authService.verifyCode(userId, code);
@@ -111,6 +110,7 @@ export const useAuth = () => {
         return false;
       }
     } catch (error: any) {
+      console.error("❌ Erreur verifyCode:", error);
       toast.error(error.response?.data?.detail || "Code invalide");
       return false;
     } finally {
