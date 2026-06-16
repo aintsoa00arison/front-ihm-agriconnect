@@ -2,13 +2,12 @@
 
 export const REGEX_PATTERNS = {
   email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  phone: /^\d{10}$/,          // 10 chiffres (Madagascar)
-  nif: /^\d{10}$/,            // 10 chiffres
-  cin: /^\d{11}[1-2]$/,       // 12 chiffres et doit se terminer par 1 ou 2 au total, le dernier est obligatoirement 1 ou 2
-  stat: /^\d{17}$/            // 🔥 17 chiffres exactement (pour le STAT malgache)
+  phone: /^(032|033|034)\d{7}$/,
+  nif: /^\d{10}$/,
+  // 🔥 CORRECTION: 12 chiffres, 2ème chiffre = 0 ou 1
+  cin: /^[0-9][0-1][0-9]{10}$/,
+  stat: /^\d{17}$/
 };
-
-// --- FONCTIONS DE FORMATAGE EN TEMPS RÉEL ---
 
 export const formatPhone = (value: string): string => {
   const digits = value.replace(/\D/g, "");
@@ -26,8 +25,6 @@ export const formatCin = (value: string): string => {
   }
   return blocks.join(" ");
 };
-
-// --- FONCTIONS DE VALIDATION ---
 
 export const validateEmail = (email: string): boolean => 
   email === '' || REGEX_PATTERNS.email.test(email.trim());
@@ -56,6 +53,7 @@ export const validateStat = (stat: string): boolean => {
   return REGEX_PATTERNS.stat.test(cleanStat);
 };
 
+// ... le reste du code
 // --- ANALYSE PRÉCISE DES ERREURS D'EMAIL ---
 
 export const analyzeEmailError = (email: string): string => {
@@ -101,7 +99,7 @@ export const analyzeEmailError = (email: string): string => {
 
 export const getPhoneError = (phone: string): string | null => {
   if (!phone) return "Le numéro de téléphone est requis";
-  if (!validatePhone(phone)) return "10 chiffres requis";
+  if (!validatePhone(phone)) return "Le numéro doit commencer par 032, 033 ou 034 et faire 10 chiffres";
   return null;
 };
 
@@ -119,7 +117,7 @@ export const getNifError = (nif: string): string | null => {
 
 export const getCinError = (cin: string): string | null => {
   if (!cin) return "Le CIN est requis";
-  if (!validateCin(cin)) return "12 chiffres requis (dernier chiffre 1 ou 2)";
+  if (!validateCin(cin)) return "12 chiffres requis (le 2ème chiffre doit être 0 ou 1)";
   return null;
 };
 

@@ -272,44 +272,70 @@ filterPublications: async (userId: string, params: PublicationParams): Promise<P
   },
 
   // Mettre à jour une publication
-  updatePublication: async (publicationId: string, data: UpdatePublicationData): Promise<{ success: boolean; message: string }> => {
-    try {
-      if (!publicationId) {
-        return { 
-          success: false, 
-          message: "ID de publication manquant" 
-        };
-      }
+// services/publication/publicationService.ts
 
-      console.warn("⚠️ Utilisation de la méthode de mise à jour temporaire");
-      console.log('📝 Données de mise à jour:', data);
-      
-      const hasData = Object.values(data).some(value => value !== undefined && value !== null && value !== '');
-      if (!hasData) {
-        return { 
-          success: false, 
-          message: "Aucune donnée à mettre à jour" 
-        };
-      }
-      
-      return { 
-        success: true, 
-        message: "Publication mise à jour avec succès (mode temporaire)" 
-      };
-    } catch (error: any) {
-      console.error("❌ Erreur mise à jour publication:", error);
-      
-      if (error.message === 'Network Error') {
-        return { 
-          success: false, 
-          message: "Impossible de contacter le serveur. Vérifiez votre connexion." 
-        };
-      }
-      
+// 🔥 Mettre à jour une publication
+updatePublication: async (publicationId: string, data: UpdatePublicationData): Promise<{ success: boolean; message: string; data?: any }> => {
+  try {
+    if (!publicationId) {
       return { 
         success: false, 
-        message: error.response?.data?.detail || "Erreur lors de la mise à jour" 
+        message: "ID de publication manquant" 
       };
     }
-  },
+
+    console.log('📝 Mise à jour publication:', publicationId);
+    console.log('📝 Données de mise à jour:', data);
+
+    const formData = new FormData();
+    formData.append('user_id', data.sender_id || '');
+    if (data.titre) formData.append('titre', data.titre);
+    if (data.description) formData.append('description', data.description);
+    if (data.category) formData.append('category', data.category);
+    if (data.localisation) formData.append('localisation', data.localisation);
+    if (data.quantity) formData.append('quantity', data.quantity);
+    if (data.prix !== undefined && data.prix !== null) {
+      formData.append('prix', String(data.prix));
+    }
+    if (data.photo) {
+      formData.append('photo', data.photo);
+    }
+
+    const url = API_ENDPOINTS.PUBLICATION_UPDATE.replace('{publication_id}', publicationId);
+    const response = await apiClient.put(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    
+    return { 
+      success: true, 
+      message: response.data?.message || "Publication mise à jour avec succès",
+      data: response.data 
+    };
+  } catch (error: any) {
+    console.error("❌ Erreur mise à jour publication:", error);
+    
+    if (error.response) {
+      console.error('📦 Réponse serveur:', {
+        status: error.response.status,
+        data: error.response.data,
+      });
+    }
+    
+    let errorMessage = "Erreur lors de la mise à jour";
+    if (error.response?.status === 404) {
+      errorMessage = "Publication non trouvée";
+    } else if (error.response?.status === 403) {
+      errorMessage = "Vous n'avez pas la permission de modifier cette publication";
+    } else if (error.response?.data?.detail) {
+      errorMessage = error.response.data.detail;
+    }
+    
+    return { 
+      success: false, 
+      message: errorMessage
+    };
+  }
+},
 };

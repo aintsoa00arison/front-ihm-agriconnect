@@ -25,14 +25,15 @@ export default function ParticulierForm({ formData, onInputChange, onValidationC
     setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
+  // 🔥 Calcul des erreurs en temps réel
   const errors = {
     nom: touched.nom && !formData.nom ? "Le nom est requis" : undefined,
     prenom: touched.prenom && !formData.prenom ? "Le prénom est requis" : undefined,
     telephoneParticulier: touched.telephoneParticulier && formData.telephoneParticulier && !validatePhone(formData.telephoneParticulier)
-      ? "Requis : 10 chiffres"
+      ? "Le numéro doit commencer par 032, 033 ou 034 et faire 10 chiffres"
       : touched.telephoneParticulier && !formData.telephoneParticulier ? "Le téléphone est requis" : undefined,
     cinParticulier: touched.cinParticulier && formData.cinParticulier && !validateCin(formData.cinParticulier)
-      ? "Requis : 12 chiffres (doit se terminer par 1 ou 2)"
+      ? "12 chiffres requis (le 2ème chiffre doit être 0 ou 1)"
       : touched.cinParticulier && !formData.cinParticulier ? "Le CIN est requis" : undefined,
     localisationParticulier: touched.localisationParticulier && !formData.localisationParticulier ? "L'adresse est requise" : undefined,
   };
@@ -90,7 +91,6 @@ export default function ParticulierForm({ formData, onInputChange, onValidationC
           icon={<Phone size={16} />}
           error={errors.telephoneParticulier}
           maxLength={13}
-         
           required
         />
         <FormInput
@@ -102,7 +102,6 @@ export default function ParticulierForm({ formData, onInputChange, onValidationC
           icon={<CreditCard size={16} />}
           error={errors.cinParticulier}
           maxLength={15}
-          
           required
         />
       </div>

@@ -22,18 +22,21 @@ export default function FinalisationForm({ role, initialData, onBack, onFinish }
 
   const getCurrentData = () => {
     const data = {
-      image: imageFile,
+      image: imageFile, // 🔥 Garder le File objet
       imageUrl: previewUrl,
       bio: isCollecteur ? '' : bio
     };
-    console.log("🔵 [FinalisationForm] getCurrentData retourne:", data);
+    console.log("🔵 [FinalisationForm] getCurrentData retourne:", {
+      ...data,
+      image: data.image ? `File: ${data.image.name} (${data.image.size} bytes)` : null
+    });
     return data;
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      console.log("🔵 [FinalisationForm] Fichier sélectionné:", file.name);
+      console.log("🔵 [FinalisationForm] Fichier sélectionné:", file.name, "type:", file.type, "size:", file.size);
       setImageFile(file);
       setPreviewUrl(URL.createObjectURL(file));
     }
@@ -41,11 +44,10 @@ export default function FinalisationForm({ role, initialData, onBack, onFinish }
 
   const handleFinishClick = () => {
     const currentData = getCurrentData();
-    console.log("🔵 [FinalisationForm] handleFinishClick - Appel onFinish avec:", currentData);
-    console.log("🔵 [FinalisationForm] role:", role);
-    console.log("🔵 [FinalisationForm] bio:", bio);
-    console.log("🔵 [FinalisationForm] imageFile:", imageFile);
-    console.log("🔵 [FinalisationForm] previewUrl:", previewUrl);
+    console.log("🔵 [FinalisationForm] handleFinishClick - Appel onFinish avec:", {
+      ...currentData,
+      image: currentData.image ? `File: ${currentData.image.name}` : null
+    });
     onFinish(currentData);
   };
 

@@ -99,11 +99,6 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
     setPrice(formatted);
   };
 
-  // 🔥 Fonction pour déterminer si la photo est obligatoire
-  const isPhotoRequired = () => {
-    return isProvider; // Seul le fournisseur doit avoir une photo
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -112,7 +107,6 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
       return;
     }
 
-    // 🔥 Vérifier la photo selon le rôle
     if (isProvider && !imageFile) {
       toast.error("Veuillez ajouter une photo pour votre annonce.");
       return;
@@ -128,7 +122,6 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
     try {
       const priceNumber = price ? parseFloat(price) : undefined;
       
-      // 🔥 Construction des données selon le rôle
       const publicationData: any = {
         sender_id: userId,
         titre: productName,
@@ -139,24 +132,24 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
         prix: priceNumber,
       };
 
-      // 🔥 Seul le fournisseur envoie une photo (le collecteur ne doit pas en avoir)
       if (isProvider && imageFile) {
         publicationData.photo = imageFile;
       }
 
       console.log('📤 Données envoyées au backend:', publicationData);
-      console.log('🔵 Rôle utilisateur:', userRole);
-      console.log('🔵 isProvider:', isProvider);
-      console.log('🔵 isCollector:', isCollector);
-      console.log('🔵 Photo envoyée:', !!publicationData.photo);
 
       let result;
       if (isEditMode && initialData?.id) {
-        result = await updatePublication(initialData.id, publicationData);
+        // 🔥 Pour la mise à jour, inclure sender_id
+        result = await updatePublication(initialData.id, {
+          ...publicationData,
+          sender_id: userId, // 🔥 Ajouté pour l'update
+        });
       } else {
         result = await createPublication(publicationData);
       }
 
+      // 🔥 Le toast est déjà géré dans le hook, on ne le refait pas ici
       if (result.success) {
         const displayType = convertToDisplay(productionType);
         
@@ -175,12 +168,7 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
           mediaUrl: mediaPreview,
         });
 
-        if (isEditMode) {
-          toast.success("Modification enregistrée avec succès !");
-        } else {
-          toast.success(isAnnonce ? "Annonce publiée avec succès !" : "Demande publiée avec succès !");
-        }
-        
+        // 🔥 Redirection sans toast supplémentaire
         setTimeout(() => {
           const redirectPath = isAnnonce ? '/f' : '/c';
           router.push(redirectPath);
@@ -221,7 +209,6 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
                       : "Spécifiez le type de produit recherché, la quantité exacte et le lieu de livraison."
                   }
                 </p>
-                {/* 🔥 Indication pour le collecteur */}
                 {isCollector && (
                   <p className="text-xs text-amber-600 font-medium mt-1">
                     ⚠️ Les collecteurs ne peuvent pas ajouter de photo (demande d'achat).
@@ -260,7 +247,6 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
                   <LocationInput mode={mode} value={location} onChange={setLocation} />
                 </div>
 
-                {/* Champ Prix */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-sm font-bold text-slate-800">
@@ -287,7 +273,6 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
 
                 <DescriptionTextarea value={description} onChange={setDescription} />
                 
-                {/* 🔥 MediaUpload - Désactivé pour les collecteurs */}
                 <MediaUpload 
                   onFileSelect={handleFileSelect} 
                   disabled={isCollector}

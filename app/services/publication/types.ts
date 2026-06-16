@@ -28,12 +28,11 @@ export const PRODUCTION_TYPE_OPTIONS: { label: ProductionTypeDisplay; value: Pro
 
 // 🔥 Pour le formulaire, on utilise la valeur backend
 export type ProductionType = ProductionTypeBackend;
-// services/publication/types.ts
 
 export interface Publication {
   id: string;
   sender_id: string;
-  sender?: string; // Nom du sender
+  sender?: string;
   titre: string;
   description: string;
   category: ProductionTypeBackend;
@@ -42,11 +41,8 @@ export interface Publication {
   photo: string | null;
   price?: number | null;
   createdAt?: string;
-  
   sender_type?: 'fournisseur' | 'collecteur';
 }
-
-// services/publication/types.ts
 
 export interface CreatePublicationData {
   sender_id: string;
@@ -55,26 +51,26 @@ export interface CreatePublicationData {
   category: ProductionTypeBackend;
   localisation: string;
   quantity?: string;
-  prix?: string | number; // 🔥 Ajouter prix (string ou number)
+  prix?: string | number;
   photo?: File | null;
 }
 
 export interface UpdatePublicationData {
+  sender_id: string; // 🔥 Ajouté pour l'update
   titre?: string;
   description?: string;
   category?: ProductionTypeBackend;
   localisation?: string;
   quantity?: string;
-  price?: number; // 🔥 NOUVEAU: Prix en nombre
+  prix?: string | number; // 🔥 Changé de price à prix
   photo?: File | null;
 }
 
 export interface PublicationParams {
   titre_or_description?: string;
-  category?: string[] | string; // 🔥 Accepter soit un tableau soit une chaîne
-
-  price_min?: number; // 🔥 NOUVEAU: Filtre prix min
-  price_max?: number; // 🔥 NOUVEAU: Filtre prix max
+  category?: string[] | string;
+  price_min?: number;
+  price_max?: number;
 }
 
 // 🔥 Utilitaires de conversion
