@@ -71,7 +71,8 @@ export interface UpdatePublicationData {
 
 export interface PublicationParams {
   titre_or_description?: string;
-  category?: string;
+  category?: string[] | string; // 🔥 Accepter soit un tableau soit une chaîne
+
   price_min?: number; // 🔥 NOUVEAU: Filtre prix min
   price_max?: number; // 🔥 NOUVEAU: Filtre prix max
 }

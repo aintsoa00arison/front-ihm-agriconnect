@@ -1,7 +1,7 @@
 // app/catalogue/AnnuairePage.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import AnnuaireHeader from "./AnnuaireHeader";
 import AnnuaireFilters from "./AnnuaireFilters";
 import AnnuaireCard from "./AnnuaireCard";
@@ -22,13 +22,11 @@ const PRODUCTION_TYPE_MAP: Record<string, string> = {
   'CEREAL': 'Rente'
 };
 
-// 🔥 Fonction pour transformer ProfileData en UserProfile
 const transformProfileToUser = (profile: any): UserProfile => {
   const role = profile.role === 'collecteur' || profile.role === 'collector' 
     ? 'collecteurs' 
     : 'fournisseurs';
   
-  // 🔥 Convertir la valeur backend en valeur d'affichage
   const rawType = profile.product_category && profile.product_category.length > 0
     ? profile.product_category[0]
     : "Non spécifié";
@@ -40,8 +38,8 @@ const transformProfileToUser = (profile: any): UserProfile => {
     name: profile.name || "Utilisateur",
     role: role,
     location: profile.address || profile.registered_office || "Non spécifié",
-    type: displayType, // 🔥 Utiliser la valeur d'affichage
-   
+    type: displayType,
+    
     rating: profile.rating || 0,
     avatar: profile.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
     description: profile.bio || profile.company_description || profile.description || "",
@@ -62,77 +60,102 @@ export default function AnnuairePage({ onBack }: AnnuairePageProps) {
   const currentUserId = getUserId();
 
   // 🔥 Charger tous les utilisateurs depuis le backend
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setIsLoading(true);
-      try {
-        const results = await profileService.getAllUsers();
-        console.log('📦 Utilisateurs récupérés:', results.length);
-        console.log('📦 Premier utilisateur:', results[0]);
-        
-        const filteredUsers = results.filter(user => user.id !== currentUserId);
-        const transformedUsers = filteredUsers.map(transformProfileToUser);
-        
-        console.log('📦 Utilisateurs transformés:', transformedUsers.length);
-        console.log('📦 Types de production:', transformedUsers.map(u => u.type));
-        
-        setAllUsers(transformedUsers);
-        setUsers(transformedUsers);
-      } catch (error) {
-        console.error('❌ Erreur chargement des utilisateurs:', error);
-        setAllUsers([]);
-        setUsers([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchUsers();
+  const loadAllUsers = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      console.log('📦 Chargement de tous les utilisateurs...');
+      const results = await profileService.getAllUsers();
+      console.log('📦 Utilisateurs récupérés:', results.length);
+      
+      const filteredUsers = results.filter(user => user.id !== currentUserId);
+      const transformedUsers = filteredUsers.map(transformProfileToUser);
+      
+      setAllUsers(transformedUsers);
+      setUsers(transformedUsers);
+      console.log('📦 Utilisateurs transformés:', transformedUsers.length);
+    } catch (error) {
+      console.error('❌ Erreur chargement des utilisateurs:', error);
+      setAllUsers([]);
+      setUsers([]);
+    } finally {
+      setIsLoading(false);
+    }
   }, [currentUserId]);
 
-  // 🔥 Appliquer les filtres sur la liste complète
-  useEffect(() => {
-    let filtered = [...allUsers];
-
-    console.log('🔍 Filtres appliqués:', filters);
-    console.log('🔍 Nombre d\'utilisateurs avant filtrage:', filtered.length);
-
-    // 🔥 Filtrer par type de production
-    if (filters.type !== "all") {
-      filtered = filtered.filter(user => {
-        const match = user.type === filters.type;
-        console.log(`🔍 User ${user.name} type=${user.type}, filtre=${filters.type}, match=${match}`);
-        return match;
-      });
+  // 🔥 Rechercher des utilisateurs par nom via le backend
+  const searchUsersByName = useCallback(async (name: string) => {
+    console.log('🔍 searchUsersByName appelé avec:', name);
+    
+    if (!name.trim()) {
+      console.log('📦 Recherche vide, retour à la liste complète');
+      await loadAllUsers();
+      return;
     }
 
-    // 🔥 Filtrer par rating
+    setIsLoading(true);
+    try {
+      console.log(`🔍 Recherche d'utilisateurs avec le nom: "${name}"`);
+      const results = await profileService.searchUsersByName(name);
+      console.log('📦 Résultats de recherche (brut):', results.length);
+      
+      // Exclure l'utilisateur connecté
+      const filteredResults = results.filter(user => user.id !== currentUserId);
+      console.log('📦 Après exclusion current user:', filteredResults.length);
+      
+      const transformedUsers = filteredResults.map(transformProfileToUser);
+      console.log('📦 Utilisateurs transformés:', transformedUsers.length);
+      
+      setUsers(transformedUsers);
+    } catch (error) {
+      console.error('❌ Erreur recherche utilisateurs:', error);
+      setUsers([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentUserId, loadAllUsers]);
+
+  // 🔥 Charger tous les utilisateurs au montage
+  useEffect(() => {
+    loadAllUsers();
+  }, [loadAllUsers]);
+
+  // 🔥 Écouter l'événement de recherche spécifique à l'annuaire
+  useEffect(() => {
+    const handleSearchEvent = (event: CustomEvent) => {
+      const query = event.detail || "";
+      console.log('🔍 Événement annuaireSearch reçu:', query);
+      setSearchQuery(query);
+      searchUsersByName(query);
+    };
+
+    window.addEventListener("annuaireSearch", handleSearchEvent as EventListener);
+    console.log('✅ Écouteur annuaireSearch ajouté');
+    
+    return () => {
+      window.removeEventListener("annuaireSearch", handleSearchEvent as EventListener);
+      console.log('❌ Écouteur annuaireSearch retiré');
+    };
+  }, [searchUsersByName]);
+
+  // 🔥 Appliquer les filtres (type et rating) sur la liste actuelle
+  useEffect(() => {
+    if (users.length === 0) return;
+
+    let filtered = [...users];
+
+    // Filtrer par type de production
+    if (filters.type !== "all") {
+      filtered = filtered.filter(user => user.type === filters.type);
+    }
+
+    // Filtrer par rating
     if (filters.rating !== "all") {
       const minRating = parseInt(filters.rating);
       filtered = filtered.filter(user => user.rating >= minRating);
     }
 
-    // 🔥 Filtrer par recherche
-    if (searchQuery.trim() !== "") {
-      filtered = filtered.filter(user =>
-        user.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    console.log('🔍 Nombre d\'utilisateurs après filtrage:', filtered.length);
     setUsers(filtered);
-  }, [allUsers, filters, searchQuery]);
-
-  // 🔥 Recherche depuis le header
-  useEffect(() => {
-    const handleSearchEvent = (event: CustomEvent) => {
-      setSearchQuery(event.detail);
-    };
-
-    window.addEventListener("catalogueSearch", handleSearchEvent as EventListener);
-    return () =>
-      window.removeEventListener("catalogueSearch", handleSearchEvent as EventListener);
-  }, []);
+  }, [filters]);
 
   // Compter les filtres actifs
   useEffect(() => {
@@ -144,13 +167,15 @@ export default function AnnuairePage({ onBack }: AnnuairePageProps) {
   }, [searchQuery, filters]);
 
   const resetFilters = () => {
+    console.log('🔄 Réinitialisation des filtres');
     setSearchQuery("");
     setFilters({ location: "all", type: "all", rating: "all" });
-    window.dispatchEvent(new CustomEvent("catalogueSearch", { detail: "" }));
-    setUsers(allUsers);
+    window.dispatchEvent(new CustomEvent("annuaireSearch", { detail: "" }));
+    loadAllUsers();
   };
 
   const updateFilter = (key: keyof FilterState, value: string) => {
+    console.log(`🔍 Filtre ${key} mis à jour:`, value);
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 

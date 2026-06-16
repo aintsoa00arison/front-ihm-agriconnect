@@ -1,5 +1,5 @@
 // services/hooks/useProfile.ts
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { profileService } from '../profile/profileService';
 import { ProfileData } from '../profile/types/profile';
 import { getUserId } from '../lib/auth';
@@ -69,6 +69,8 @@ export const useProfile = (userId?: string) => {
     return result;
   };
 
+
+
   return {
     profile,
     loading,
@@ -76,6 +78,7 @@ export const useProfile = (userId?: string) => {
     updateProfile,
     updateIndividualProfile,
     updateEntrepriseProfile,
+  
     refetch: () => {
       const currentUserId = getUserId();
       if (currentUserId) {

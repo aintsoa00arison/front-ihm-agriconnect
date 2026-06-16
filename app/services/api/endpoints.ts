@@ -23,7 +23,9 @@ export const API_ENDPOINTS = {
 
   // User / Profile
   USER_GET: '/user/{user_id}',
-  USER_ALL: '/user/all', // 🔥 Nouvel endpoint pour tous les utilisateurs
+  USER_ALL: '/user/all',
+  USER_TOP_PROVIDERS: '/user/top/providers',   // 🔥 Top 5 fournisseurs
+  USER_TOP_COLLECTORS: '/user/top/collectors', // 🔥 Top 5 collecteurs
   USER_UPDATE_INDIVIDUAL: '/user/individual',
   USER_UPDATE_ENTREPRISE: '/user/entreprise',
   USER_SEARCH: '/user/name/{name}',

@@ -18,6 +18,13 @@ interface CataloguePageProps {
   userRole: UserRole;
 }
 
+// 🔥 Mapping des types de production backend -> affichage
+const PRODUCTION_TYPE_MAP: Record<string, string> = {
+  'VEGETAL': 'Végétale',
+  'ANIMAL': 'Élevage',
+  'CEREAL': 'Rente'
+};
+
 const transformPublicationToAd = (pub: any): Ad => {
   const sender = pub.sender || {};
   
@@ -34,6 +41,18 @@ const transformPublicationToAd = (pub: any): Ad => {
     senderType = 'fournisseur';
   }
   
+  const firstName = sender.first_name || '';
+  const lastName = sender.last_name || '';
+  const fullName = `${firstName} ${lastName}`.trim() || 
+                    sender.legal_name || 
+                    sender.rep_first_name || 
+                    sender.rep_last_name || 
+                    sender.name || 
+                    "Utilisateur";
+  
+  const authorRating = sender.score?.value ?? sender.score ?? sender.rating ?? 0;
+  const displayProductionType = PRODUCTION_TYPE_MAP[pub.category] || pub.category || "Non catégorisé";
+  
   return {
     id: pub.id,
     title: pub.titre || "Sans titre",
@@ -42,15 +61,14 @@ const transformPublicationToAd = (pub: any): Ad => {
     unit: "Kg",
     quantity: pub.quantity || "0",
     location: pub.localisation || "Non spécifié",
-    productionType: pub.category || "Non catégorisé",
+    productionType: displayProductionType,
     description: pub.description || "",
     image: pub.photo || "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=800&q=80",
     sender_id: pub.sender_id || '',
     sender_type: senderType,
     author: {
-      name: sender.legal_name || sender.rep_first_name || sender.rep_last_name || 
-            sender.name || sender.first_name || "Utilisateur",
-      rating: sender.score?.value || 0,
+      name: fullName,
+      rating: authorRating,
       avatar: sender.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
       location: sender.registered_office || sender.address || pub.localisation || "Non spécifié",
       productionType: pub.category || "Non catégorisé",
@@ -58,61 +76,24 @@ const transformPublicationToAd = (pub: any): Ad => {
   };
 };
 
-const topSuppliers: Supplier[] = [
-  {
-    name: "John Doe",
-    location: "Tana",
-    productionType: "Végétale",
-    rating: 5,
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
-  },
-  {
-    name: "Jane Cooper",
-    location: "Antsirabe",
-    productionType: "Végétale",
-    rating: 4,
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
-  },
-  {
-    name: "Jenny Wilson",
-    location: "Toliara",
-    productionType: "Rente",
-    rating: 5,
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&q=80",
-  },
-  {
-    name: "Ferme Raso",
-    location: "Antsirabe",
-    productionType: "Élevage",
-    rating: 4,
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
-  },
-  {
-    name: "Vanille Sava",
-    location: "Sambava",
-    productionType: "Rente",
-    rating: 5,
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80",
-  },
-];
-
 export default function CataloguePage({ userRole }: CataloguePageProps) {
   const [view, setView] = useState<"catalogue" | "annuaire">("catalogue");
   const [expandedAds, setExpandedAds] = useState<Record<string, boolean>>({});
   const [selectedTypes, setSelectedTypes] = useState<string[]>([
-    "VEGETAL",
-    "ANIMAL",
-    "CEREAL",
+    "Végétale",
+    "Élevage",
+    "Rente",
   ]);
   const [minRating, setMinRating] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showScrollButton, setShowScrollButton] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   const userId = getUserId();
   const currentUserRole = getUserRole();
   
-  const { publications, loading, isInitialized, refreshPublications } = usePublications(userId || undefined);
+  const { publications, loading, isInitialized, refreshPublications, filterPublications } = usePublications(userId || undefined);
 
   useEffect(() => {
     console.log('🔵 currentUserRole:', currentUserRole);
@@ -120,6 +101,38 @@ export default function CataloguePage({ userRole }: CataloguePageProps) {
     console.log('🔵 publications.length:', publications?.length);
   }, [publications, currentUserRole]);
 
+  // 🔥 Écouter la recherche
+  useEffect(() => {
+    const handleSearchEvent = (event: Event) => {
+      if (!(event instanceof CustomEvent)) return;
+      
+      const query = event.detail || "";
+      setSearchQuery(query);
+      setIsSearching(true);
+      
+      if (userId && query.trim() !== "") {
+        console.log(`🔵 Recherche de publications avec: "${query}"`);
+        filterPublications({
+          titre_or_description: query,
+          category: [],
+        }).finally(() => {
+          setIsSearching(false);
+        });
+      } else if (userId) {
+        refreshPublications().finally(() => {
+          setIsSearching(false);
+        });
+      } else {
+        setIsSearching(false);
+      }
+    };
+
+    window.addEventListener("catalogueSearch", handleSearchEvent);
+    return () =>
+      window.removeEventListener("catalogueSearch", handleSearchEvent);
+  }, [userId, filterPublications, refreshPublications]);
+
+  // 🔥 Transformer les publications en annonces
   const allAds = useMemo(() => {
     if (publications && publications.length > 0) {
       console.log(`🔵 Transformation de ${publications.length} publications en annonces`);
@@ -128,36 +141,23 @@ export default function CataloguePage({ userRole }: CataloguePageProps) {
     return [];
   }, [publications]);
 
+  // 🔥 Filtrer uniquement par type et note
   const filteredAds = useMemo(() => {
     let ads = allAds;
 
+    // 🔥 Filtrer par type de production
     if (selectedTypes.length > 0 && selectedTypes.length < 3) {
       ads = ads.filter(ad => selectedTypes.includes(ad.productionType));
     }
 
-    if (searchQuery.trim() !== "") {
-      const query = searchQuery.toLowerCase();
-      ads = ads.filter(ad =>
-        ad.title.toLowerCase().includes(query) ||
-        ad.description.toLowerCase().includes(query) ||
-        ad.author.name.toLowerCase().includes(query) ||
-        ad.location.toLowerCase().includes(query)
-      );
+    // 🔥 Filtrer par note minimale
+    if (minRating !== "all") {
+      const min = parseInt(minRating);
+      ads = ads.filter(ad => (ad.author.rating || 0) >= min);
     }
 
-    console.log(`🔵 ${ads.length} annonces après filtrage`);
     return ads;
-  }, [allAds, selectedTypes, searchQuery]);
-
-  useEffect(() => {
-    const handleSearchEvent = (event: CustomEvent) => {
-      setSearchQuery(event.detail);
-    };
-
-    window.addEventListener("catalogueSearch", handleSearchEvent as EventListener);
-    return () =>
-      window.removeEventListener("catalogueSearch", handleSearchEvent as EventListener);
-  }, []);
+  }, [allAds, selectedTypes, minRating]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -190,7 +190,6 @@ export default function CataloguePage({ userRole }: CataloguePageProps) {
     console.log("Voir profil:", name);
   };
 
-  // 🔥 Correction ici - Appel à AnnuairePage sans paramètre type
   if (view === "annuaire") {
     return (
       <AnnuairePage
@@ -199,7 +198,8 @@ export default function CataloguePage({ userRole }: CataloguePageProps) {
     );
   }
 
-  if (loading || !isInitialized) {
+  // 🔥 Afficher le skeleton SEULEMENT au chargement initial
+  if (loading && !isInitialized) {
     return (
       <div className="w-full h-full bg-neutral flex overflow-hidden p-4 md:p-8 relative">
         <div className="max-w-7xl w-full flex justify-center gap-8 h-full overflow-hidden mx-auto">
@@ -257,7 +257,14 @@ export default function CataloguePage({ userRole }: CataloguePageProps) {
             ref={scrollRef}
             className="flex-1 overflow-y-auto pr-2 space-y-6 no-scrollbar pb-10 min-h-0"
           >
-            {filteredAds.length > 0 ? (
+            {isSearching ? (
+              // 🔥 Skeleton pendant la recherche (uniquement sur les cartes)
+              <div className="space-y-6">
+                <AdSkeleton />
+                <AdSkeleton />
+                <AdSkeleton />
+              </div>
+            ) : filteredAds.length > 0 ? (
               filteredAds.map((ad) => (
                 <AdCard
                   key={ad.id}
@@ -272,12 +279,12 @@ export default function CataloguePage({ userRole }: CataloguePageProps) {
                 <p className="text-muted-foreground">
                   {searchQuery
                     ? `Aucune annonce ne correspond à votre recherche "${searchQuery}"`
-                    : `Aucune annonce disponible pour le moment.`}
+                    : `Aucune ${currentUserRole === 'fournisseur' ? 'demande' : 'annonce'} disponible pour le moment.`}
                 </p>
                 <p className="text-xs text-muted-foreground mt-2">
                   {currentUserRole === "collecteur" || currentUserRole === "collector"
                     ? "Les fournisseurs n'ont pas encore publié d'annonces."
-                    : "Les collecteurs n'ont pas encore publié d'annonces."}
+                    : "Les collecteurs n'ont pas encore publié de demandes."}
                 </p>
                 <button 
                   onClick={() => refreshPublications()}
@@ -298,7 +305,6 @@ export default function CataloguePage({ userRole }: CataloguePageProps) {
             onRatingChange={setMinRating}
           />
           <TopSuppliers
-            suppliers={topSuppliers}
             userRole={userRole}
             onViewAll={() => setView("annuaire")}
             onViewProfile={handleViewProfile}

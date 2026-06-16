@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { publicationService } from '../publication/publicationService';
 import { Publication, CreatePublicationData, PublicationParams, UpdatePublicationData } from '../publication/types';
 import { toast } from 'sonner';
-import { getUserRole } from '../lib/auth';
+import { getUserRole, getUserId } from '../lib/auth';
 
 export const usePublications = (userId?: string) => {
   const [publications, setPublications] = useState<Publication[]>([]);
@@ -33,7 +33,11 @@ export const usePublications = (userId?: string) => {
 
   // 🔥 Charger les publications selon le rôle de l'utilisateur
   const loadPublicationsByRole = useCallback(async (showToast: boolean = false) => {
-    if (!userId) {
+    // 🔥 Récupérer l'userId depuis le token si non passé
+    const currentUserId = userId || getUserId();
+    
+    if (!currentUserId) {
+      console.log('⚠️ Aucun userId trouvé');
       setPublications([]);
       setLoading(false);
       setIsInitialized(true);
@@ -44,22 +48,31 @@ export const usePublications = (userId?: string) => {
     setError(null);
 
     try {
+      // 🔥 Récupérer le rôle depuis le token
       const userRole = getUserRole();
+      
+      console.log(`🔵 [loadPublicationsByRole] userId: ${currentUserId}, userRole: ${userRole}`);
+      
       let data: Publication[] = [];
       
-      console.log(`🔵 Chargement des publications pour le rôle: ${userRole}`);
-      
       // 🔥 Selon le rôle, appeler la bonne route
-      if (userRole === 'collecteur' || userRole === 'collector') {
-        // Collecteur voit les publications des fournisseurs
+      // Les valeurs possibles: 'collector', 'collecteur', 'fournisseur', 'provider'
+      const isCollector = userRole === 'collecteur' || userRole === 'collector';
+      const isProvider = userRole === 'fournisseur' || userRole === 'provider';
+      
+      if (isCollector) {
+        // 🔥 Collecteur voit les publications des fournisseurs (avec photo)
+        console.log('🔵 Collecteur - Chargement des publications des fournisseurs');
         data = await publicationService.getProviderPublications();
-        console.log(`📦 ${data.length} publications fournisseurs chargées`);
-      } else if (userRole === 'fournisseur' || userRole === 'provider') {
-        // Fournisseur voit les publications des collecteurs
+        console.log(`📦 ${data.length} publications fournisseurs chargées pour collecteur`);
+      } else if (isProvider) {
+        // 🔥 Fournisseur voit les publications des collecteurs (sans photo)
+        console.log('🔵 Fournisseur - Chargement des publications des collecteurs');
         data = await publicationService.getCollectorPublications();
-        console.log(`📦 ${data.length} publications collecteurs chargées`);
+        console.log(`📦 ${data.length} publications collecteurs chargées pour fournisseur`);
       } else {
-        // Fallback: charger toutes les publications
+        // Fallback: charger toutes les publications des fournisseurs
+        console.warn(`⚠️ Rôle non reconnu: ${userRole}, fallback sur les fournisseurs`);
         data = await publicationService.getProviderPublications();
         console.log(`📦 ${data.length} publications chargées (fallback)`);
       }
@@ -99,7 +112,9 @@ export const usePublications = (userId?: string) => {
 
   // 🔥 Charger les publications de l'utilisateur
   const loadUserPublications = useCallback(async (showToast: boolean = false) => {
-    if (!userId) {
+    const currentUserId = userId || getUserId();
+    
+    if (!currentUserId) {
       setPublications([]);
       setLoading(false);
       setIsInitialized(true);
@@ -110,7 +125,7 @@ export const usePublications = (userId?: string) => {
     setError(null);
 
     try {
-      const data = await publicationService.getUserPublications(userId);
+      const data = await publicationService.getUserPublications(currentUserId);
       
       if (!isMounted.current) return;
       
@@ -142,35 +157,48 @@ export const usePublications = (userId?: string) => {
     }
   }, [userId]);
 
-  const filterPublications = useCallback(async (params: PublicationParams) => {
-    if (!userId) {
-      setPublications([]);
-      return;
+// services/hooks/usePublication.ts
+
+const filterPublications = useCallback(async (params: PublicationParams) => {
+  const currentUserId = userId || getUserId();
+  
+  if (!currentUserId) {
+    setPublications([]);
+    return;
+  }
+
+  setLoading(true);
+  setError(null);
+
+  try {
+    console.log('🔵 filterPublications - userId:', currentUserId);
+    console.log('🔵 filterPublications - params:', params);
+    
+    // 🔥 S'assurer que category est un tableau
+    let category = params.category || [];
+    if (typeof category === 'string') {
+      category = category ? [category] : [];
     }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const data = await publicationService.filterPublications(userId, params);
-      
-      if (!isMounted.current) return;
-      
-      const sanitized = sanitizePublications(data);
-      setPublications(sanitized);
-    } catch (err: any) {
-      if (!isMounted.current) return;
-      
-      const errorMsg = err.message || "Erreur lors du filtrage";
-      setError(errorMsg);
-      setPublications([]);
-      console.error('❌ Erreur filterPublications:', err);
-    } finally {
-      if (isMounted.current) {
-        setLoading(false);
+    if (!Array.isArray(category)) {
+      category = [];
+    }
+    
+    const data = await publicationService.filterPublications(
+      currentUserId,
+      {
+        titre_or_description: params.titre_or_description || "",
+        category: category, // 🔥 Maintenant c'est un tableau
       }
-    }
-  }, [userId]);
+    );
+    
+    if (!isMounted.current) return;
+    
+    const sanitized = sanitizePublications(data);
+    setPublications(sanitized);
+  } catch (err: any) {
+    // ...
+  }
+}, [userId]);
 
   const createPublication = useCallback(async (data: CreatePublicationData) => {
     try {
@@ -217,13 +245,15 @@ export const usePublications = (userId?: string) => {
   }, [loadPublicationsByRole]);
 
   const deletePublication = useCallback(async (publicationId: string) => {
-    if (!userId) {
+    const currentUserId = userId || getUserId();
+    
+    if (!currentUserId) {
       toast.error("Utilisateur non identifié");
       return { success: false, message: "Utilisateur non identifié" };
     }
 
     try {
-      const response = await publicationService.deletePublication(publicationId, userId);
+      const response = await publicationService.deletePublication(publicationId, currentUserId);
       
       if (response.success) {
         toast.success(response.message || "Publication supprimée avec succès !");
@@ -245,8 +275,6 @@ export const usePublications = (userId?: string) => {
   }, [userId, loadPublicationsByRole]);
 
   const refreshPublications = useCallback(async () => {
-    if (!userId) return;
-    
     setIsRefreshing(true);
     try {
       await loadPublicationsByRole(true);
@@ -256,7 +284,7 @@ export const usePublications = (userId?: string) => {
     } finally {
       setIsRefreshing(false);
     }
-  }, [userId, loadPublicationsByRole]);
+  }, [loadPublicationsByRole]);
 
   const resetPublications = useCallback(() => {
     setPublications([]);
@@ -266,12 +294,15 @@ export const usePublications = (userId?: string) => {
     initialLoadDone.current = false;
   }, []);
 
-  // 🔥 Charger au montage
+  // 🔥 Charger au montage et quand userId change
   useEffect(() => {
     isMounted.current = true;
     
-    if (userId && !initialLoadDone.current) {
+    const currentUserId = userId || getUserId();
+    
+    if (currentUserId && !initialLoadDone.current) {
       initialLoadDone.current = true;
+      console.log(`🔵 [usePublications] Chargement initial pour userId: ${currentUserId}`);
       loadPublicationsByRole();
       
       const forceTimeout = setTimeout(() => {
@@ -288,7 +319,7 @@ export const usePublications = (userId?: string) => {
           clearTimeout(loadTimeoutRef.current);
         }
       };
-    } else if (!userId) {
+    } else if (!currentUserId) {
       setLoading(false);
       setPublications([]);
       setIsInitialized(true);
@@ -301,7 +332,7 @@ export const usePublications = (userId?: string) => {
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }, [userId]); // 🔥 Recharger quand userId change
 
   // 🔥 Réinitialiser le flag quand userId change
   useEffect(() => {

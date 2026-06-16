@@ -180,30 +180,45 @@ createPublication: async (data: CreatePublicationData): Promise<{ success: boole
   },
 
   // Filtrer les publications
-  filterPublications: async (userId: string, params: PublicationParams): Promise<Publication[]> => {
-    try {
-      if (!userId) {
-        console.warn('⚠️ filterPublications: userId manquant');
-        return [];
-      }
+// services/publication/publicationService.ts
 
-      const url = API_ENDPOINTS.PUBLICATION_FILTERED.replace('{user_id}', userId);
-      console.log('📡 Filtrage publications:', url, params);
-      
-      const response = await apiClient.post(
-        url,
-        {
-          titre_or_description: params.titre_or_description || "",
-          category: params.category || "",
-        }
-      );
-      return response.data || [];
-    } catch (error: any) {
-      console.error("❌ Erreur filtrage publications:", error);
+// Filtrer les publications
+filterPublications: async (userId: string, params: PublicationParams): Promise<Publication[]> => {
+  try {
+    if (!userId) {
+      console.warn('⚠️ filterPublications: userId manquant');
       return [];
     }
-  },
 
+    const url = API_ENDPOINTS.PUBLICATION_FILTERED.replace('{user_id}', userId);
+    console.log('📡 Filtrage publications:', url, params);
+    
+    // 🔥 Construire le payload avec category en tableau
+    const payload: any = {
+      titre_or_description: params.titre_or_description || "",
+    };
+    
+    // 🔥 Si category est un tableau non vide, l'ajouter
+    if (params.category && Array.isArray(params.category) && params.category.length > 0) {
+      payload.category = params.category;
+    }
+    // Si category est une chaîne, la convertir en tableau
+    else if (params.category && typeof params.category === 'string' && params.category !== '') {
+      payload.category = [params.category];
+    }
+    
+    console.log('📤 Payload envoyé:', payload);
+    
+    const response = await apiClient.post(url, payload);
+    return response.data || [];
+  } catch (error: any) {
+    console.error("❌ Erreur filtrage publications:", error);
+    if (error.response) {
+      console.error('📦 Réponse erreur:', error.response.data);
+    }
+    return [];
+  }
+},
   // Supprimer une publication
   deletePublication: async (publicationId: string, userId: string): Promise<{ success: boolean; message: string }> => {
     try {

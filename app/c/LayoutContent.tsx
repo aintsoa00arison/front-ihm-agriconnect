@@ -1,4 +1,3 @@
-// app/c/LayoutContent.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -9,7 +8,8 @@ import Link from "next/link";
 import { Search, ArrowUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { usePathname, useSearchParams } from "next/navigation";
-
+import { usePublications } from "../../app/services/hooks/usePublication";
+import { getUserId } from "../../app/services/lib/auth";
 
 interface LayoutContentProps {
   children: React.ReactNode;
@@ -24,34 +24,43 @@ export default function LayoutContent({
 }: LayoutContentProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
   const [searchQuery, setSearchQuery] = useState("");
   const [showScrollButton, setShowScrollButton] = useState(false);
   const mainRef = useRef<HTMLDivElement>(null);
-
-
+  
+  const userId = getUserId();
+  const { filterPublications } = usePublications(userId || undefined);
 
   const isCataloguePage = pathname === "/c";
   const isProfilePage = pathname?.startsWith("/c/profile/") ?? false;
+  const isAnnuairePage = pathname === "/c/annuaire";
 
   const tabParam = searchParams?.get("tab");
   const isProfileAdsTab = isProfilePage && tabParam === "annonces";
-  const showSearchBar = isCataloguePage || isProfileAdsTab;
+  const showSearchBar = isCataloguePage || isProfileAdsTab || isAnnuairePage;
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // 🔥 Gestion de la recherche avec appel API
+  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
+    
     if (typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent("catalogueSearch", { detail: value }),
-      );
-      window.dispatchEvent(
-        new CustomEvent("profileAdsSearch", { detail: value }),
-      );
+      // 🔥 Envoyer l'événement selon la page
+      if (isCataloguePage) {
+        window.dispatchEvent(
+          new CustomEvent("catalogueSearch", { detail: value })
+        );
+      } else if (isAnnuairePage) {
+        window.dispatchEvent(
+          new CustomEvent("annuaireSearch", { detail: value })
+        );
+      } else if (isProfileAdsTab) {
+        window.dispatchEvent(
+          new CustomEvent("profileAdsSearch", { detail: value })
+        );
+      }
     }
   };
-
-
 
   useEffect(() => {
     const handleScroll = () => {
@@ -71,6 +80,13 @@ export default function LayoutContent({
     if (mainRef.current) {
       mainRef.current.scrollTo({ top: 0, behavior: "smooth" });
     }
+  };
+
+  const getPlaceholder = () => {
+    if (isCataloguePage) return "Rechercher une annonce...";
+    if (isAnnuairePage) return "Rechercher un membre...";
+    if (isProfileAdsTab) return "Rechercher dans mes annonces...";
+    return "Rechercher...";
   };
 
   return (
@@ -95,14 +111,12 @@ export default function LayoutContent({
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
               <Input
                 type="text"
-                placeholder="Rechercher une annonce..."
+                placeholder={getPlaceholder()}
                 value={searchQuery}
                 onChange={handleSearch}
                 className="pl-10 bg-muted/30 border-border rounded-xl h-10 text-sm focus-visible:ring-primary w-full text-ellipsis"
               />
             </div>
-
-            
           </div>
         )}
       </header>

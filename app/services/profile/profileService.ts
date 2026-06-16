@@ -53,46 +53,104 @@ export const profileService = {
     return result;
   },
 
-// services/profile/profileService.ts
-
-// 🔥 NOUVELLE MÉTHODE : Récupérer tous les utilisateurs
-getAllUsers: async (): Promise<ProfileData[]> => {
-  try {
-    console.log('🔍 getAllUsers - Récupération de tous les utilisateurs');
-    
-    const response = await apiClient.get<UserResponse[]>(API_ENDPOINTS.USER_ALL);
-    console.log('📦 getAllUsers - Réponse brute:', JSON.stringify(response.data, null, 2));
-    console.log('📦 getAllUsers - Type de réponse:', typeof response.data);
-    console.log('📦 getAllUsers - Est un tableau?', Array.isArray(response.data));
-    console.log('📦 getAllUsers - Nombre d\'éléments:', response.data?.length || 0);
-    
-    if (!response.data || !Array.isArray(response.data)) {
-      console.warn('⚠️ getAllUsers - La réponse n\'est pas un tableau');
+  // 🔥 Récupérer tous les utilisateurs
+  getAllUsers: async (): Promise<ProfileData[]> => {
+    try {
+      console.log('🔍 getAllUsers - Récupération de tous les utilisateurs');
+      
+      const response = await apiClient.get<UserResponse[]>(API_ENDPOINTS.USER_ALL);
+      console.log('📦 getAllUsers - Réponse brute:', JSON.stringify(response.data, null, 2));
+      console.log('📦 getAllUsers - Type de réponse:', typeof response.data);
+      console.log('📦 getAllUsers - Est un tableau?', Array.isArray(response.data));
+      console.log('📦 getAllUsers - Nombre d\'éléments:', response.data?.length || 0);
+      
+      if (!response.data || !Array.isArray(response.data)) {
+        console.warn('⚠️ getAllUsers - La réponse n\'est pas un tableau');
+        return [];
+      }
+      
+      const results = response.data
+        .map(user => {
+          console.log('🔄 Transformation user:', user);
+          const transformed = transformUserResponse(user);
+          console.log('🔄 Transformé:', transformed);
+          return transformed;
+        })
+        .filter(Boolean) as ProfileData[];
+      
+      console.log(`🔄 getAllUsers - ${results.length} utilisateurs récupérés`);
+      return results;
+    } catch (error: any) {
+      console.error("❌ Erreur récupération tous les utilisateurs:", error);
+      if (error.response) {
+        console.error('📦 Réponse erreur:', {
+          status: error.response.status,
+          data: error.response.data,
+        });
+      }
       return [];
     }
-    
-    const results = response.data
-      .map(user => {
-        console.log('🔄 Transformation user:', user);
-        const transformed = transformUserResponse(user);
-        console.log('🔄 Transformé:', transformed);
-        return transformed;
-      })
-      .filter(Boolean) as ProfileData[];
-    
-    console.log(`🔄 getAllUsers - ${results.length} utilisateurs récupérés`);
-    return results;
-  } catch (error: any) {
-    console.error("❌ Erreur récupération tous les utilisateurs:", error);
-    if (error.response) {
-      console.error('📦 Réponse erreur:', {
-        status: error.response.status,
-        data: error.response.data,
-      });
+  },
+
+  // 🔥 NOUVELLE MÉTHODE : Récupérer le Top 5 des fournisseurs
+  getTopProviders: async (limit: number = 5): Promise<ProfileData[]> => {
+    try {
+      console.log('🔍 getTopProviders - Récupération du Top 5 des fournisseurs');
+      const response = await apiClient.get<UserResponse[]>(`${API_ENDPOINTS.USER_TOP_PROVIDERS}?limit=${limit}`);
+      console.log('📦 getTopProviders - Réponse brute:', JSON.stringify(response.data, null, 2));
+      
+      if (!response.data || !Array.isArray(response.data)) {
+        console.warn('⚠️ getTopProviders - La réponse n\'est pas un tableau');
+        return [];
+      }
+      
+      const results = response.data
+        .map(user => transformUserResponse(user))
+        .filter(Boolean) as ProfileData[];
+      
+      console.log(`🔄 getTopProviders - ${results.length} fournisseurs récupérés`);
+      return results;
+    } catch (error: any) {
+      console.error("❌ Erreur récupération Top 5 fournisseurs:", error);
+      if (error.response) {
+        console.error('📦 Réponse erreur:', {
+          status: error.response.status,
+          data: error.response.data,
+        });
+      }
+      return [];
     }
-    return [];
-  }
-},
+  },
+
+  // 🔥 NOUVELLE MÉTHODE : Récupérer le Top 5 des collecteurs
+  getTopCollectors: async (limit: number = 5): Promise<ProfileData[]> => {
+    try {
+      console.log('🔍 getTopCollectors - Récupération du Top 5 des collecteurs');
+      const response = await apiClient.get<UserResponse[]>(`${API_ENDPOINTS.USER_TOP_COLLECTORS}?limit=${limit}`);
+      console.log('📦 getTopCollectors - Réponse brute:', JSON.stringify(response.data, null, 2));
+      
+      if (!response.data || !Array.isArray(response.data)) {
+        console.warn('⚠️ getTopCollectors - La réponse n\'est pas un tableau');
+        return [];
+      }
+      
+      const results = response.data
+        .map(user => transformUserResponse(user))
+        .filter(Boolean) as ProfileData[];
+      
+      console.log(`🔄 getTopCollectors - ${results.length} collecteurs récupérés`);
+      return results;
+    } catch (error: any) {
+      console.error("❌ Erreur récupération Top 5 collecteurs:", error);
+      if (error.response) {
+        console.error('📦 Réponse erreur:', {
+          status: error.response.status,
+          data: error.response.data,
+        });
+      }
+      return [];
+    }
+  },
 
   updateIndividualProfile: async (data: {
     id: string;

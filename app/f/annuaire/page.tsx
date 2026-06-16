@@ -9,7 +9,7 @@ function Page() {
 
   return (
     <AnnuairePage
-      type="collecteurs"
+    
       onBack={() => {
         router.push("/f");
       }}
