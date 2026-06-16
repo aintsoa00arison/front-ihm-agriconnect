@@ -1,9 +1,8 @@
-// app/catalogue/AdCard.tsx
 "use client";
 
 import { Scale, MapPin, ChevronDown, ChevronUp, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Ad } from "./types/catalogue";
+import type { Ad } from "../../app/services/publication/catalogue";
 
 interface AdCardProps {
   ad: Ad;
@@ -63,7 +62,9 @@ export default function AdCard({ ad, isExpanded, onToggleExpand, onViewProfile }
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} size={10} fill={i < ad.author.rating ? "currentColor" : "none"} />
                 ))}
-                <span className="text-[10px] font-bold text-muted-foreground ml-1">{ad.author.rating}.0</span>
+                <span className="text-[10px] font-bold text-muted-foreground ml-1">
+                  {ad.author.rating.toFixed(1)}
+                </span>
               </div>
             </div>
           </div>

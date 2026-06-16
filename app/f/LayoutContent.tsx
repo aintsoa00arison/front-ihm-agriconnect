@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { NotificationMenu } from "@/components/layout/notificationMenu";
 import SidebarFournisseur from "@/components/layout/sidebarFournisseur";
-import MobileSidebarFournisseur from "@/components/layout/MobileSidebarFournisseur"; // À créer sur le même modèle que le collecteur
+import MobileSidebarFournisseur from "@/components/layout/MobileSidebarFournisseur";
 import Link from "next/link";
 import { Search, ArrowUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -28,22 +28,37 @@ export default function LayoutContent({
 
   const isCataloguePage = pathname === "/f";
   const isProfilePage = pathname?.startsWith("/f/profile/") ?? false;
+  const isAnnuairePage = pathname === "/f/annuaire";
 
   const tabParam = searchParams?.get("tab");
   const isProfileAdsTab = isProfilePage && tabParam === "annonces";
-  const showSearchBar = isCataloguePage || isProfileAdsTab;
+  const showSearchBar = isCataloguePage || isProfileAdsTab || isAnnuairePage;
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
     if (typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent("catalogueSearch", { detail: value }),
-      );
-      window.dispatchEvent(
-        new CustomEvent("profileAdsSearch", { detail: value }),
-      );
+      if (isCataloguePage) {
+        window.dispatchEvent(
+          new CustomEvent("catalogueSearch", { detail: value })
+        );
+      } else if (isAnnuairePage) {
+        window.dispatchEvent(
+          new CustomEvent("annuaireSearch", { detail: value })
+        );
+      } else if (isProfileAdsTab) {
+        window.dispatchEvent(
+          new CustomEvent("profileAdsSearch", { detail: value })
+        );
+      }
     }
+  };
+
+  const getPlaceholder = () => {
+    if (isCataloguePage) return "Rechercher une annonce...";
+    if (isAnnuairePage) return "Rechercher un membre...";
+    if (isProfileAdsTab) return "Rechercher dans mes annonces...";
+    return "Rechercher...";
   };
 
   useEffect(() => {
@@ -68,9 +83,6 @@ export default function LayoutContent({
 
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden bg-neutral">
-      {/* 
-        HEADER OPTIMISÉ 
-      */}
       <header className="shrink-0 flex flex-wrap md:flex-nowrap justify-between items-center px-4 py-3 min-h-16 bg-card shadow-sm border-b border-border z-10 gap-y-3 gap-x-4">
         {/* 1. GAUCHE : Menu Mobile + Logo */}
         <div className="flex items-center gap-3 order-1">
@@ -94,7 +106,7 @@ export default function LayoutContent({
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
               <Input
                 type="text"
-                placeholder="Rechercher une annonce, un produit, un fournisseur..."
+                placeholder={getPlaceholder()}
                 value={searchQuery}
                 onChange={handleSearch}
                 className="pl-10 bg-muted/30 border-border rounded-xl h-10 text-sm focus-visible:ring-primary w-full text-ellipsis"
@@ -105,7 +117,6 @@ export default function LayoutContent({
       </header>
 
       <div className="grow flex min-h-0 overflow-hidden">
-        {/* Protection pour la sidebar desktop */}
         <div className="hidden md:block h-full">
           <SidebarFournisseur userSlug={userSlug} userName={userName} />
         </div>

@@ -9,7 +9,7 @@ function Page() {
 
   return (
     <AnnuairePage
-      type="fournisseurs"
+      
       onBack={() => {
         router.push("/c");
       }}

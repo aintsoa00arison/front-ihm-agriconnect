@@ -1,4 +1,5 @@
 // services/api/endpoints.ts
+
 export const API_ENDPOINTS = {
   // Auth
   LOGIN: '/auth/login',
@@ -17,10 +18,14 @@ export const API_ENDPOINTS = {
   PUBLICATION_ALL: '/publication/all/{user_id}',
   PUBLICATION_USER: '/publication/user/{user_id}',
   PUBLICATION_FILTERED: '/publication/filtered/{user_id}',
- 
+  PUBLICATION_PROVIDER_ALL: '/publication/provider/all',
+  PUBLICATION_COLLECTOR_ALL: '/publication/collector/all',
 
   // User / Profile
   USER_GET: '/user/{user_id}',
+  USER_ALL: '/user/all',
+  USER_TOP_PROVIDERS: '/user/top/providers',   // 🔥 Top 5 fournisseurs
+  USER_TOP_COLLECTORS: '/user/top/collectors', // 🔥 Top 5 collecteurs
   USER_UPDATE_INDIVIDUAL: '/user/individual',
   USER_UPDATE_ENTREPRISE: '/user/entreprise',
   USER_SEARCH: '/user/name/{name}',

@@ -10,14 +10,12 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { UserCheck } from "lucide-react";
-import type { TargetRole } from "./types/annuaire";
 
 interface AnnuaireHeaderProps {
-  type: TargetRole;
   onBack: () => void;
 }
 
-export default function AnnuaireHeader({ type, onBack }: AnnuaireHeaderProps) {
+export default function AnnuaireHeader({ onBack }: AnnuaireHeaderProps) {
   return (
     <div className="space-y-4">
       {/* Fil d'Ariane avec Breadcrumb shadcn */}
@@ -31,19 +29,17 @@ export default function AnnuaireHeader({ type, onBack }: AnnuaireHeaderProps) {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbPage className="capitalize">
-              Liste des {type}
+              Liste des membres
             </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
 
-      {/* Description seulement, plus de titre en double */}
+      {/* Description */}
       <div className="flex items-center gap-2">
         <UserCheck className="text-primary" size={24} />
         <p className="text-sm text-muted-foreground font-medium">
-          {type === "fournisseurs" 
-            ? "Découvrez les producteurs partenaires près de chez vous" 
-            : "Trouvez les collecteurs qui recherchent vos produits"}
+          Consultez tous les membres de la plateforme
         </p>
       </div>
     </div>

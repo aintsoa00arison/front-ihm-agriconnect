@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-// 🔥 Importer depuis ad.ts (qui ré-exporte depuis types.ts)
 import { AdFormMode, AdData, ProductionType, QuantityUnit, convertToDisplay } from "../../app/services/publication/ad";
 import BreadcrumbNav from "./BreadcrumbNav";
 import ProductionTypeSelect from "./utils/ProductionTypeSelect";
@@ -16,7 +15,7 @@ import MediaUpload from "./utils/MediaUpload";
 import AdPreview from "./AdPreview";
 import { FormSkeleton, PreviewSkeleton } from "./AdSkeletons";
 import { usePublications } from "../../app/services/hooks/usePublication";
-import { getUserId } from "../../app/services/lib/auth";
+import { getUserId, getUserRole } from "../../app/services/lib/auth";
 
 interface AdFormProps {
   mode: AdFormMode;
@@ -33,6 +32,10 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const userId = getUserId();
+  const userRole = getUserRole();
+  const isCollector = userRole === 'collecteur' || userRole === 'collector';
+  const isProvider = userRole === 'fournisseur' || userRole === 'provider';
+  
   const { createPublication, updatePublication } = usePublications(userId || undefined);
 
   // 🔥 États du formulaire
@@ -40,7 +43,7 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
   const [productName, setProductName] = useState<string>("");
   const [quantityValue, setQuantityValue] = useState<string>("");
   const [quantityUnit, setQuantityUnit] = useState<QuantityUnit>("tonnes");
-  const [price, setPrice] = useState<string>(""); // 🔥 NOUVEAU: Prix
+  const [price, setPrice] = useState<string>("");
   const [location, setLocation] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -57,7 +60,7 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
     if (initialData) {
       setProductionType(initialData.productionType || "VEGETAL");
       setProductName(initialData.productName || "");
-      setPrice(initialData.price || ""); // 🔥 Charger le prix
+      setPrice(initialData.price || "");
       setLocation(initialData.location || "");
       setDescription(initialData.description || "");
       if (initialData.mediaUrl) setMediaPreview(initialData.mediaUrl);
@@ -86,9 +89,7 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
     reader.readAsDataURL(file);
   };
 
-  // 🔥 Fonction pour formater le prix
   const formatPriceInput = (value: string): string => {
-    // Ne garder que les chiffres
     const cleaned = value.replace(/[^0-9]/g, '');
     return cleaned;
   };
@@ -98,11 +99,22 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
     setPrice(formatted);
   };
 
+  // 🔥 Fonction pour déterminer si la photo est obligatoire
+  const isPhotoRequired = () => {
+    return isProvider; // Seul le fournisseur doit avoir une photo
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!productName.trim() || !quantityValue.trim() || !location.trim()) {
       toast.error("Veuillez remplir tous les champs obligatoires.");
+      return;
+    }
+
+    // 🔥 Vérifier la photo selon le rôle
+    if (isProvider && !imageFile) {
+      toast.error("Veuillez ajouter une photo pour votre annonce.");
       return;
     }
 
@@ -114,21 +126,29 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
     setIsSubmitting(true);
 
     try {
-      // 🔥 productionType est déjà au format backend
-      const priceNumber = price ? parseFloat(price) : 0;
+      const priceNumber = price ? parseFloat(price) : undefined;
       
-      const publicationData = {
+      // 🔥 Construction des données selon le rôle
+      const publicationData: any = {
         sender_id: userId,
         titre: productName,
         description: description,
         category: productionType,
         localisation: location,
         quantity: `${quantityValue} ${quantityUnit}`,
-        price: priceNumber, // 🔥 NOUVEAU: Prix en nombre
-        photo: imageFile || undefined,
+        prix: priceNumber,
       };
 
+      // 🔥 Seul le fournisseur envoie une photo (le collecteur ne doit pas en avoir)
+      if (isProvider && imageFile) {
+        publicationData.photo = imageFile;
+      }
+
       console.log('📤 Données envoyées au backend:', publicationData);
+      console.log('🔵 Rôle utilisateur:', userRole);
+      console.log('🔵 isProvider:', isProvider);
+      console.log('🔵 isCollector:', isCollector);
+      console.log('🔵 Photo envoyée:', !!publicationData.photo);
 
       let result;
       if (isEditMode && initialData?.id) {
@@ -149,7 +169,7 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
           quantityValue,
           quantityUnit,
           quantity: `${quantityValue} ${quantityUnit}`,
-          price: price || "0", // 🔥 Sauvegarder le prix
+          price: price || "0",
           location,
           description,
           mediaUrl: mediaPreview,
@@ -201,6 +221,17 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
                       : "Spécifiez le type de produit recherché, la quantité exacte et le lieu de livraison."
                   }
                 </p>
+                {/* 🔥 Indication pour le collecteur */}
+                {isCollector && (
+                  <p className="text-xs text-amber-600 font-medium mt-1">
+                    ⚠️ Les collecteurs ne peuvent pas ajouter de photo (demande d'achat).
+                  </p>
+                )}
+                {isProvider && (
+                  <p className="text-xs text-green-600 font-medium mt-1">
+                    ✅ Les fournisseurs doivent ajouter une photo (offre de vente).
+                  </p>
+                )}
               </div>
 
               <div className="space-y-4">
@@ -229,7 +260,7 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
                   <LocationInput mode={mode} value={location} onChange={setLocation} />
                 </div>
 
-                {/* 🔥 NOUVEAU: Champ Prix */}
+                {/* Champ Prix */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-sm font-bold text-slate-800">
@@ -248,14 +279,24 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
                       />
                     </div>
                     <p className="text-[10px] text-slate-400 font-medium">
-                      Laissez vide pour indiquer "Gratuit"
+                      Laissez vide si le prix n'est pas défini
                     </p>
                   </div>
                   <div />
                 </div>
 
                 <DescriptionTextarea value={description} onChange={setDescription} />
-                <MediaUpload onFileSelect={handleFileSelect} />
+                
+                {/* 🔥 MediaUpload - Désactivé pour les collecteurs */}
+                <MediaUpload 
+                  onFileSelect={handleFileSelect} 
+                  disabled={isCollector}
+                />
+                {isCollector && (
+                  <p className="text-xs text-amber-600 font-medium -mt-2">
+                    ⚠️ Les demandes d'achat ne peuvent pas inclure de photo
+                  </p>
+                )}
               </div>
 
               <div className="flex items-center justify-center gap-4 pt-4 border-t border-slate-100">
@@ -269,7 +310,7 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || (isProvider && !imageFile)}
                   className="bg-primary hover:opacity-90 text-white font-bold h-11 px-8 rounded-xl shadow-sm gap-2 transition-all disabled:opacity-50"
                 >
                   <Check size={18} strokeWidth={2.5} />
@@ -290,7 +331,7 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
               productName={productName}
               quantityValue={quantityValue}
               quantityUnit={quantityUnit}
-              price={price} // 🔥 NOUVEAU: Passer le prix à l'aperçu
+              price={price}
               location={location}
               description={description}
               mediaPreview={mediaPreview}
