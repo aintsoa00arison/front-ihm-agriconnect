@@ -1,14 +1,28 @@
 "use client";
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from '../ui/drawer';
-import { Button } from '../ui/button';
-import { Star } from 'lucide-react';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "../ui/drawer";
+import { Button } from "../ui/button";
+import { Star } from "lucide-react";
 
-import Image from 'next/image';
-import StarAffichage from './Star';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import BasicRating from '../rating-group';
+import Image from "next/image";
+import StarAffichage from "./Star";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import BasicRating from "../rating-group";
+import { useChat } from "@/app/services/chat/ChatContext";
 
 function Header() {
+  const { discussions, activeDiscussionId } = useChat();
+  const activeChat = discussions.find((d) => d.id === activeDiscussionId);
+  const name =
+    activeChat?.entreprise_legal_name ||
+    `${activeChat?.interlocutor_first_name || ""} ${activeChat?.interlocutor_last_name || ""}`.trim() ||
+    "Sélectionnez une discussion";
+
   return (
     <header className="flex justify-between px-4 py-2 h-14 bg-card items-center  border-b border-border">
       <div className="flex items-center gap-3">
@@ -24,7 +38,7 @@ function Header() {
           <span className="absolute bottom-0 right-0 size-3 bg-green-500 border-2 border-white rounded-full" />
         </div>
         {/* Nom de l'interlocuteur */}
-        <h3 className="font-semibold">John Doe</h3>
+        <h3 className="font-semibold">{name}</h3>
       </div>
       <Drawer direction="right">
         <DrawerTrigger>
@@ -39,7 +53,7 @@ function Header() {
             </DrawerTitle>
           </DrawerHeader>
           <div className="p-4 scrollbar-none overflow-y-auto">
-            <div className='flex flex-col items-center mb-8'>
+            <div className="flex flex-col items-center mb-8">
               <Image
                 src="/images/default-avatar.jpg"
                 alt="Avatar de John Doe"
@@ -59,7 +73,12 @@ function Header() {
                 <CardTitle className="text-lg font-semibold">Bio</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className='text-muted-foreground font-semibold'>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Et impedit deleniti eaque dolore veritatis ipsam debitis minima iste rerum? Porro, natus! Consequatur qui vel maiores vitae reiciendis iste sunt ipsum.</p>
+                <p className="text-muted-foreground font-semibold">
+                  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Et
+                  impedit deleniti eaque dolore veritatis ipsam debitis minima
+                  iste rerum? Porro, natus! Consequatur qui vel maiores vitae
+                  reiciendis iste sunt ipsum.
+                </p>
               </CardContent>
             </Card>
             <BasicRating />
@@ -70,4 +89,4 @@ function Header() {
   );
 }
 
-export default Header
+export default Header;

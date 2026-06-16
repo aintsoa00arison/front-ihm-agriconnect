@@ -1,23 +1,27 @@
-import { Message } from "@/data/message";
+"use client";
+
 import Image from "next/image";
+import { ChatMessage } from "@/app/services/chat/ChatContext";
 
 type Props = {
-  message: Message;
+  message: ChatMessage;
   showSender: boolean;
   isMe: boolean;
+  senderName: string; // On le passe en prop depuis MessageList
 };
 
-const statusLabel: Record<NonNullable<Message["status"]>, string> = {
-  envoyé: "Envoyé",
-  distribué: "Distribué",
-  lu: "Lu",
-};
-
-function formatTime(date: Date) {
+// Fonction pour formater une date ISO string (ex: "2024-09-12T09:12:00Z")
+function formatTime(dateString: string) {
+  const date = new Date(dateString);
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-export default function MessageBubble({ message, showSender, isMe }: Props) {
+export default function MessageBubble({
+  message,
+  showSender,
+  isMe,
+  senderName,
+}: Props) {
   if (isMe) {
     return (
       <div className="flex items-end gap-2 max-w-[75%] self-end flex-row-reverse">
@@ -27,13 +31,9 @@ export default function MessageBubble({ message, showSender, isMe }: Props) {
           </div>
           <div className="flex items-center gap-1.5 mr-1">
             <span className="text-xs text-muted-foreground">
-              {formatTime(message.sentAt)}
+              {formatTime(message.created_at)}
             </span>
-            {message.status && (
-              <span className="text-xs text-primary font-medium">
-                {statusLabel[message.status]}
-              </span>
-            )}
+            {/* Si un jour on rajoute le statut de lecture côté Backend, on pourra le remettre ici */}
           </div>
         </div>
       </div>
@@ -45,7 +45,7 @@ export default function MessageBubble({ message, showSender, isMe }: Props) {
       {showSender ? (
         <Image
           src="/images/default-avatar.jpg"
-          alt={message.senderName}
+          alt={senderName}
           width={30}
           height={30}
           className="rounded-full shrink-0 mb-5"
@@ -56,14 +56,14 @@ export default function MessageBubble({ message, showSender, isMe }: Props) {
       <div className="flex flex-col gap-1">
         {showSender && (
           <span className="text-xs text-muted-foreground ml-1">
-            {message.senderName}
+            {senderName}
           </span>
         )}
         <div className="bg-muted rounded-2xl rounded-bl-sm px-4 py-2.5">
           <p className="text-sm leading-relaxed">{message.content}</p>
         </div>
         <span className="text-xs text-muted-foreground ml-1">
-          {formatTime(message.sentAt)}
+          {formatTime(message.created_at)}
         </span>
       </div>
     </div>

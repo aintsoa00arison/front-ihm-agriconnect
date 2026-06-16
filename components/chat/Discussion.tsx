@@ -1,6 +1,9 @@
 "use client";
 import Image from "next/image";
+import { useChat } from "@/app/services/chat/ChatContext";
+
 type DiscussionProps = {
+  id: string; // Nouvel attribut requis
   name: string;
   lastMessage: string;
   lastMessageDate: Date;
@@ -23,14 +26,21 @@ function formatRelativeTime(date: Date): string {
 }
 
 function Discussion({
+  id,
   name,
   lastMessage,
   lastMessageDate,
   hasNewMessage,
   isOnline,
 }: DiscussionProps) {
+  const { selectDiscussion, activeDiscussionId } = useChat();
+  const isActive = activeDiscussionId === id;
+
   return (
-    <div className="flex items-center gap-3 p-2 px-4 rounded-lg hover:bg-muted cursor-pointer">
+    <div
+      onClick={() => selectDiscussion(id)}
+      className={`flex items-center gap-3 p-2 px-4 rounded-lg cursor-pointer transition-colors ${isActive ? "bg-neutral-100" : "hover:bg-muted"}`}
+    >
       {/* Avatar */}
       <div className="shrink-0 relative">
         <Image
