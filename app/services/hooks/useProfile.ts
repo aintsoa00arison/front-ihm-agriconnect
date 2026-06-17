@@ -11,17 +11,14 @@ const transformProfileData = (data: any): ProfileData => {
   // ⭐ Extraire la photo de différentes sources possibles
   let photoUrl = data.photo || data.avatarUrl || null;
   
-  // Si photo est un objet avec .value (comme dans le backend)
   if (data.photo && typeof data.photo === 'object' && data.photo.value) {
     photoUrl = data.photo.value;
   }
   
-  // Si photo est un objet avec .url
   if (data.photo && typeof data.photo === 'object' && data.photo.url) {
     photoUrl = data.photo.url;
   }
   
-  // Si photo est une chaîne directe
   if (typeof data.photo === 'string') {
     photoUrl = data.photo;
   }
@@ -52,13 +49,13 @@ const transformProfileData = (data: any): ProfileData => {
     email = data.email.value;
   }
   
-  // ⭐ Extraire le pseudonyme (pour la redirection)
+  // ⭐ Extraire le pseudonyme
   const pseudonyme = data.pseudonyme || data.name || null;
   
   return {
     ...data,
     name: name,
-    pseudonyme: pseudonyme,  // ⭐ Ajouté pour la redirection
+    pseudonyme: pseudonyme,
     photo: photoUrl,
     avatarUrl: photoUrl,
     rating: rating,
@@ -71,7 +68,6 @@ export const useProfile = (userId?: string) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ⭐ Fonction pour charger le profil avec transformation
   const loadProfile = useCallback(async () => {
     try {
       setLoading(true);
@@ -91,7 +87,6 @@ export const useProfile = (userId?: string) => {
         }
       }
       
-      // ⭐ Transformer les données pour ajouter le champ photo
       const transformedData = transformProfileData(data);
       
       console.log('🔵 useProfile - Données brutes:', data);
@@ -142,7 +137,6 @@ export const useProfile = (userId?: string) => {
     return result;
   };
 
-  // ⭐ Fonction pour obtenir le pseudonyme facilement
   const getPseudonyme = useCallback(() => {
     return profile?.pseudonyme || profile?.name || null;
   }, [profile]);
@@ -155,6 +149,6 @@ export const useProfile = (userId?: string) => {
     updateIndividualProfile,
     updateEntrepriseProfile,
     refetch: loadProfile,
-    getPseudonyme,  // ⭐ Ajouté
+    getPseudonyme,
   };
 };

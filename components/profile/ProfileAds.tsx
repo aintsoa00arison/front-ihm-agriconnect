@@ -50,7 +50,7 @@ interface ToastState {
 
 interface ProfileAdsProps {
   onEditAd: (ad: AdItem) => void;
-  isOwner?: boolean;  // ⭐ Ajouté
+  isOwner?: boolean;
 }
 
 // Fonction pour formater la date
@@ -195,13 +195,13 @@ export default function ProfileAds({ onEditAd, isOwner = true }: ProfileAdsProps
 
   const handleAcceptInterested = (user: any, adName: string) => {
     showToast(
-      `Vous avez matché avec ${user.name} pour cette annonce.`,
+      `✅ Vous avez matché avec ${user.name} pour "${adName}"`,
       "success"
     );
   };
 
   const handleRejectInterested = (user: any) => {
-    showToast(`Vous avez rejeté l'intérêt de ${user.name}.`, "info");
+    showToast(`❌ Vous avez rejeté l'intérêt de ${user.name}.`, "info");
   };
 
   // Filtrer les annonces
@@ -262,7 +262,6 @@ export default function ProfileAds({ onEditAd, isOwner = true }: ProfileAdsProps
     );
   }
 
-  // ⭐ Modifier le titre en fonction du propriétaire
   const title = isOwner ? "Mes annonces" : "Annonces";
 
   return (
@@ -365,12 +364,12 @@ export default function ProfileAds({ onEditAd, isOwner = true }: ProfileAdsProps
               onEdit={onEditAd}
               onDelete={handleDeleteAd}
               onViewInterested={setSelectedAdForInterested}
-              isOwner={isOwner}  // ⭐ Passer isOwner à AdCard
+              isOwner={isOwner}
             />
           ))
         )}
 
-        {/* Modale intéressés */}
+        {/* ⭐ Modale intéressés - version simplifiée avec les callbacks */}
         <InterestedUsersModal
           ad={selectedAdForInterested}
           onClose={() => setSelectedAdForInterested(null)}

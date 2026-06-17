@@ -14,10 +14,10 @@ import { getUserId, getUserRole } from "../../app/services/lib/auth";
 
 interface AnnuairePageProps {
   onBack: () => void;
-  onViewProfile?: (userId: string) => void;  // ⭐ Changé: userId
+  onViewProfile?: (userId: string) => void;
 }
 
-// 🔥 Mapping des types de production backend -> affichage
+// Mapping des types de production backend -> affichage
 const PRODUCTION_TYPE_MAP: Record<string, string> = {
   'VEGETAL': 'Végétale',
   'ANIMAL': 'Elevage',
@@ -41,7 +41,7 @@ const transformProfileToUser = (profile: any): UserProfile => {
     role: role,
     location: profile.address || profile.registered_office || "Non spécifié",
     type: displayType,
-    rating: profile.rating || 0,
+    rating: typeof profile.rating === 'number' ? profile.rating : 0,
     avatar: profile.photo || profile.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
     description: profile.bio || profile.company_description || profile.description || "",
   };
@@ -61,32 +61,67 @@ export default function AnnuairePage({ onBack, onViewProfile }: AnnuairePageProp
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
   const currentUserId = getUserId();
 
-  // ⭐ Fonction pour rediriger vers le profil avec l'ID
+  // Fonction pour rediriger vers le profil avec l'ID
   const handleViewProfile = (userId: string) => {
     if (onViewProfile) {
       onViewProfile(userId);
     } else {
-      // Fallback avec l'ID
       const userRole = getUserRole();
       const basePath = userRole === 'fournisseur' || userRole === 'provider' ? '/f' : '/c';
       router.push(`${basePath}/profile/${userId}`);
     }
   };
 
-  // 🔥 Charger tous les utilisateurs depuis le backend
+  // Charger les utilisateurs via Top Providers + Top Collectors
   const loadAllUsers = useCallback(async () => {
     setIsLoading(true);
     try {
-      console.log('📦 Chargement de tous les utilisateurs...');
-      const results = await profileService.getAllUsers();
-      console.log('📦 Utilisateurs récupérés:', results.length);
+      console.log('📦 Chargement des utilisateurs via Top Providers + Top Collectors...');
       
-      const filteredUsers = results.filter(user => user.id !== currentUserId);
+      let results:any = [];
+      
+      try {
+        // ⭐ Essayer avec limit=20
+        const [providers, collectors] = await Promise.all([
+          profileService.getTopProviders(20),
+          profileService.getTopCollectors(20)
+        ]);
+        results = [...providers, ...collectors];
+        console.log('📦 Récupéré avec limit=20:', results.length);
+      } catch (error) {
+        console.warn('⚠️ Erreur avec limit=20, essai avec limit=5');
+        try {
+          // ⭐ Fallback avec limit=5
+          const [providers, collectors] = await Promise.all([
+            profileService.getTopProviders(5),
+            profileService.getTopCollectors(5)
+          ]);
+          results = [...providers, ...collectors];
+          console.log('📦 Récupéré avec limit=5:', results.length);
+        } catch (err) {
+          console.error('❌ Erreur même avec limit=5:', err);
+          results = [];
+        }
+      }
+      
+      console.log('📦 Utilisateurs récupérés au total:', results.length);
+      
+      if (!results || results.length === 0) {
+        console.warn('⚠️ Aucun utilisateur trouvé');
+        setUsers([]);
+        setAllUsers([]);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Filtrer l'utilisateur connecté
+      const filteredUsers = results.filter((user: any) => user.id !== currentUserId);
       const transformedUsers = filteredUsers.map(transformProfileToUser);
       
       setAllUsers(transformedUsers);
       setUsers(transformedUsers);
       console.log('📦 Utilisateurs transformés:', transformedUsers.length);
+      
     } catch (error) {
       console.error('❌ Erreur chargement des utilisateurs:', error);
       setAllUsers([]);
@@ -96,7 +131,7 @@ export default function AnnuairePage({ onBack, onViewProfile }: AnnuairePageProp
     }
   }, [currentUserId]);
 
-  // 🔥 Rechercher des utilisateurs par nom via le backend
+  // Rechercher des utilisateurs par nom
   const searchUsersByName = useCallback(async (name: string) => {
     console.log('🔍 searchUsersByName appelé avec:', name);
     
@@ -113,7 +148,7 @@ export default function AnnuairePage({ onBack, onViewProfile }: AnnuairePageProp
       console.log('📦 Résultats de recherche (brut):', results.length);
       
       // Exclure l'utilisateur connecté
-      const filteredResults = results.filter(user => user.id !== currentUserId);
+      const filteredResults = results.filter((user: any) => user.id !== currentUserId);
       console.log('📦 Après exclusion current user:', filteredResults.length);
       
       const transformedUsers = filteredResults.map(transformProfileToUser);
@@ -128,12 +163,12 @@ export default function AnnuairePage({ onBack, onViewProfile }: AnnuairePageProp
     }
   }, [currentUserId, loadAllUsers]);
 
-  // 🔥 Charger tous les utilisateurs au montage
+  // Charger tous les utilisateurs au montage
   useEffect(() => {
     loadAllUsers();
   }, [loadAllUsers]);
 
-  // 🔥 Écouter l'événement de recherche spécifique à l'annuaire
+  // Écouter l'événement de recherche
   useEffect(() => {
     const handleSearchEvent = (event: CustomEvent) => {
       const query = event.detail || "";
@@ -151,7 +186,7 @@ export default function AnnuairePage({ onBack, onViewProfile }: AnnuairePageProp
     };
   }, [searchUsersByName]);
 
-  // 🔥 Appliquer les filtres (type et rating) sur la liste actuelle
+  // Appliquer les filtres (type et rating) sur la liste actuelle
   useEffect(() => {
     if (users.length === 0) return;
 
