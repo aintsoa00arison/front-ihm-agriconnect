@@ -7,15 +7,20 @@ import { Plus, Store, MessageCircle, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import LogoutModal from "./LogoutModal";
+import { useUnreadCount } from "@/app/services/hooks/useUnreadCount";
 
 interface SidebarCollecteurProps {
   userSlug: string;
   userName: string;
 }
 
-export default function SidebarCollecteur({ userSlug, userName }: SidebarCollecteurProps) {
+export default function SidebarCollecteur({
+  userSlug,
+  userName,
+}: SidebarCollecteurProps) {
   const pathname = usePathname();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const totalUnread = useUnreadCount();
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -25,7 +30,12 @@ export default function SidebarCollecteur({ userSlug, userName }: SidebarCollect
 
   const navItems = [
     { label: "Catalogue", href: "/c", icon: Store, exact: true },
-    { label: "Messages", href: "/c/messages", icon: MessageCircle, badgeCount: 3 },
+    {
+      label: "Messages",
+      href: "/c/messages",
+      icon: MessageCircle,
+      badgeCount: totalUnread,
+    },
     // 🔥 Utiliser "me" pour le profil de l'utilisateur connecté
     { label: "Mon profil", href: `/c/profile/me?tab=annonces`, icon: User },
   ];
@@ -34,8 +44,8 @@ export default function SidebarCollecteur({ userSlug, userName }: SidebarCollect
     <>
       <nav className="w-70 hidden shrink-0 bg-white border-r border-border shadow-sm lg:flex flex-col pb-3 h-full overflow-y-auto">
         <div className="px-4 py-4 mb-6 border-b border-border">
-          <Button 
-            onClick={() => window.location.href = "/c?action=new"}
+          <Button
+            onClick={() => (window.location.href = "/c?action=new")}
             className="w-full h-12 shadow-sm font-bold gap-2 bg-[#0D631B] hover:bg-[#094713] text-white transition-all"
           >
             <Plus className="w-6 h-6" strokeWidth={2.5} />
@@ -46,17 +56,19 @@ export default function SidebarCollecteur({ userSlug, userName }: SidebarCollect
         <div className="flex flex-col grow justify-between">
           <div className="flex flex-col gap-1">
             {navItems.map((item) => {
-              const isActive = item.exact 
-                ? pathname === item.href 
-                : pathname.startsWith(item.href.split('?')[0]);
-              
+              const isActive = item.exact
+                ? pathname === item.href
+                : pathname.startsWith(item.href.split("?")[0]);
+
               return (
                 <a
                   key={item.href}
                   href={item.href}
                   className={cn(
                     "group flex items-center pl-6 pr-2 py-4 transition-all duration-200 relative",
-                    isActive ? "bg-light-bg text-[#0D631B]" : "text-label hover:bg-neutral",
+                    isActive
+                      ? "bg-light-bg text-[#0D631B]"
+                      : "text-label hover:bg-neutral",
                   )}
                 >
                   <item.icon
@@ -66,12 +78,17 @@ export default function SidebarCollecteur({ userSlug, userName }: SidebarCollect
                     )}
                     strokeWidth={1.8}
                   />
-                  <span className={cn("font-bold grow", isActive ? "text-[#0D631B]" : "text-label")}>
+                  <span
+                    className={cn(
+                      "font-bold grow",
+                      isActive ? "text-[#0D631B]" : "text-label",
+                    )}
+                  >
                     {item.label}
                   </span>
-                  {item.badgeCount && item.badgeCount > 0 && (
+                  {(item.badgeCount ?? 0) > 0 && (
                     <span className="mr-2 flex size-5 text-xs items-center justify-center rounded-full bg-red-500 font-bold text-white shadow-sm">
-                      {item.badgeCount}
+                      <p>{item.badgeCount}</p>
                     </span>
                   )}
                   {isActive && (

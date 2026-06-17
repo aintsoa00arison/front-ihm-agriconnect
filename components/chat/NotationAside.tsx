@@ -5,7 +5,7 @@ import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, Dr
 function NotationAside() {
   return (
     <Drawer direction="right">
-      <DrawerTrigger>
+      <DrawerTrigger asChild>
         <Button className="text-white font-semibold bg-secondary">
           <Star /> Evaluer le profil
         </Button>

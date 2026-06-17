@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Store, MessageCircle, User, LogOut, Menu, Star } from "lucide-react";
+import {
+  Plus,
+  Store,
+  MessageCircle,
+  User,
+  LogOut,
+  Menu,
+  Star,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import LogoutModal from "./LogoutModal";
@@ -14,6 +22,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { useUnreadCount } from "@/app/services/hooks/useUnreadCount";
 
 interface SidebarCollecteurProps {
   userSlug: string;
@@ -27,6 +36,7 @@ export default function MobileSidebarCollecteur({
   const pathname = usePathname();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const totalUnread = useUnreadCount();
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -40,7 +50,7 @@ export default function MobileSidebarCollecteur({
       label: "Messages",
       href: "/c/messages",
       icon: MessageCircle,
-      badgeCount: 3,
+      badgeCount: totalUnread,
     },
     {
       label: "Mon profil",
@@ -68,7 +78,6 @@ export default function MobileSidebarCollecteur({
             <span className="sr-only">Ouvrir le menu</span>
           </Button>
         </DrawerTrigger>
-
 
         <DrawerContent className="h-screen top-0 right-0 left-auto mt-0 w-72 rounded-none flex flex-col border-border border-r">
           <DrawerHeader className="text-left border-b border-border pb-6 pt-4">
@@ -123,9 +132,9 @@ export default function MobileSidebarCollecteur({
                     >
                       {item.label}
                     </span>
-                    {item.badgeCount && item.badgeCount > 0 && (
+                    {(item.badgeCount ?? 0) > 0 && (
                       <span className="mr-2 flex size-5 text-xs items-center justify-center rounded-full bg-red-500 font-bold text-white shadow-sm">
-                        {item.badgeCount}
+                        <p>{item.badgeCount}</p>
                       </span>
                     )}
                     {isActive && (

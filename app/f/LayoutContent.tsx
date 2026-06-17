@@ -88,16 +88,16 @@ export default function LayoutContent({
         <div className="flex items-center gap-3 order-1">
           <MobileSidebarFournisseur userSlug={userSlug} userName={userName} />
           <Link href="/">
-            <h1 className="hover:text-primary text-label duration-300 transition-colors font-bold text-2xl flex gap-1 items-center">
+            <h1 className="hover:text-primary text-label duration-300 transition-colors font-black text-3xl flex gap-1 items-center">
               Tsena
             </h1>
           </Link>
         </div>
 
         {/* 2. DROITE : Notifications */}
-        <div className="flex items-center gap-3 order-2 md:order-3">
+        {/* <div className="flex items-center gap-3 order-2 md:order-3">
           <NotificationMenu />
-        </div>
+        </div> */}
 
         {/* 3. MILIEU : Barre de recherche */}
         {showSearchBar && (
@@ -117,7 +117,8 @@ export default function LayoutContent({
       </header>
 
       <div className="grow flex min-h-0 overflow-hidden">
-        <div className="hidden md:block h-full">
+        {/* Protection pour la sidebar desktop */}
+        <div className="hidden lg:block h-full">
           <SidebarFournisseur userSlug={userSlug} userName={userName} />
         </div>
 
