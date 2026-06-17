@@ -11,7 +11,7 @@ interface AdPreviewProps {
   productName: string;
   quantityValue: string;
   quantityUnit: string;
-  price?: string; // 🔥 NOUVEAU: Prix
+  price?: string;
   location: string;
   description: string;
   mediaPreview: string;
@@ -36,10 +36,21 @@ export default function AdPreview({
     ? displayDescription.slice(0, 150) + "..."
     : displayDescription;
 
-  // 🔥 Formater le prix pour l'affichage
   const displayPrice = price && parseFloat(price) > 0 
     ? `${parseFloat(price).toLocaleString()} Ar`
     : "Gratuit";
+
+  // ⭐ DEBUG : Afficher le mode dans la console
+  console.log("🔵 AdPreview - mode:", mode);
+  console.log("🔵 AdPreview - est-ce une annonce?", mode === "annonce");
+
+  // ⭐ Déterminer le texte du badge en fonction du mode
+  const getPreviewLabel = () => {
+    if (mode === "annonce") {
+      return "Aperçu actuel de l'annonce";
+    }
+    return "Aperçu actuel de la demande";
+  };
 
   return (
     <div className="space-y-6">
@@ -55,7 +66,7 @@ export default function AdPreview({
       <div className="rounded-2xl border border-separator/10 overflow-hidden shadow-md bg-white">
         <div className="p-3.5 bg-green-50/80 border-b border-green-100/60 text-xs font-bold text-primary flex items-center gap-2">
           <Eye size={15} />
-          {mode === "annonce" ? "Aperçu actuel de l'annonce" : "Aperçu actuel de la demande"}
+          {getPreviewLabel()}
         </div>
 
         <div className="relative w-full h-64 bg-slate-100">
@@ -79,7 +90,6 @@ export default function AdPreview({
                 <MapPin size={13} />
                 {location || "Antananarivo, Madagascar"}
               </span>
-              {/* 🔥 NOUVEAU: Affichage du prix */}
               <span className="flex items-center gap-1 text-[#ffa000]">
                 <Tag size={13} />
                 {displayPrice}

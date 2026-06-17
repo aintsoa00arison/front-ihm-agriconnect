@@ -38,7 +38,7 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
   
   const { createPublication, updatePublication } = usePublications(userId || undefined);
 
-  // 🔥 États du formulaire
+  // États du formulaire
   const [productionType, setProductionType] = useState<ProductionType>("VEGETAL");
   const [productName, setProductName] = useState<string>("");
   const [quantityValue, setQuantityValue] = useState<string>("");
@@ -50,6 +50,7 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
   const [mediaPreview, setMediaPreview] = useState<string>(
     "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=800"
   );
+  const [hasExistingPhoto, setHasExistingPhoto] = useState<boolean>(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1000);
@@ -63,7 +64,10 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
       setPrice(initialData.price || "");
       setLocation(initialData.location || "");
       setDescription(initialData.description || "");
-      if (initialData.mediaUrl) setMediaPreview(initialData.mediaUrl);
+      if (initialData.mediaUrl) {
+        setMediaPreview(initialData.mediaUrl);
+        setHasExistingPhoto(true);
+      }
       if (initialData.quantityValue && initialData.quantityUnit) {
         setQuantityValue(initialData.quantityValue);
         setQuantityUnit(initialData.quantityUnit);
@@ -79,6 +83,7 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
 
   const handleFileSelect = (file: File) => {
     setImageFile(file);
+    setHasExistingPhoto(false);
     const reader = new FileReader();
     reader.onloadend = () => {
       if (typeof reader.result === "string") {
@@ -102,12 +107,19 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Vérification des champs obligatoires
     if (!productName.trim() || !quantityValue.trim() || !location.trim()) {
       toast.error("Veuillez remplir tous les champs obligatoires.");
       return;
     }
 
-    if (isProvider && !imageFile) {
+    // Photo obligatoire UNIQUEMENT pour les fournisseurs en création
+    if (isProvider && !isEditMode && !imageFile) {
+      toast.error("Veuillez ajouter une photo pour votre annonce.");
+      return;
+    }
+
+    if (isProvider && isEditMode && !imageFile && !hasExistingPhoto) {
       toast.error("Veuillez ajouter une photo pour votre annonce.");
       return;
     }
@@ -136,20 +148,16 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
         publicationData.photo = imageFile;
       }
 
-      console.log('📤 Données envoyées au backend:', publicationData);
-
       let result;
       if (isEditMode && initialData?.id) {
-        // 🔥 Pour la mise à jour, inclure sender_id
         result = await updatePublication(initialData.id, {
           ...publicationData,
-          sender_id: userId, // 🔥 Ajouté pour l'update
+          sender_id: userId,
         });
       } else {
         result = await createPublication(publicationData);
       }
 
-      // 🔥 Le toast est déjà géré dans le hook, on ne le refait pas ici
       if (result.success) {
         const displayType = convertToDisplay(productionType);
         
@@ -168,10 +176,16 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
           mediaUrl: mediaPreview,
         });
 
-        // 🔥 Redirection sans toast supplémentaire
+        toast.success(isEditMode ? "Annonce modifiée avec succès" : "Annonce publiée avec succès");
+
+        // ⭐ REDIRECTION VERS /f/profile/me?tab=annonces
         setTimeout(() => {
-          const redirectPath = isAnnonce ? '/f' : '/c';
-          router.push(redirectPath);
+          if (isEditMode) {
+            router.push('/f/profile/me?tab=annonces');
+          } else {
+            const redirectPath = isAnnonce ? '/f' : '/c';
+            router.push(redirectPath);
+          }
         }, 1500);
       }
     } catch (error: any) {
@@ -181,6 +195,8 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
       setIsSubmitting(false);
     }
   };
+
+  const isPhotoRequired = isProvider && !isEditMode;
 
   return (
     <div className="w-full max-w-6xl mx-auto pb-12 p-6 animate-in fade-in duration-300">
@@ -210,13 +226,13 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
                   }
                 </p>
                 {isCollector && (
-                  <p className="text-xs text-amber-600 font-medium mt-1">
-                    ⚠️ Les collecteurs ne peuvent pas ajouter de photo (demande d'achat).
+                  <p className="text-xs text-slate-500 not-last:font-medium mt-1">
+                     Les demandes d'achat ne peuvent pas inclure de photo
                   </p>
                 )}
-                {isProvider && (
-                  <p className="text-xs text-green-600 font-medium mt-1">
-                    ✅ Les fournisseurs doivent ajouter une photo (offre de vente).
+                {isProvider && isEditMode && (
+                  <p className="text-xs text-slate-500 font-medium mt-1">
+                     Vous pouvez changer la photo en en sélectionnant une nouvelle
                   </p>
                 )}
               </div>
@@ -273,14 +289,28 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
 
                 <DescriptionTextarea value={description} onChange={setDescription} />
                 
-                <MediaUpload 
-                  onFileSelect={handleFileSelect} 
-                  disabled={isCollector}
-                />
+                {/* UPLOAD PHOTO - UNIQUEMENT POUR LES FOURNISSEURS */}
+                {isProvider && (
+                  <div>
+             
+                    <MediaUpload 
+                      onFileSelect={handleFileSelect} 
+                      disabled={false}
+                    />
+                    <p className="text-xs text-slate-400 font-medium mt-1.5">
+                      {isEditMode 
+                        ? "Sélectionnez une nouvelle photo pour remplacer l'ancienne (optionnel)"
+                        : "Ajoutez une photo pour illustrer votre annonce"
+                      }
+                    </p>
+                  </div>
+                )}
+                
+                {/* POUR LES COLLECTEURS : message seulement */}
                 {isCollector && (
-                  <p className="text-xs text-amber-600 font-medium -mt-2">
-                    ⚠️ Les demandes d'achat ne peuvent pas inclure de photo
-                  </p>
+                  <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-4 text-sm text-amber-700">
+                    <span className="font-medium"></span> Les demandes d'achat ne peuvent pas inclure de photo.
+                  </div>
                 )}
               </div>
 
@@ -295,7 +325,7 @@ export default function AdForm({ mode, initialData, onCancel, onSave }: AdFormPr
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isSubmitting || (isProvider && !imageFile)}
+                  disabled={isSubmitting || (isProvider && !isEditMode && !imageFile)}
                   className="bg-primary hover:opacity-90 text-white font-bold h-11 px-8 rounded-xl shadow-sm gap-2 transition-all disabled:opacity-50"
                 >
                   <Check size={18} strokeWidth={2.5} />

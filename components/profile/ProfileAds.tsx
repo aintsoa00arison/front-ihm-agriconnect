@@ -24,7 +24,7 @@ import AdCard from "./AdCard";
 import { usePublications } from "../../app/services/hooks/usePublication";
 import { getUserId } from "../../app/services/lib/auth";
 
-// 🔥 Types
+// Types
 export interface AdItem {
   id: string;
   productName: string;
@@ -50,7 +50,7 @@ interface ProfileAdsProps {
   onEditAd: (ad: AdItem) => void;
 }
 
-// 🔥 Fonction pour formater la date
+// Fonction pour formater la date
 const formatTimeAgo = (date: Date): string => {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -90,7 +90,7 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
   const [toasts, setToasts] = useState<ToastState[]>([]);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
 
-  // 🔥 Charger les publications au montage et quand userId change
+  // Charger les publications au montage et quand userId change
   useEffect(() => {
     if (userId) {
       setIsFirstLoad(true);
@@ -103,14 +103,14 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
     }
   }, [userId, loadUserPublications]);
 
-  // 🔥 Recharger quand le userId change
+  // Recharger quand le userId change
   useEffect(() => {
     if (userId) {
       loadUserPublications();
     }
   }, [userId]);
 
-  // 🔥 Transformer les publications en AdItem
+  // Transformer les publications en AdItem
   const ads: AdItem[] = (publications || []).map(pub => ({
     id: pub.id,
     productName: pub.titre || "Sans titre",
@@ -181,7 +181,9 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
       const result = await deletePublication(selectedAdForDelete.id);
       if (result.success) {
         setSelectedAdForDelete(null);
-        showToast("L'annonce a été supprimée avec succès.", "success");
+        // ⭐ SUPPRESSION DU TOAST ICI
+        // La suppression est déjà gérée par le hook deletePublication
+        // Pas de toast supplémentaire
         setTimeout(() => {
           loadUserPublications(true);
         }, 300);
@@ -202,7 +204,7 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
     showToast(`Vous avez rejeté l'intérêt de ${user.name}.`, "info");
   };
 
-  // 🔥 Filtrer les annonces
+  // Filtrer les annonces
   const getFilteredAds = () => {
     let filtered = [...ads];
 
@@ -240,12 +242,12 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
 
   const filteredAds = getFilteredAds();
 
-  // 🔥 Rafraîchir
+  // Rafraîchir
   const handleRefresh = async () => {
     await refreshPublications();
   };
 
-  // 🔥 Skeleton Loader
+  // Skeleton Loader
   if (loading && isFirstLoad) {
     return (
       <div className="space-y-6">
@@ -371,7 +373,7 @@ export default function ProfileAds({ onEditAd }: ProfileAdsProps) {
           onReject={handleRejectInterested}
         />
 
-        {/* 🔥 AlertDialog avec VisuallyHidden corrigé */}
+        {/* AlertDialog */}
         <AlertDialog open={!!selectedAdForDelete} onOpenChange={() => setSelectedAdForDelete(null)}>
           <AlertDialogContent className="rounded-2xl max-w-md p-6">
             <VisuallyHidden>

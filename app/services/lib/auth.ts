@@ -1,5 +1,5 @@
 // lib/auth.ts
-"use client"; // 🔥 Ajouter "use client" en haut
+"use client";
 
 import { decodeToken } from '../auth/authService';
 
@@ -12,11 +12,9 @@ export interface DecodedToken {
   email?: string;
 }
 
-// 🔥 Vérifier si on est côté client
 const isBrowser = typeof window !== 'undefined';
 
 export const getUserFromToken = () => {
-  // 🔥 Vérifier si on est côté client
   if (!isBrowser) {
     return null;
   }
@@ -41,7 +39,6 @@ export const getUserFromToken = () => {
 };
 
 export const getUserId = (): string | null => {
-  // 🔥 Vérifier si on est côté client
   if (!isBrowser) {
     return null;
   }
@@ -55,23 +52,54 @@ export const getUserId = (): string | null => {
   }
 };
 
+// ⭐ NOUVELLE FONCTION : Normaliser le rôle
+export const normalizeRole = (role: string | null): string | null => {
+  if (!role) return null;
+  
+  const normalized = role.toLowerCase();
+  
+  // 🔥 Mapping des rôles
+  if (normalized === 'fournisseur' || normalized === 'provider' || normalized === 'supplier') {
+    return 'fournisseur';
+  }
+  
+  if (normalized === 'collecteur' || normalized === 'collector') {
+    return 'collecteur';
+  }
+  
+  if (normalized === 'admin') {
+    return 'admin';
+  }
+  
+  if (normalized === 'worker') {
+    return 'worker';
+  }
+  
+  return normalized;
+};
+
 export const getUserRole = (): string | null => {
-  // 🔥 Vérifier si on est côté client
   if (!isBrowser) {
     return null;
   }
   
   try {
-    // 🔥 D'abord vérifier dans localStorage
+    // D'abord vérifier dans localStorage
     const storedRole = localStorage.getItem('user_role');
-    if (storedRole) return storedRole;
+    if (storedRole) {
+      // ⭐ Normaliser le rôle stocké
+      return normalizeRole(storedRole);
+    }
     
     // Sinon, extraire du token
     const user = getUserFromToken();
     if (user?.userType) {
+      const normalized = normalizeRole(user.userType);
       // Stocker pour la prochaine fois
-      localStorage.setItem('user_role', user.userType);
-      return user.userType;
+      if (normalized) {
+        localStorage.setItem('user_role', normalized);
+      }
+      return normalized;
     }
     
     return null;
@@ -81,19 +109,33 @@ export const getUserRole = (): string | null => {
   }
 };
 
+// ⭐ NOUVELLE FONCTION : Vérifier si l'utilisateur est un fournisseur
+export const isProvider = (): boolean => {
+  const role = getUserRole();
+  return role === 'fournisseur';
+};
+
+// ⭐ NOUVELLE FONCTION : Vérifier si l'utilisateur est un collecteur
+export const isCollector = (): boolean => {
+  const role = getUserRole();
+  return role === 'collecteur';
+};
+
 export const setUserRole = (role: string) => {
-  // 🔥 Vérifier si on est côté client
   if (!isBrowser) return;
   
   try {
-    localStorage.setItem('user_role', role);
+    // ⭐ Normaliser avant de stocker
+    const normalized = normalizeRole(role);
+    if (normalized) {
+      localStorage.setItem('user_role', normalized);
+    }
   } catch (error) {
     console.error('Erreur lors du stockage du rôle:', error);
   }
 };
 
 export const isAuthenticated = (): boolean => {
-  // 🔥 Vérifier si on est côté client
   if (!isBrowser) {
     return false;
   }
@@ -118,7 +160,7 @@ export const deduceRoleFromEmail = (email: string): string | null => {
   
   const cleanEmail = email.toLowerCase();
   if (cleanEmail.includes("collecteur") || cleanEmail.includes("collector")) {
-    return "collector";
+    return "collecteur";
   }
   if (cleanEmail.includes("fournisseur") || cleanEmail.includes("provider")) {
     return "fournisseur";
@@ -133,7 +175,6 @@ export const isUUID = (str: string): boolean => {
 };
 
 export const logout = () => {
-  // 🔥 Vérifier si on est côté client
   if (!isBrowser) return;
   
   try {
@@ -149,7 +190,6 @@ export const logout = () => {
   }
 };
 
-// 🔥 Fonction utilitaire supplémentaire pour récupérer le token
 export const getToken = (): string | null => {
   if (!isBrowser) return null;
   
@@ -161,7 +201,6 @@ export const getToken = (): string | null => {
   }
 };
 
-// 🔥 Fonction utilitaire pour stocker le token
 export const setToken = (token: string): void => {
   if (!isBrowser) return;
   

@@ -31,7 +31,6 @@ export const usePublications = (userId?: string) => {
     return [];
   };
 
-  // 🔥 Charger les publications selon le rôle de l'utilisateur
   const loadPublicationsByRole = useCallback(async (showToast: boolean = false) => {
     const currentUserId = userId || getUserId();
     
@@ -197,6 +196,7 @@ export const usePublications = (userId?: string) => {
     }
   }, [userId]);
 
+  // 🔥 createPublication - GARDE LE TOAST (création)
   const createPublication = useCallback(async (data: CreatePublicationData) => {
     try {
       const response = await publicationService.createPublication(data);
@@ -219,19 +219,21 @@ export const usePublications = (userId?: string) => {
     }
   }, [loadPublicationsByRole]);
 
-  // 🔥 updatePublication corrigé avec toast unique
+  // 🔥 updatePublication - SUPPRIME LE TOAST (géré par le formulaire)
   const updatePublication = useCallback(async (publicationId: string, data: UpdatePublicationData) => {
     try {
       const response = await publicationService.updatePublication(publicationId, data);
       
-      // 🔥 Un seul toast de succès
+      // ⭐ SUPPRESSION DU TOAST ICI - Il est géré par AdForm
+      // On laisse juste le refresh
       if (response.success) {
-        toast.success(response.message || "Publication mise à jour avec succès !");
+        // Pas de toast ici, c'est géré par le formulaire
         setTimeout(() => {
           loadPublicationsByRole(true);
         }, 500);
         return response;
       } else {
+        // ⭐ On garde les erreurs pour les cas d'échec
         toast.error(response.message || "Erreur lors de la mise à jour");
         return response;
       }
@@ -243,6 +245,7 @@ export const usePublications = (userId?: string) => {
     }
   }, [loadPublicationsByRole]);
 
+  // 🔥 deletePublication - GARDE LE TOAST (suppression)
   const deletePublication = useCallback(async (publicationId: string) => {
     const currentUserId = userId || getUserId();
     
@@ -293,7 +296,7 @@ export const usePublications = (userId?: string) => {
     initialLoadDone.current = false;
   }, []);
 
-  // 🔥 Charger au montage et quand userId change
+  // Charger au montage et quand userId change
   useEffect(() => {
     isMounted.current = true;
     
@@ -333,7 +336,7 @@ export const usePublications = (userId?: string) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  // 🔥 Réinitialiser le flag quand userId change
+  // Réinitialiser le flag quand userId change
   useEffect(() => {
     initialLoadDone.current = false;
   }, [userId]);
