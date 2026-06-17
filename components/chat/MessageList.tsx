@@ -1,6 +1,5 @@
 "use client";
 import { useChat } from "@/app/services/chat/ChatContext";
-import { useAuth } from "@/app/services/hooks/useAuth";
 import MessageBubble from "./MessageBubble";
 import { useEffect, useRef } from "react";
 
@@ -40,7 +39,6 @@ export default function MessageList() {
     {} as Record<string, typeof messages>,
   );
 
-
   return (
     <div
       ref={scrollRef}
@@ -67,6 +65,7 @@ export default function MessageList() {
                 isMe={isMe}
                 showSender={showSender}
                 senderName={isMe ? "Moi" : interlocutorName}
+                senderPhoto={activeChat?.interlocutor_photo}
               />
             );
           })}

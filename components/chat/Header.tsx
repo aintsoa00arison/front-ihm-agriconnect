@@ -16,7 +16,7 @@ import BasicRating from "../rating-group";
 import { useChat } from "@/app/services/chat/ChatContext";
 
 function Header() {
-  const { discussions, activeDiscussionId } = useChat();
+  const { discussions, activeDiscussionId, currentUserId } = useChat();
   const activeChat = discussions.find((d) => d.id === activeDiscussionId);
   const name =
     activeChat?.entreprise_legal_name ||
@@ -29,11 +29,11 @@ function Header() {
         {/* Avatar */}
         <div className="shrink-0 relative">
           <Image
-            src="/images/default-avatar.jpg"
-            alt="Nom de la discussion"
+            src={activeChat?.interlocutor_photo || "/images/default-avatar.jpg"}
+            alt={name}
             width={35}
             height={35}
-            className="rounded-full"
+            className="rounded-full object-cover"
           />
           <span className="absolute bottom-0 right-0 size-3 bg-green-500 border-2 border-white rounded-full" />
         </div>
@@ -82,7 +82,10 @@ function Header() {
                   </p>
                 </CardContent>
               </Card>
-              <BasicRating />
+              <BasicRating
+                assessorId={currentUserId ?? ""}
+                assesseeId={activeChat?.interlocutor_id ?? ""}
+              />
             </div>
           </DrawerContent>
         </Drawer>

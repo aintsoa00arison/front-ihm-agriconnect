@@ -7,7 +7,8 @@ type Props = {
   message: ChatMessage;
   showSender: boolean;
   isMe: boolean;
-  senderName: string; // On le passe en prop depuis MessageList
+  senderName: string;
+  senderPhoto?: string;
 };
 
 // Fonction pour formater une date ISO string (ex: "2024-09-12T09:12:00Z")
@@ -21,6 +22,7 @@ export default function MessageBubble({
   showSender,
   isMe,
   senderName,
+  senderPhoto,
 }: Props) {
   if (isMe) {
     return (
@@ -44,11 +46,11 @@ export default function MessageBubble({
     <div className="flex items-end gap-2 max-w-[75%]">
       {showSender ? (
         <Image
-          src="/images/default-avatar.jpg"
+          src={senderPhoto || "/images/default-avatar.jpg"}
           alt={senderName}
           width={30}
           height={30}
-          className="rounded-full shrink-0 mb-5"
+          className="rounded-full shrink-0 mb-5 object-cover"
         />
       ) : (
         <div className="w-7.5 shrink-0" />

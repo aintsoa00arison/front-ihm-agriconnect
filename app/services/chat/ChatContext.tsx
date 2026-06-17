@@ -17,6 +17,8 @@ export type DiscussionSummary = {
   entreprise_legal_name?: string;
   last_message?: string;
   is_online?: boolean;
+  interlocutor_photo?: string;
+  interlocutor_id?: string;
 };
 
 export type ChatMessage = {

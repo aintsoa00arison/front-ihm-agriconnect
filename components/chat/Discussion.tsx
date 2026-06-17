@@ -3,8 +3,9 @@ import Image from "next/image";
 import { useChat } from "@/app/services/chat/ChatContext";
 
 type DiscussionProps = {
-  id: string; // Nouvel attribut requis
+  id: string;
   name: string;
+  photo?: string;
   lastMessage: string;
   lastMessageDate: Date;
   hasNewMessage: boolean;
@@ -30,6 +31,7 @@ function Discussion({
   name,
   lastMessage,
   lastMessageDate,
+  photo,
   hasNewMessage,
   isOnline,
 }: DiscussionProps) {
@@ -44,11 +46,11 @@ function Discussion({
       {/* Avatar */}
       <div className="shrink-0 relative">
         <Image
-          src="/images/default-avatar.jpg"
+          src={photo || "/images/default-avatar.jpg"}
           alt={name}
           width={50}
           height={50}
-          className="rounded-full"
+          className="rounded-full object-cover"
         />
         {isOnline && (
           <span className="absolute bottom-0 right-0 size-3 bg-green-500 border-2 border-white rounded-full" />

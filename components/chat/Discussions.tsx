@@ -23,6 +23,7 @@ function Discussions() {
             lastMessageDate={new Date()}
             hasNewMessage={discussion.unread_count > 0}
             isOnline={discussion.is_online ?? false}
+            photo={discussion.interlocutor_photo}
           />
         );
       })}
