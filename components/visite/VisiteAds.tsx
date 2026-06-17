@@ -1,30 +1,20 @@
-// app/profile/ProfileAds.tsx
-
+// app/profile/VisiteAds.tsx
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Bell, X, ArrowUp, AlertTriangle, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import ProfileFilters from "./ProfileFilters";
-import InterestedUsersModal from "./InterestedUsersModal";
-import AdCard from "./AdCard";
-import { usePublications } from "../../app/services/hooks/usePublication";
+import ProfileFilters from "../profile/ProfileFilters";
+import InterestedUsersModal from "../profile/InterestedUsersModal";
+import VisiteAdCard from "./VisiteAdCard";
+import { publicationService } from "../../app/services/publication/publicationService";
 import { getUserId } from "../../app/services/lib/auth";
+import { toast } from "sonner";
 
 // Types
 export interface AdItem {
@@ -40,6 +30,7 @@ export interface AdItem {
   date: Date;
   interestedCount: number;
   interestedUsers: any[];
+  sender_id?: string;
 }
 
 interface ToastState {
@@ -48,9 +39,9 @@ interface ToastState {
   type: "success" | "info" | "error";
 }
 
-interface ProfileAdsProps {
-  onEditAd: (ad: AdItem) => void;
-  isOwner?: boolean;  // ⭐ Ajouté
+interface VisiteAdsProps {
+  userId: string;
+  onViewProfile: (userId: string) => void;
 }
 
 // Fonction pour formater la date
@@ -69,17 +60,13 @@ const formatTimeAgo = (date: Date): string => {
   return `il y a ${Math.floor(diffDay / 30)} mois`;
 };
 
-export default function ProfileAds({ onEditAd, isOwner = true }: ProfileAdsProps) {
-  const userId = getUserId();
-  const { 
-    publications, 
-    loading, 
-    isRefreshing,
-    isInitialized,
-    loadUserPublications, 
-    deletePublication,
-    refreshPublications
-  } = usePublications(userId || undefined);
+export default function VisiteAds({ userId, onViewProfile }: VisiteAdsProps) {
+  const currentUserId = getUserId();
+  const [publications, setPublications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const [filterType, setFilterType] = useState<string>("all");
   const [filterDate, setFilterDate] = useState<string>("all");
@@ -88,30 +75,75 @@ export default function ProfileAds({ onEditAd, isOwner = true }: ProfileAdsProps
   const [searchQuery, setSearchQuery] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const [selectedAdForInterested, setSelectedAdForInterested] = useState<AdItem | null>(null);
-  const [selectedAdForDelete, setSelectedAdForDelete] = useState<AdItem | null>(null);
   const [expandedAdIds, setExpandedAdIds] = useState<Record<string, boolean>>({});
   const [toasts, setToasts] = useState<ToastState[]>([]);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
 
-  // Charger les publications au montage et quand userId change
-  useEffect(() => {
-    if (userId) {
-      setIsFirstLoad(true);
-      const timer = setTimeout(() => {
-        loadUserPublications(true);
-        setIsFirstLoad(false);
-      }, 200);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [userId, loadUserPublications]);
+  // ⭐ LOGS DE DÉBOGAGE - Afficher les IDs
+  console.log('🔴🔴🔴 [VisiteAds] COMPOSANT MOUNTÉ');
+  console.log('🔴🔴🔴 [VisiteAds] userId REÇU EN PROP:', userId);
+  console.log('🔴🔴🔴 [VisiteAds] currentUserId (connecté):', currentUserId);
+  console.log('🔴🔴🔴 [VisiteAds] Les IDs sont-ils différents?', userId !== currentUserId);
+  console.log('🔴🔴🔴 [VisiteAds] userId type:', typeof userId);
+  console.log('🔴🔴🔴 [VisiteAds] userId length:', userId?.length);
 
-  // Recharger quand le userId change
+  // ⭐ Charger les publications de l'utilisateur visité
+  const loadUserPublications = useCallback(async (showToast: boolean = false) => {
+    // ⭐ CRITIQUE : Utiliser userId de la prop, PAS currentUserId
+    const targetUserId = userId;
+    
+    console.log('🔴🔴🔴 [loadUserPublications] targetUserId (userId prop):', targetUserId);
+    console.log('🔴🔴🔴 [loadUserPublications] currentUserId (connecté):', currentUserId);
+    
+    if (!targetUserId) {
+      console.warn('⚠️ [loadUserPublications] userId manquant');
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      console.log(`📡 [loadUserPublications] Chargement des publications pour l'utilisateur visité: ${targetUserId}`);
+      // ⭐ Utiliser targetUserId (la prop) et non currentUserId
+      const data = await publicationService.getUserPublications(targetUserId);
+      
+      console.log(`📦 [loadUserPublications] ${data?.length || 0} publications récupérées pour l'utilisateur ${targetUserId}`);
+      console.log('📦 [loadUserPublications] Publications:', data);
+      
+      setPublications(data || []);
+      setIsInitialized(true);
+    } catch (err: any) {
+      const errorMsg = err.message || "Erreur lors du chargement des publications";
+      setError(errorMsg);
+      console.error('❌ Erreur loadUserPublications:', err);
+      if (showToast) {
+        toast.error(errorMsg);
+      }
+    } finally {
+      setLoading(false);
+      setIsFirstLoad(false);
+    }
+  }, [userId]); // ⭐ Dépendance sur userId de la prop
+
+  // ⭐ Rafraîchir les publications
+  const refreshPublications = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await loadUserPublications(true);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [loadUserPublications]);
+
+  // Charger les publications au montage ou quand userId change
   useEffect(() => {
+    console.log('🔴🔴🔴 [useEffect] userId a changé:', userId);
     if (userId) {
       loadUserPublications();
     }
-  }, [userId]);
+  }, [userId, loadUserPublications]);
 
   // Transformer les publications en AdItem
   const ads: AdItem[] = (publications || []).map(pub => ({
@@ -122,11 +154,12 @@ export default function ProfileAds({ onEditAd, isOwner = true }: ProfileAdsProps
     location: pub.localisation || "Non spécifié",
     description: pub.description || "",
     mediaUrl: pub.photo || "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=800",
-    price: pub.price ? `${pub.price} Ar` : "Gratuit",
+    price: pub.prix ? `${pub.prix} Ar` : "Gratuit",
     timeAgo: pub.createdAt ? formatTimeAgo(new Date(pub.createdAt)) : "Récent",
     date: pub.createdAt ? new Date(pub.createdAt) : new Date(),
     interestedCount: 0,
     interestedUsers: [],
+    sender_id: pub.sender_id || '',
   }));
 
   // Écouter la recherche
@@ -173,24 +206,6 @@ export default function ProfileAds({ onEditAd, isOwner = true }: ProfileAdsProps
 
   const toggleDescription = (id: string) => {
     setExpandedAdIds((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const handleDeleteAd = (ad: AdItem) => {
-    setSelectedAdForDelete(ad);
-  };
-
-  const confirmDelete = async () => {
-    if (selectedAdForDelete && userId) {
-      const result = await deletePublication(selectedAdForDelete.id);
-      if (result.success) {
-        setSelectedAdForDelete(null);
-        setTimeout(() => {
-          loadUserPublications(true);
-        }, 300);
-      } else {
-        showToast(result.message, "error");
-      }
-    }
   };
 
   const handleAcceptInterested = (user: any, adName: string) => {
@@ -242,11 +257,6 @@ export default function ProfileAds({ onEditAd, isOwner = true }: ProfileAdsProps
 
   const filteredAds = getFilteredAds();
 
-  // Rafraîchir
-  const handleRefresh = async () => {
-    await refreshPublications();
-  };
-
   // Skeleton Loader
   if (loading && isFirstLoad) {
     return (
@@ -261,9 +271,6 @@ export default function ProfileAds({ onEditAd, isOwner = true }: ProfileAdsProps
       </div>
     );
   }
-
-  // ⭐ Modifier le titre en fonction du propriétaire
-  const title = isOwner ? "Mes annonces" : "Annonces";
 
   return (
     <TooltipProvider>
@@ -306,10 +313,10 @@ export default function ProfileAds({ onEditAd, isOwner = true }: ProfileAdsProps
         {/* En-tête */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h2 className="text-lg font-bold text-slate-900">{title}</h2>
+            <h2 className="text-lg font-bold text-slate-900">Annonces</h2>
           </div>
           <button
-            onClick={handleRefresh}
+            onClick={refreshPublications}
             disabled={isRefreshing}
             className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-[#2e7d32] transition-colors disabled:opacity-50"
           >
@@ -346,9 +353,7 @@ export default function ProfileAds({ onEditAd, isOwner = true }: ProfileAdsProps
           <div className="text-center py-12 text-slate-400 font-medium bg-white rounded-2xl border border-dashed">
             {searchQuery 
               ? `Aucune annonce ne correspond à votre recherche "${searchQuery}"`
-              : isOwner 
-                ? "Vous n'avez pas encore publié d'annonces."
-                : "Cet utilisateur n'a pas encore publié d'annonces."}
+              : "Cet utilisateur n'a pas encore publié d'annonces."}
           </div>
         ) : filteredAds.length === 0 ? (
           <div className="text-center py-12">
@@ -357,15 +362,14 @@ export default function ProfileAds({ onEditAd, isOwner = true }: ProfileAdsProps
           </div>
         ) : (
           filteredAds.map((ad) => (
-            <AdCard
+            <VisiteAdCard
               key={ad.id}
               ad={ad}
               isExpanded={!!expandedAdIds[ad.id]}
               onToggleDescription={toggleDescription}
-              onEdit={onEditAd}
-              onDelete={handleDeleteAd}
+              onViewProfile={onViewProfile}
               onViewInterested={setSelectedAdForInterested}
-              isOwner={isOwner}  // ⭐ Passer isOwner à AdCard
+              userId={currentUserId || ''}
             />
           ))
         )}
@@ -377,44 +381,6 @@ export default function ProfileAds({ onEditAd, isOwner = true }: ProfileAdsProps
           onAccept={handleAcceptInterested}
           onReject={handleRejectInterested}
         />
-
-        {/* AlertDialog */}
-        <AlertDialog open={!!selectedAdForDelete} onOpenChange={() => setSelectedAdForDelete(null)}>
-          <AlertDialogContent className="rounded-2xl max-w-md p-6">
-            <VisuallyHidden>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Confirmation de suppression</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Cette action est irréversible
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-            </VisuallyHidden>
-            
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className="size-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center">
-                <AlertTriangle size={24} />
-              </div>
-              <div className="space-y-2">
-                <h2 className="text-lg font-bold text-slate-900">Supprimer l'annonce ?</h2>
-                <p className="text-xs text-slate-500">Cette action est irréversible.</p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 w-full pt-2">
-                <button
-                  onClick={() => setSelectedAdForDelete(null)}
-                  className="flex-1 px-4 py-2.5 rounded-xl font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors text-sm"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  className="flex-1 px-4 py-2.5 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white transition-colors text-sm"
-                >
-                  Supprimer
-                </button>
-              </div>
-            </div>
-          </AlertDialogContent>
-        </AlertDialog>
 
         {/* Bouton scroll avec Tooltip */}
         {showScrollButton && (

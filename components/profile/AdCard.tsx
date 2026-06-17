@@ -1,7 +1,10 @@
+// components/AdCard.tsx
+
 "use client";
 
 import { useState } from "react";
-import { MoreVertical, Edit2, Trash2, Scale, MapPin, ChevronDown, ChevronUp } from "lucide-react";
+import { MoreVertical, Edit2, Trash2, Scale, MapPin, ChevronDown, ChevronUp, Heart } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface InterestedUser {
   id: string;
@@ -33,6 +36,7 @@ interface AdCardProps {
   onEdit: (ad: AdItem) => void;
   onDelete: (ad: AdItem) => void;
   onViewInterested: (ad: AdItem) => void;
+  isOwner?: boolean;
 }
 
 export default function AdCard({
@@ -42,13 +46,21 @@ export default function AdCard({
   onEdit,
   onDelete,
   onViewInterested,
+  isOwner = true,
 }: AdCardProps) {
   const [showMenu, setShowMenu] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
 
-  // 🔥 Raccourcir la description si trop longue
+  // Raccourcir la description si trop longue
   const getShortDescription = (text: string, maxLength: number = 120) => {
     if (text.length <= maxLength) return text;
     return text.slice(0, maxLength) + '...';
+  };
+
+  // Gestion du like
+  const handleLike = () => {
+    setIsLiked(!isLiked);
+    // TODO: Appeler l'API pour liker/déliker
   };
 
   return (
@@ -62,7 +74,6 @@ export default function AdCard({
         <span className="absolute top-4 left-4 bg-[#2e7d32] text-white text-[10px] font-extrabold px-3.5 py-1.5 rounded-full shadow-md uppercase tracking-wider">
           {ad.productionType}
         </span>
-        {/* Badge "Annonce" */}
         <span className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-slate-700 text-[9px] font-bold px-3 py-1 rounded-full shadow-md">
           {ad.timeAgo}
         </span>
@@ -114,6 +125,7 @@ export default function AdCard({
       </div>
 
       <div className="border-t border-slate-100 px-5 md:px-6 py-3 md:py-4 flex items-center justify-between gap-4 bg-slate-50/50 flex-wrap">
+        {/* Partie intérêts - visible pour tout le monde */}
         <div className="flex items-center gap-3">
           <div className="flex -space-x-2.5 overflow-hidden">
             {ad.interestedUsers.slice(0, 3).map((usr) => (
@@ -142,38 +154,59 @@ export default function AdCard({
           </div>
         </div>
 
-        <div className="relative">
-          <button
-            onClick={() => setShowMenu(!showMenu)}
-            className="p-2 hover:bg-slate-100 rounded-full transition-colors"
-            aria-label="Menu"
-          >
-            <MoreVertical size={20} className="text-slate-500" />
-          </button>
-          {showMenu && (
-            <>
-              <div className="fixed inset-0 z-20" onClick={() => setShowMenu(false)} />
-              <div className="absolute right-0 bottom-full mb-2 w-44 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden z-30 animate-in fade-in zoom-in-95 duration-100">
-                <button
-                  onClick={() => {
-                    onEdit(ad);
-                    setShowMenu(false);
-                  }}
-                  className="flex items-center gap-3 w-full px-4 py-3 text-xs font-bold text-slate-700 hover:bg-green-50/50 hover:text-[#2e7d32] transition-all text-left"
-                >
-                  <Edit2 size={14} className="text-[#2e7d32]" /> Modifier
-                </button>
-                <button
-                  onClick={() => {
-                    onDelete(ad);
-                    setShowMenu(false);
-                  }}
-                  className="flex items-center gap-3 w-full px-4 py-3 text-xs font-bold text-red-600 hover:bg-red-50 transition-all text-left border-t border-slate-100"
-                >
-                  <Trash2 size={14} className="text-red-500" /> Supprimer
-                </button>
-              </div>
-            </>
+        {/* ⭐ Partie actions - conditionnée par isOwner */}
+        <div className="flex items-center gap-2">
+          {/* ⭐ Bouton J'aime - UNIQUEMENT si ce n'est PAS le propriétaire */}
+          {!isOwner && (
+            <button
+              onClick={handleLike}
+              className={`p-2 rounded-full transition-colors ${
+                isLiked 
+                  ? 'text-red-500 bg-red-50 hover:bg-red-100' 
+                  : 'text-slate-400 hover:bg-slate-100 hover:text-red-500'
+              }`}
+              aria-label="J'aime"
+            >
+              <Heart size={18} className={isLiked ? 'fill-red-500' : ''} />
+            </button>
+          )}
+
+          {/* ⭐ Menu (Modifier/Supprimer) - UNIQUEMENT si owner */}
+          {isOwner && (
+            <div className="relative">
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                aria-label="Menu"
+              >
+                <MoreVertical size={20} className="text-slate-500" />
+              </button>
+              {showMenu && (
+                <>
+                  <div className="fixed inset-0 z-20" onClick={() => setShowMenu(false)} />
+                  <div className="absolute right-0 bottom-full mb-2 w-44 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden z-30 animate-in fade-in zoom-in-95 duration-100">
+                    <button
+                      onClick={() => {
+                        onEdit(ad);
+                        setShowMenu(false);
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-3 text-xs font-bold text-slate-700 hover:bg-green-50/50 hover:text-[#2e7d32] transition-all text-left"
+                    >
+                      <Edit2 size={14} className="text-[#2e7d32]" /> Modifier
+                    </button>
+                    <button
+                      onClick={() => {
+                        onDelete(ad);
+                        setShowMenu(false);
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-3 text-xs font-bold text-red-600 hover:bg-red-50 transition-all text-left border-t border-slate-100"
+                    >
+                      <Trash2 size={14} className="text-red-500" /> Supprimer
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           )}
         </div>
       </div>

@@ -52,11 +52,15 @@ const transformProfileData = (data: any): ProfileData => {
     email = data.email.value;
   }
   
+  // ⭐ Extraire le pseudonyme (pour la redirection)
+  const pseudonyme = data.pseudonyme || data.name || null;
+  
   return {
     ...data,
     name: name,
+    pseudonyme: pseudonyme,  // ⭐ Ajouté pour la redirection
     photo: photoUrl,
-    avatarUrl: photoUrl,  // ⭐ Ajouter aussi avatarUrl pour compatibilité
+    avatarUrl: photoUrl,
     rating: rating,
     email: email,
   };
@@ -93,6 +97,7 @@ export const useProfile = (userId?: string) => {
       console.log('🔵 useProfile - Données brutes:', data);
       console.log('🔵 useProfile - Données transformées:', transformedData);
       console.log('🔵 useProfile - Photo extraite:', transformedData.photo);
+      console.log('🔵 useProfile - Pseudonyme:', transformedData.pseudonyme);
       
       setProfile(transformedData);
     } catch (err: any) {
@@ -137,6 +142,11 @@ export const useProfile = (userId?: string) => {
     return result;
   };
 
+  // ⭐ Fonction pour obtenir le pseudonyme facilement
+  const getPseudonyme = useCallback(() => {
+    return profile?.pseudonyme || profile?.name || null;
+  }, [profile]);
+
   return {
     profile,
     loading,
@@ -145,5 +155,6 @@ export const useProfile = (userId?: string) => {
     updateIndividualProfile,
     updateEntrepriseProfile,
     refetch: loadProfile,
+    getPseudonyme,  // ⭐ Ajouté
   };
 };

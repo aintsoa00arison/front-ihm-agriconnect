@@ -1,5 +1,8 @@
 // types/catalogue.ts
+
 export interface Author {
+  id: string;
+  pseudonyme?: string;  // ⭐ AJOUTÉ
   name: string;
   rating: number;
   avatar: string;
@@ -25,7 +28,11 @@ export interface Ad {
   sender_type?: 'fournisseur' | 'collecteur' | string; // Type de l'auteur
 }
 
+// services/publication/catalogue.ts
+
 export interface Supplier {
+  id: string;
+  pseudonyme?: string;  // ⭐ Ajouté
   name: string;
   location: string;
   productionType: string;

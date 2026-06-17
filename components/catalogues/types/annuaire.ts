@@ -4,6 +4,7 @@ export type UserRole = "fournisseurs" | "collecteurs";
 
 export interface UserProfile {
   id: string;
+  pseudonyme?: string;  // ⭐ AJOUTÉ - pour la redirection
   name: string;
   role: UserRole;
   location: string;

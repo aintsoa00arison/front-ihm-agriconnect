@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { ArrowUp, SlidersHorizontal } from "lucide-react";
+import { useRouter } from "next/navigation";
 import AnnuairePage from "./AnnuairePage";
 import CatalogueHeader from "./CatalogueHeader";
 import CatalogueFilters from "./CatalogueFilters";
@@ -53,6 +54,9 @@ const transformPublicationToAd = (pub: any): Ad => {
   const authorRating = sender.score?.value ?? sender.score ?? sender.rating ?? 0;
   const displayProductionType = PRODUCTION_TYPE_MAP[pub.category] || pub.category || "Non catégorisé";
   
+  // ⭐ Récupérer le pseudonyme pour la redirection
+  const pseudonyme = sender.pseudonyme || sender.name || fullName;
+  
   return {
     id: pub.id,
     title: pub.titre || "Sans titre",
@@ -67,9 +71,11 @@ const transformPublicationToAd = (pub: any): Ad => {
     sender_id: pub.sender_id || '',
     sender_type: senderType,
     author: {
+      id: sender.id || pub.sender_id || '',
+      pseudonyme: pseudonyme,  // ⭐ Ajouté pour la redirection
       name: fullName,
       rating: authorRating,
-      avatar: sender.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+      avatar: sender.photo || sender.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
       location: sender.registered_office || sender.address || pub.localisation || "Non spécifié",
       productionType: pub.category || "Non catégorisé",
     },
@@ -77,6 +83,7 @@ const transformPublicationToAd = (pub: any): Ad => {
 };
 
 export default function CataloguePage({ userRole }: CataloguePageProps) {
+  const router = useRouter();
   const [view, setView] = useState<"catalogue" | "annuaire">("catalogue");
   const [expandedAds, setExpandedAds] = useState<Record<string, boolean>>({});
   const [selectedTypes, setSelectedTypes] = useState<string[]>([
@@ -186,14 +193,25 @@ export default function CataloguePage({ userRole }: CataloguePageProps) {
     );
   };
 
-  const handleViewProfile = (name: string) => {
-    console.log("Voir profil:", name);
+  // ⭐ Fonction pour rediriger vers le profil avec le pseudonyme et le bon chemin
+  const handleViewProfile = (pseudonyme: string) => {
+    if (pseudonyme) {
+      // ⭐ Déterminer le chemin de base selon le rôle de l'utilisateur connecté
+      const userRole = getUserRole();
+      const basePath = userRole === 'fournisseur' || userRole === 'provider' ? '/f' : '/c';
+      const profilePath = `${basePath}/profile/${encodeURIComponent(pseudonyme)}`;
+      console.log(`🔵 Redirection vers: ${profilePath}`);
+      router.push(profilePath);
+    } else {
+      console.warn('⚠️ Tentative de redirection sans pseudonyme');
+    }
   };
 
   if (view === "annuaire") {
     return (
       <AnnuairePage
         onBack={() => setView("catalogue")}
+        onViewProfile={handleViewProfile}
       />
     );
   }

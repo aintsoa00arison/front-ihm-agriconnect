@@ -1,8 +1,11 @@
 // services/profile/types/profile.ts
 
+// services/profile/types/profile.ts
+
 export interface ProfileData {
   id: string;
   name: string;
+  pseudonyme?: string;  // ⭐ Ajouté
   role: "fournisseur" | "collecteur";
   rating: number | null;
   bio: string;
@@ -15,7 +18,7 @@ export interface ProfileData {
   isOwner?: boolean;
   type?: 'particulier' | 'entreprise';
   product_category?: string[];
-  // 🔥 Nouveaux champs pour les fournisseurs
+ 
   legal_name?: string;
   company_name?: string;
   first_name?: string;

@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import AnnuaireHeader from "./AnnuaireHeader";
 import AnnuaireFilters from "./AnnuaireFilters";
 import AnnuaireCard from "./AnnuaireCard";
@@ -9,10 +10,11 @@ import { AnnuaireCardSkeleton } from "./AnnuaireSkeletons";
 import AnnuaireEmptyState from "./AnnuaireEmptyState";
 import type { UserProfile, FilterState } from "./types/annuaire";
 import { profileService } from "../../app/services/profile/profileService";
-import { getUserId } from "../../app/services/lib/auth";
+import { getUserId, getUserRole } from "../../app/services/lib/auth";
 
 interface AnnuairePageProps {
   onBack: () => void;
+  onViewProfile?: (userId: string) => void;  // ⭐ Changé: userId
 }
 
 // 🔥 Mapping des types de production backend -> affichage
@@ -39,14 +41,14 @@ const transformProfileToUser = (profile: any): UserProfile => {
     role: role,
     location: profile.address || profile.registered_office || "Non spécifié",
     type: displayType,
-    
     rating: profile.rating || 0,
-    avatar: profile.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+    avatar: profile.photo || profile.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
     description: profile.bio || profile.company_description || profile.description || "",
   };
 };
 
-export default function AnnuairePage({ onBack }: AnnuairePageProps) {
+export default function AnnuairePage({ onBack, onViewProfile }: AnnuairePageProps) {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
@@ -58,6 +60,18 @@ export default function AnnuairePage({ onBack }: AnnuairePageProps) {
   });
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
   const currentUserId = getUserId();
+
+  // ⭐ Fonction pour rediriger vers le profil avec l'ID
+  const handleViewProfile = (userId: string) => {
+    if (onViewProfile) {
+      onViewProfile(userId);
+    } else {
+      // Fallback avec l'ID
+      const userRole = getUserRole();
+      const basePath = userRole === 'fournisseur' || userRole === 'provider' ? '/f' : '/c';
+      router.push(`${basePath}/profile/${userId}`);
+    }
+  };
 
   // 🔥 Charger tous les utilisateurs depuis le backend
   const loadAllUsers = useCallback(async () => {
@@ -217,7 +231,11 @@ export default function AnnuairePage({ onBack }: AnnuairePageProps) {
         ) : users.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {users.map((user) => (
-              <AnnuaireCard key={user.id} user={user} />
+              <AnnuaireCard 
+                key={user.id} 
+                user={user} 
+                onViewProfile={() => handleViewProfile(user.id)}
+              />
             ))}
           </div>
         ) : (

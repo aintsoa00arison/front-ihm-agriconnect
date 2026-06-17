@@ -179,8 +179,6 @@ createPublication: async (data: CreatePublicationData): Promise<{ success: boole
     }
   },
 
-  // Filtrer les publications
-// services/publication/publicationService.ts
 
 // Filtrer les publications
 filterPublications: async (userId: string, params: PublicationParams): Promise<Publication[]> => {

@@ -10,6 +10,13 @@ const cache = new Map<string, { data: Supplier[]; timestamp: number }>();
 const CACHE_DURATION = 60000; // 1 minute
 
 const transformProfileToSupplier = (profile: any): Supplier => {
+  // ⭐ Récupérer l'ID
+  const userId = profile.id || '';
+  
+  // ⭐ Récupérer la photo (priorité à photo puis avatarUrl)
+  const photoUrl = profile.photo || profile.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80";
+  
+  // Récupérer le type de production
   const productionType = profile.product_category && profile.product_category.length > 0
     ? profile.product_category[0]
     : "Non spécifié";
@@ -21,11 +28,12 @@ const transformProfileToSupplier = (profile: any): Supplier => {
   };
   
   return {
+    id: userId,  // ⭐ ID de l'utilisateur
     name: profile.name || "Utilisateur",
     location: profile.address || profile.registered_office || "Non spécifié",
     productionType: typeMap[productionType] || productionType,
     rating: profile.rating || 0,
-    avatar: profile.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+    avatar: photoUrl,  // ⭐ Photo du profil
   };
 };
 
@@ -62,8 +70,15 @@ export const useTopSuppliers = (userRole: 'fournisseur' | 'collecteur') => {
           data = await profileService.getTopProviders(5);
         }
         
+        console.log('📦 Données brutes du Top 5:', JSON.stringify(data, null, 2));
+        
+        // ⭐ Vérifier que chaque profil a une photo
+        data.forEach((profile, index) => {
+          console.log(`📸 Profile ${index + 1} - photo:`, profile.photo, 'avatarUrl:', profile.avatarUrl);
+        });
+        
         const transformed = data.map(transformProfileToSupplier);
-        console.log('🔄 Suppliers transformés:', transformed.length);
+        console.log('🔄 Suppliers transformés:', transformed);
         
         // 🔥 Mettre en cache
         cache.set(cacheKey, {
@@ -82,7 +97,7 @@ export const useTopSuppliers = (userRole: 'fournisseur' | 'collecteur') => {
     };
 
     fetchTopSuppliers();
-  }, [userRole]); // 🔥 Seul userRole déclenche le rechargement
+  }, [userRole]);
 
   return { suppliers, isLoading, error };
 };
