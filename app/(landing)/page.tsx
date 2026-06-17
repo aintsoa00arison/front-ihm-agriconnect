@@ -1,29 +1,36 @@
 "use client";
 
-import { useState } from 'react';
-import Hero from './components/Hero';
-import Features from './components/Features';
-import Benefits from './components/Benefits';
-import Process from './components/Process';
-import Trust from './components/Trust';
+import { useState } from "react";
+import Hero from "./components/Hero";
+import Features from "./components/Features";
+import Benefits from "./components/Benefits";
+import Process from "./components/Process";
+import Trust from "./components/Trust";
+import Reveal from "./components/Reveal";
 
 export default function Home() {
-  // 'home' reste la vue active par défaut pour afficher la Landing Page
-  const [view, setView] = useState('home');
+  const [view, setView] = useState("home");
 
   return (
-    <main className="flex flex-col min-h-screen"> 
-      <div className="flex-grow">
-        {view === 'home' && (
+    <main className="flex flex-col min-h-screen">
+      <div className="grow">
+        {view === "home" && (
           <>
-      
             <Hero />
-            <Features />
-            <Benefits />
-            <Process />
-            <Trust />
+            <Reveal>
+              <Features />
+            </Reveal>
+            <Reveal delay={100}>
+              <Benefits />
+            </Reveal>
+            <Reveal>
+              <Process />
+            </Reveal>
+            <Reveal delay={100}>
+              <Trust />
+            </Reveal>
           </>
-        )} 
+        )}
       </div>
     </main>
   );

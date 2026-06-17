@@ -25,19 +25,19 @@ export default function Footer({ setView }: FooterProps) {
 
   return (
     <footer className="w-full bg-background py-12 font-sans border-t border-separator/10 relative z-10 select-none">
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-16">
+      <div className="flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-          
           {/* --- LOGO ET COPYRIGHT --- */}
           <div className="space-y-4 max-w-sm">
             {/* Les 5 petits points aux couleurs primaires */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 ml-2">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="w-2 h-2 bg-primary rounded-full" />
               ))}
             </div>
             <p className="text-input-element text-sm leading-relaxed">
-              © {currentYear} Tsena. Autonomiser l'écosystème agricole grâce à l'innovation numérique et à la confiance.
+              © {currentYear} Tsena. Autonomiser l&apos;écosystème agricole
+              grâce à l&apos;innovation numérique et à la confiance.
             </p>
           </div>
 
@@ -55,29 +55,28 @@ export default function Footer({ setView }: FooterProps) {
             ))}
           </nav>
 
-          {/* --- RÉSEAUX SOCIAUX (ICONES LUCIDE) --- */}
+          {/* --- RÉSEAUX SOCIAUX --- */}
           <div className="flex gap-4">
             <Button
               asChild
               variant="ghost"
-              className="w-10 h-10 bg-neutral hover:bg-primary text-label hover:text-white rounded-full flex items-center justify-center p-0 transition-all shadow-sm cursor-pointer"
+              className="w-10 h-10 hover:scale-110 bg-neutral hover:bg-primary text-label hover:text-white rounded-full flex items-center justify-center p-0 transition-all shadow-sm cursor-pointer"
             >
               <a href="#" aria-label="Twitter">
                 <FaTwitter className="w-4 h-4 fill-current" />
               </a>
             </Button>
-            
+
             <Button
               asChild
               variant="ghost"
-              className="w-10 h-10 bg-neutral hover:bg-primary text-label hover:text-white rounded-full flex items-center justify-center p-0 transition-all shadow-sm cursor-pointer"
+              className="w-10 h-10 hover:scale-110 bg-neutral hover:bg-primary text-label hover:text-white rounded-full flex items-center justify-center p-0 transition-all shadow-sm cursor-pointer"
             >
               <a href="#" aria-label="LinkedIn">
                 <FaLinkedinIn className="w-4 h-4 fill-current" />
               </a>
             </Button>
           </div>
-
         </div>
       </div>
     </footer>

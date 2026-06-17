@@ -15,8 +15,7 @@ export default function Hero() {
       id="accueil"
       className="w-full bg-background pt-8 sm:pt-12 md:pt-16 pb-16 sm:pb-20 md:pb-24 font-sans select-none overflow-hidden"
     >
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16 flex flex-col lg:flex-row items-center gap-8 sm:gap-12 md:gap-16">
-        
+      <div className="max-w-360 mx-auto px-4 sm:px-6 lg:px-16 flex flex-col lg:flex-row items-center gap-8 sm:gap-12 md:gap-16">
         {/* --- COLONNE GAUCHE : TEXTE (visible sur tous les écrans) --- */}
         <div className="flex-1 space-y-6 sm:space-y-8 text-center lg:text-left">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-label leading-[1.2] sm:leading-[1.1]">
@@ -48,10 +47,10 @@ export default function Hero() {
           </div>
 
           {/* Badge Qualité */}
-          <Card className="absolute -bottom-6 sm:-bottom-8 left-6 bg-white border border-separator/10 rounded-[20px] sm:rounded-[24px] shadow-2xl min-w-[280px] sm:min-w-[320px] overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <Card className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-white border border-separator/10 rounded-[20px] shadow-2xl min-w-70 w-[90%] overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
             <CardContent className="p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-[#FFEFD7] rounded-full flex items-center justify-center flex-shrink-0">
-                <CheckCircle2 className="text-tertiary w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 fill-tertiary text-white" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-[#FFEFD7] rounded-full flex items-center justify-center shrink-0">
+                <CheckCircle2 className="text-tertiary w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 fill-tertiary " />
               </div>
               <div className="flex flex-col flex-1">
                 <p className="text-[10px] sm:text-[12px] text-input-element font-bold uppercase tracking-tight">
@@ -61,7 +60,7 @@ export default function Hero() {
                   99.8% Succès
                 </p>
                 <div className="mt-2 sm:mt-3">
-                  <Progress value={90} className="h-[4px] sm:h-[6px] bg-gray-100" />
+                  <Progress value={90} className="h-1 sm:h-1.5 bg-gray-100" />
                 </div>
               </div>
             </CardContent>
@@ -82,13 +81,10 @@ export default function Hero() {
               className="w-full h-auto object-cover"
               priority
             />
-            
-            {/* Badge Qualité pour mobile (superposé sur l'image) */}
-            <Card className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-white border border-separator/10 rounded-[20px] shadow-2xl min-w-[280px] w-[90%] overflow-hidden">
+
+            {/* Badge Qualité pour mobile  */}
+            <Card className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-white border border-separator/10 rounded-[20px] shadow-2xl min-w-70 w-[90%] overflow-hidden">
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#FFEFD7] rounded-full flex items-center justify-center flex-shrink-0">
-                  <CheckCircle2 className="text-tertiary w-5 h-5 fill-tertiary text-white" />
-                </div>
                 <div className="flex flex-col flex-1">
                   <p className="text-[10px] text-input-element font-bold uppercase tracking-tight">
                     Qualité Garantie
@@ -97,7 +93,7 @@ export default function Hero() {
                     99.8% Succès
                   </p>
                   <div className="mt-2">
-                    <Progress value={90} className="h-[4px] bg-gray-100" />
+                    <Progress value={90} className="h-1 sm:h-1.5 bg-gray-100" />
                   </div>
                 </div>
               </CardContent>
@@ -113,17 +109,18 @@ export default function Hero() {
                 key={i}
                 className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white bg-gray-200 overflow-hidden shadow-sm"
               >
-                <img
+                <Image
                   src={`https://i.pravatar.cc/100?u=${i}`}
                   alt="user"
                   className="w-full h-full object-cover"
+                  width={40}
+                  height={40}
                 />
               </div>
             ))}
           </div>
           <p className="text-xs sm:text-sm text-input-element">
-            Rejoint par{" "}
-            <span className="text-primary font-bold">2 500+</span>{" "}
+            Rejoint par <span className="text-primary font-bold">2 500+</span>{" "}
             producteurs
           </p>
         </div>
@@ -141,7 +138,7 @@ export default function Hero() {
 
       {/* --- VERSION DESKTOP : BOUTON ET STATS (cachés sur mobile) --- */}
       <div className="hidden lg:block mt-8 lg:mt-0">
-        <div className="max-w-[1440px] mx-auto px-6 lg:px-16">
+        <div className="max-w-360 mx-auto px-6 lg:px-16">
           <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
             <Button
               onClick={() => router.push("/login?mode=register")}
@@ -158,17 +155,18 @@ export default function Hero() {
                   key={i}
                   className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white bg-gray-200 overflow-hidden shadow-sm"
                 >
-                  <img
+                  <Image
                     src={`https://i.pravatar.cc/100?u=${i}`}
                     alt="user"
                     className="w-full h-full object-cover"
+                    width={40}
+                    height={40}
                   />
                 </div>
               ))}
             </div>
             <p className="text-xs sm:text-sm text-input-element">
-              Rejoint par{" "}
-              <span className="text-primary font-bold">2 500+</span>{" "}
+              Rejoint par <span className="text-primary font-bold">2 500+</span>{" "}
               producteurs
             </p>
           </div>
