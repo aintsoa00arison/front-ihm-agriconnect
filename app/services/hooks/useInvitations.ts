@@ -7,14 +7,13 @@ import { invitationService } from '../invitation/invitationService';
 import { Invitation, InvitationCreateInput } from '../invitation/types';
 import { toast } from 'sonner';
 
-export const useInvitations = (userId?: string) => {
+export const useInvitations = (userId?: string, autoLoad: boolean = true) => {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [pendingInvitations, setPendingInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // ⭐ Charger les invitations
   const loadInvitations = useCallback(async (showToast: boolean = false) => {
     if (!userId) {
       setLoading(false);
@@ -30,66 +29,64 @@ export const useInvitations = (userId?: string) => {
       
       setInvitations(data);
       
-      // Filtrer les invitations en attente
       const pending = data.filter(inv => inv.status === 'pending' || inv.status === 'PENDING');
       setPendingInvitations(pending);
       
       console.log(`📦 ${data.length} invitations récupérées (${pending.length} en attente)`);
     } catch (err: any) {
-      const errorMsg = err.message || "Erreur lors du chargement des invitations";
-      setError(errorMsg);
-      console.error('❌ Erreur loadInvitations:', err);
-      if (showToast) {
-        toast.error(errorMsg);
+      // ⭐ NE PAS AFFICHER D'ERREUR SI 404
+      if (err?.response?.status !== 404) {
+        const errorMsg = err.message || "Erreur lors du chargement des invitations";
+        setError(errorMsg);
+        console.error('❌ Erreur loadInvitations:', err);
+        if (showToast) {
+          toast.error(errorMsg);
+        }
+      } else {
+        console.log('📭 Aucune invitation trouvée (404)');
+        setInvitations([]);
+        setPendingInvitations([]);
       }
     } finally {
       setLoading(false);
     }
   }, [userId]);
 
-// services/hooks/useInvitations.ts
-
-// ⭐ Dans createInvitation, retourner le status même en cas d'erreur
-const createInvitation = useCallback(async (data: InvitationCreateInput) => {
-  try {
-    console.log('📤 Création invitation avec:', data);
-    
-    const response = await invitationService.createInvitation({
-      sender_id: data.sender_id,
-      receiver_id: data.receiver_id,
-      publication_id: data.publication_id,
-      message: data.message
-    });
-    
-    // ⭐ Retourner la réponse complète avec le status
-    if (response.success) {
-      toast.success(response.message || "Invitation envoyée avec succès !");
-      await loadInvitations(true);
+  const createInvitation = useCallback(async (data: InvitationCreateInput) => {
+    try {
+      console.log('📤 Création invitation avec:', data);
+      
+      const response = await invitationService.createInvitation({
+        sender_id: data.sender_id,
+        receiver_id: data.receiver_id,
+        publication_id: data.publication_id,
+        message: data.message
+      });
+      
+      if (response.success) {
+        toast.success(response.message || "Invitation envoyée avec succès !");
+        return response;
+      }
+      
+      if (response.status === 409) {
+        return response;
+      }
+      
+      toast.error(response.message || "Erreur lors de l'envoi");
       return response;
+      
+    } catch (err: any) {
+      const errorMsg = err.message || "Une erreur est survenue";
+      toast.error(errorMsg);
+      console.error('❌ Erreur createInvitation:', err);
+      return { 
+        success: false, 
+        message: errorMsg,
+        status: err?.response?.status || 500
+      };
     }
-    
-    // ⭐ Pour les erreurs (y compris 409), retourner la réponse complète
-    if (response.status === 409) {
-      // Ne pas afficher de toast d'erreur pour le 409
-      return response;
-    }
-    
-    toast.error(response.message || "Erreur lors de l'envoi");
-    return response;
-    
-  } catch (err: any) {
-    const errorMsg = err.message || "Une erreur est survenue";
-    toast.error(errorMsg);
-    console.error('❌ Erreur createInvitation:', err);
-    return { 
-      success: false, 
-      message: errorMsg,
-      status: err?.response?.status || 500
-    };
-  }
-}, [loadInvitations])
+  }, []);
 
-  // ⭐ Accepter une invitation
   const acceptInvitation = useCallback(async (invitationId: string) => {
     if (!userId) {
       toast.error("Utilisateur non identifié");
@@ -115,7 +112,6 @@ const createInvitation = useCallback(async (data: InvitationCreateInput) => {
     }
   }, [userId, loadInvitations]);
 
-  // ⭐ Refuser une invitation
   const refuseInvitation = useCallback(async (invitationId: string) => {
     if (!userId) {
       toast.error("Utilisateur non identifié");
@@ -141,7 +137,6 @@ const createInvitation = useCallback(async (data: InvitationCreateInput) => {
     }
   }, [userId, loadInvitations]);
 
-  // ⭐ Rafraîchir
   const refreshInvitations = useCallback(async () => {
     setIsRefreshing(true);
     try {
@@ -151,12 +146,14 @@ const createInvitation = useCallback(async (data: InvitationCreateInput) => {
     }
   }, [loadInvitations]);
 
-  // Chargement initial
+  // ⭐ Chargement initial SEULEMENT si autoLoad est true
   useEffect(() => {
-    if (userId) {
+    if (userId && autoLoad) {
       loadInvitations();
+    } else if (userId && !autoLoad) {
+      setLoading(false);
     }
-  }, [userId, loadInvitations]);
+  }, [userId, autoLoad, loadInvitations]);
 
   return {
     invitations,

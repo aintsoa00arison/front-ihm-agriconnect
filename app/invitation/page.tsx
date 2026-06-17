@@ -1,10 +1,10 @@
-// app/invitation/page.tsx
-
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
 
 export default function InvitationPage() {
   const router = useRouter();
@@ -35,11 +35,11 @@ export default function InvitationPage() {
         }
         
         const data = await response.json();
-        console.log('🔵 Données invitation:', data);
+        console.log('Données invitation:', data);
         setInvitationData(data);
         
       } catch (err: any) {
-        console.error("❌ Erreur:", err);
+        console.error("Erreur:", err);
         setError(err.message || "Erreur lors du chargement de l'invitation");
       } finally {
         setLoading(false);
@@ -49,7 +49,6 @@ export default function InvitationPage() {
     fetchInvitation();
   }, [invitationId]);
 
-  // ⭐ Accepter - utiliser receiver_id
   const handleAccept = async () => {
     if (!invitationId || !invitationData) {
       toast.error("Données d'invitation manquantes");
@@ -63,7 +62,6 @@ export default function InvitationPage() {
       return;
     }
     
-    // ⭐ Vérifier si déjà traité
     if (invitationData.status === 'accepted' || invitationData.status === 'ACCEPTED') {
       toast.info("Cette invitation a déjà été acceptée");
       return;
@@ -87,20 +85,18 @@ export default function InvitationPage() {
         throw new Error(errorData.detail || "Erreur lors de l'acceptation");
       }
       
-      // ⭐ Mettre à jour le statut localement
       setInvitationData({ ...invitationData, status: 'accepted' });
       
-      toast.success("✅ Vous avez accepté l'invitation. Un email de confirmation a été envoyé.");
+      toast.success("Vous avez accepté l'invitation. Un email de confirmation a été envoyé.");
       
     } catch (error: any) {
-      console.error("❌ Erreur:", error);
+      console.error("Erreur:", error);
       toast.error(error.message || "Erreur lors de l'acceptation");
     } finally {
       setIsAccepting(false);
     }
   };
 
-  // ⭐ Refuser - utiliser receiver_id
   const handleRefuse = async () => {
     if (!invitationId || !invitationData) {
       toast.error("Données d'invitation manquantes");
@@ -114,7 +110,6 @@ export default function InvitationPage() {
       return;
     }
     
-    // ⭐ Vérifier si déjà traité
     if (invitationData.status === 'accepted' || invitationData.status === 'ACCEPTED') {
       toast.info("Cette invitation a déjà été acceptée");
       return;
@@ -137,13 +132,12 @@ export default function InvitationPage() {
         throw new Error(errorData.detail || "Erreur lors du refus");
       }
       
-      // ⭐ Mettre à jour le statut localement
       setInvitationData({ ...invitationData, status: 'refused' });
       
-      toast.info("❌ Vous avez refusé l'invitation. Un email de confirmation a été envoyé.");
+      toast.info("Vous avez refusé l'invitation. Un email de confirmation a été envoyé.");
       
     } catch (error: any) {
-      console.error("❌ Erreur:", error);
+      console.error("Erreur:", error);
       toast.error(error.message || "Erreur lors du refus");
     } finally {
       setIsRefusing(false);
@@ -152,10 +146,12 @@ export default function InvitationPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1e5631] mx-auto mb-4" />
-          <p className="text-slate-500">Chargement de l'invitation...</p>
+      <div className="min-h-screen bg-background flex items-center justify-center font-sans select-none">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto" />
+          <p className="text-sm text-muted-foreground tracking-wide">
+            Chargement de l'invitation...
+          </p>
         </div>
       </div>
     );
@@ -163,14 +159,20 @@ export default function InvitationPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center max-w-md p-6">
-          <div className="text-6xl mb-4">🔒</div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Invitation invalide</h1>
-          <p className="text-slate-500">{error}</p>
+      <div className="min-h-screen bg-background flex items-center justify-center font-sans select-none">
+        <div className="max-w-md w-full mx-4 p-8 bg-white rounded-2xl shadow-sm border border-border/40 text-center space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-full bg-red-50 flex items-center justify-center">
+            <XCircle className="w-8 h-8 text-red-500" />
+          </div>
+          <h1 className="text-xl font-black text-label tracking-tight">
+            Invitation invalide
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {error}
+          </p>
           <button
             onClick={() => router.push('/')}
-            className="mt-4 px-6 py-2 bg-[#1e5631] text-white rounded-lg hover:bg-[#2e7d32] transition"
+            className="mt-4 px-8 py-2.5 bg-primary text-white text-sm font-bold tracking-wide hover:bg-primary/90 transition-colors rounded-full"
           >
             Accueil
           </button>
@@ -185,27 +187,32 @@ export default function InvitationPage() {
                       invitationData?.status === 'REFUSED';
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
-        <div className="bg-[#1e5631] p-6 text-center">
-          <h1 className="text-2xl font-bold text-white">📩 Invitation</h1>
+    <div className="min-h-screen bg-background flex items-center justify-center font-sans select-none p-4">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-border/40 overflow-hidden">
+        <div className="border-b border-border/40 px-8 pt-8 pb-6">
+          <h1 className="text-xl font-black text-label tracking-tight">
+            Invitation
+          </h1>
         </div>
         
-        <div className="p-6 space-y-6">
+        <div className="px-8 pt-8 pb-6 space-y-8">
           <div className="text-center">
-            <p className="text-slate-600">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {isProcessed ? (
-                <span className="text-amber-600 font-medium">
-                  Cette invitation a déjà été {invitationData?.status === 'accepted' || invitationData?.status === 'ACCEPTED' ? 'acceptée ✅' : 'refusée ❌'}
+                <span className="text-muted-foreground">
+                  Cette invitation a déjà été{' '}
+                  {invitationData?.status === 'accepted' || invitationData?.status === 'ACCEPTED' 
+                    ? 'acceptée' 
+                    : 'refusée'}
                 </span>
               ) : (
                 <>
-                  <span className="font-semibold text-slate-800">
+                  <span className="text-label font-bold">
                     {invitationData?.sender_object?.pseudonyme || 
                      invitationData?.sender_object?.name || 
-                     'Quelqu\'un'}
+                     'Un membre'}
                   </span>
-                  <span className="text-slate-500"> souhaite entrer en contact avec vous.</span>
+                  <span className="text-muted-foreground"> souhaite entrer en contact avec vous.</span>
                 </>
               )}
             </p>
@@ -215,55 +222,57 @@ export default function InvitationPage() {
             <button
               onClick={handleAccept}
               disabled={isAccepting || isProcessed || !invitationData}
-              className={`w-full py-3 rounded-xl font-bold text-white transition-all ${
+              className={`w-full py-3 rounded-full text-sm font-bold tracking-wide transition-colors ${
                 isProcessed || !invitationData
-                  ? 'bg-slate-300 cursor-not-allowed' 
+                  ? 'bg-muted text-muted-foreground cursor-not-allowed' 
                   : isAccepting
-                    ? 'bg-[#1e5631] opacity-70 cursor-wait'
-                    : 'bg-[#1e5631] hover:bg-[#2e7d32] active:scale-95'
+                    ? 'bg-primary text-white opacity-70 cursor-wait'
+                    : 'bg-primary text-white hover:bg-primary/90'
               }`}
             >
               {isAccepting ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                <span className="flex items-center justify-center gap-3">
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   Traitement...
-                </div>
+                </span>
               ) : (
-                '✅ Accepter l\'invitation'
+                'Accepter l\'invitation'
               )}
             </button>
             
             <button
               onClick={handleRefuse}
               disabled={isRefusing || isProcessed || !invitationData}
-              className={`w-full py-3 rounded-xl font-bold text-white transition-all ${
+              className={`w-full py-3 rounded-full text-sm font-bold tracking-wide transition-colors ${
                 isProcessed || !invitationData
-                  ? 'bg-slate-300 cursor-not-allowed' 
+                  ? 'bg-muted text-muted-foreground cursor-not-allowed' 
                   : isRefusing
-                    ? 'bg-red-600 opacity-70 cursor-wait'
-                    : 'bg-red-600 hover:bg-red-700 active:scale-95'
+                    ? 'bg-secondary text-white opacity-70 cursor-wait'
+                    : 'bg-secondary text-white hover:bg-secondary/90'
               }`}
             >
               {isRefusing ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                <span className="flex items-center justify-center gap-3">
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   Traitement...
-                </div>
+                </span>
               ) : (
-                '❌ Refuser l\'invitation'
+                'Refuser l\'invitation'
               )}
             </button>
           </div>
           
           {isProcessed && (
-            <p className="text-center text-sm text-slate-400">
+            <p className="text-center text-xs text-muted-foreground/60 tracking-wide">
               Cette invitation a déjà été traitée
             </p>
           )}
         </div>
         
-        <div className="bg-slate-50 p-4 text-center text-xs text-slate-400 border-t border-slate-100">
-          Tsena - Le pont du monde agricole
+        <div className="border-t border-border/40 px-8 py-4">
+          <p className="text-center text-[11px] text-muted-foreground/50 tracking-wider uppercase font-black">
+            Tsena
+          </p>
         </div>
       </div>
     </div>

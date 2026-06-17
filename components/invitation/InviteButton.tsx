@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { Heart, Loader2, CheckCircle, MessageCircle } from "lucide-react";
 import {
   Tooltip,
@@ -36,60 +36,21 @@ export function InviteButton({
   const currentUserId = getUserId();
   const [isInvited, setIsInvited] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isChecking, setIsChecking] = useState(true);
   const [alreadyExists, setAlreadyExists] = useState(false);
-  const hasCheckedRef = useRef(false);
   
+  // ⭐ autoLoad = false pour ne pas charger les invitations automatiquement
   const { 
-    createInvitation, 
-    pendingInvitations,
-    loadInvitations,
-    loading: invitationsLoading
-  } = useInvitations(currentUserId || undefined);
-
-  // Vérifier les invitations existantes
-  useEffect(() => {
-    const checkExistingInvitation = async () => {
-      if (!currentUserId || !targetUserId) {
-        setIsChecking(false);
-        return;
-      }
-
-      if (hasCheckedRef.current) {
-        return;
-      }
-
-      try {
-        if (pendingInvitations.length === 0) {
-          await loadInvitations();
-        }
-        
-        const existing = pendingInvitations.some(inv => 
-          inv.sender_id === currentUserId && 
-          inv.receiver_id === targetUserId &&
-          (inv.publication_id === publicationId || !publicationId)
-        );
-        
-        setIsInvited(existing);
-        setAlreadyExists(existing);
-        hasCheckedRef.current = true;
-      } catch (error) {
-        console.error('❌ Erreur vérification invitation:', error);
-      } finally {
-        setIsChecking(false);
-      }
-    };
-
-    checkExistingInvitation();
-  }, [currentUserId, targetUserId, publicationId, pendingInvitations, loadInvitations]);
+    createInvitation
+  } = useInvitations(currentUserId || undefined, false);
 
   // ⭐ Redirection vers les discussions
   const goToDiscussions = () => {
-    router.push('/discussions');
+    router.push('/messages');
   };
 
   const handleInvite = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     
     if (!currentUserId) {
       toast.error("Veuillez vous connecter pour envoyer une invitation");
@@ -98,30 +59,6 @@ export function InviteButton({
 
     if (currentUserId === targetUserId) {
       toast.info("Vous ne pouvez pas vous inviter vous-même");
-      return;
-    }
-
-    // Vérifier à nouveau avant d'envoyer
-    const alreadyExistsCheck = pendingInvitations.some(inv => 
-      inv.sender_id === currentUserId && 
-      inv.receiver_id === targetUserId &&
-      (inv.publication_id === publicationId || !publicationId)
-    );
-
-    if (alreadyExistsCheck) {
-      toast.info(
-        `💬 Vous pouvez déjà discuter avec ${targetName}.`,
-        {
-          duration: 5000,
-          icon: "💬",
-          action: {
-            label: "Voir les discussions",
-            onClick: goToDiscussions,
-          },
-        }
-      );
-      setIsInvited(true);
-      setAlreadyExists(true);
       return;
     }
 
@@ -138,7 +75,6 @@ export function InviteButton({
         message: message
       });
       
-      // ⭐ Gestion basée sur le status retourné
       if (result.success) {
         setIsInvited(true);
         toast.success(
@@ -170,7 +106,6 @@ export function InviteButton({
         }
       }
     } catch (error: any) {
-      // ⭐ Gestion du conflit 409 via l'erreur
       if (error?.response?.status === 409) {
         toast.info(
           `💬 Vous pouvez déjà discuter avec ${targetName}.`,
@@ -193,8 +128,19 @@ export function InviteButton({
     }
   };
 
+  // ⭐ Gérer le clic
+  const handleClick = (e: React.MouseEvent) => {
+    if (isInvited && alreadyExists) {
+      e.stopPropagation();
+      e.preventDefault();
+      goToDiscussions();
+      return;
+    }
+    handleInvite(e);
+  };
+
   // ⭐ Déterminer l'état du bouton
-  const isDisabled = isLoading || isInvited || isChecking || !currentUserId;
+  const isDisabled = isLoading || isInvited || !currentUserId;
   
   // ⭐ Déterminer les classes CSS
   const getButtonClasses = () => {
@@ -204,7 +150,7 @@ export function InviteButton({
     if (isInvited) {
       return 'bg-green-100 text-green-600 hover:bg-green-200 cursor-pointer';
     }
-    if (isLoading || isChecking) {
+    if (isLoading) {
       return 'bg-slate-200 text-slate-400 cursor-wait';
     }
     if (!currentUserId) {
@@ -218,19 +164,8 @@ export function InviteButton({
     if (isInvited && alreadyExists) return "Déjà en discussion - Voir les messages";
     if (isInvited) return "Invitation envoyée";
     if (isLoading) return "Envoi en cours...";
-    if (isChecking) return "Vérification...";
     if (!currentUserId) return "Connectez-vous pour inviter";
     return "Inviter cette personne";
-  };
-
-  // ⭐ Gérer le clic pour rediriger vers les discussions si déjà invité
-  const handleClick = (e: React.MouseEvent) => {
-    if (isInvited && alreadyExists) {
-      e.stopPropagation();
-      goToDiscussions();
-      return;
-    }
-    handleInvite(e);
   };
 
   return (
