@@ -45,12 +45,10 @@ function Discussion({
     >
       {/* Avatar */}
       <div className="shrink-0 relative">
-        <Image
+        <img
           src={photo || "/images/default-avatar.jpg"}
           alt={name}
-          width={50}
-          height={50}
-          className="rounded-full object-cover"
+          className="rounded-full object-cover size-14"
         />
         {isOnline && (
           <span className="absolute bottom-0 right-0 size-3 bg-green-500 border-2 border-white rounded-full" />
