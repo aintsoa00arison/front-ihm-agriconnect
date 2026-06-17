@@ -10,6 +10,7 @@ import ProfileReviews from "./ProfileReviews";
 import EditCollectorProfileForm from "./Edit/EditCollectorProfileForm";
 import EditSupplierProfileForm from "./Edit/EditSupplierProfileForm";
 import ProfileAds from "./ProfileAds";
+import VisiteAds from "../visite/VisiteAds";  // ⭐ AJOUTER L'IMPORT
 import AdForm from "@/components/annonces/AddForm";
 import { useProfile } from "../../app/services/hooks/useProfile";
 import { useEvaluations } from "../../app/services/hooks/useEvaluations";
@@ -95,6 +96,15 @@ export default function ProfileView({ slug }: ProfileViewProps) {
   const handleTabChange = (value: string) => {
     setActiveTabState(value);
     router.push(`?tab=${value}`, { scroll: false });
+  };
+
+  // ⭐ Fonction pour rediriger vers le profil avec l'ID (pour les profils visités)
+  const handleViewProfile = (userId: string) => {
+    if (userId) {
+      const userRole = getUserRole();
+      const basePath = userRole === 'fournisseur' || userRole === 'provider' ? '/f' : '/c';
+      router.push(`${basePath}/profile/${userId}`);
+    }
   };
 
   const handleProfileSave = async (data: any) => {
@@ -251,7 +261,19 @@ export default function ProfileView({ slug }: ProfileViewProps) {
           />
 
           <div className="max-w-7xl mx-auto px-4">
-            {activeTab === "annonces" && <ProfileAds onEditAd={setEditingAd} />}
+            {activeTab === "annonces" && (
+              // ⭐ SI C'EST LE PROPRIÉTAIRE → ProfileAds (avec édition)
+              // ⭐ SINON → VisiteAds (sans édition, avec like)
+              isOwnProfile ? (
+                <ProfileAds key="profile-ads" onEditAd={setEditingAd} />
+              ) : (
+                <VisiteAds 
+                  key={`visite-ads-${profileId}`}
+                  userId={profileId || ''} 
+                  onViewProfile={handleViewProfile}
+                />
+              )
+            )}
             {activeTab === "apropos" && <AboutSection profile={profile} />}
             {activeTab === "avis" && (
               <ProfileReviews

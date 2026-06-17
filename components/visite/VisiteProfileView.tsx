@@ -1,8 +1,9 @@
 // app/profile/VisiteProfileView.tsx
+
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import VisiteHeader from "./VisiteHeader";
 import ProfileReviews from "../profile/ProfileReviews";
@@ -10,14 +11,21 @@ import VisiteAds from "./VisiteAds";
 import AboutSection from "../profile/ProfileAbout";
 import { useProfile } from "../../app/services/hooks/useProfile";
 import { useEvaluations } from "../../app/services/hooks/useEvaluations";
-import { getUserId, getUserRole } from "../../app/services/lib/auth";
+import { getUserId } from "../../app/services/lib/auth";
 
 interface VisiteProfileViewProps {
   userId: string;
+  invitationId?: string | null;
+  publicationId?: string | null;
 }
 
-export default function VisiteProfileView({ userId }: VisiteProfileViewProps) {
+export default function VisiteProfileView({ 
+  userId, 
+  invitationId = null,
+  publicationId = null
+}: VisiteProfileViewProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState("annonces");
   
   const currentUserId = getUserId();
@@ -25,8 +33,8 @@ export default function VisiteProfileView({ userId }: VisiteProfileViewProps) {
   // ⭐ Si c'est le profil de l'utilisateur connecté, rediriger vers son profil
   useEffect(() => {
     if (userId === currentUserId) {
-      const userRole = getUserRole();
-      const basePath = userRole === 'fournisseur' || userRole === 'provider' ? '/f' : '/c';
+      const userRole = localStorage.getItem('user_role');
+      const basePath = userRole === 'fournisseur' ? '/f' : '/c';
       router.replace(`${basePath}/profile/me`);
     }
   }, [userId, currentUserId, router]);
@@ -55,12 +63,16 @@ export default function VisiteProfileView({ userId }: VisiteProfileViewProps) {
     setActiveTab(value);
   };
 
-  // ⭐ Fonction pour rediriger vers le profil avec l'ID
-  const handleViewProfile = (profileUserId: string) => {
-    if (profileUserId) {
-      const userRole = getUserRole();
-      const basePath = userRole === 'fournisseur' || userRole === 'provider' ? '/f' : '/c';
-      router.push(`${basePath}/profile/${profileUserId}`);
+  // ⭐ Gérer l'action sur l'invitation
+  const handleInvitationAction = (action: 'accept' | 'refuse') => {
+    if (action === 'accept') {
+      toast.success("🎉 Invitation acceptée ! Vous pouvez maintenant discuter.");
+      // Optionnel: rafraîchir la page ou rediriger
+      setTimeout(() => {
+        router.refresh();
+      }, 1000);
+    } else {
+      toast.info("Invitation refusée");
     }
   };
 
@@ -100,15 +112,18 @@ export default function VisiteProfileView({ userId }: VisiteProfileViewProps) {
           activeTab={activeTab}
           onTabChange={handleTabChange}
           isLoading={loading}
+          invitationId={invitationId}
+          publicationId={publicationId}
+          onInvitationAction={handleInvitationAction}
         />
 
         <div className="max-w-7xl mx-auto px-4">
-       {activeTab === "annonces" && (
-  <VisiteAds 
-    userId={userId} 
-    onViewProfile={handleViewProfile}
-  />
-)}
+          {activeTab === "annonces" && (
+            <VisiteAds 
+              userId={userId} 
+              onViewProfile={(id) => router.push(`/profile/${id}`)}
+            />
+          )}
           {activeTab === "apropos" && <AboutSection profile={profile} />}
           {activeTab === "avis" && (
             <ProfileReviews
