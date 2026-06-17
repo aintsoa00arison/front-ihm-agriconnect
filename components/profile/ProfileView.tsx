@@ -12,6 +12,7 @@ import EditSupplierProfileForm from "./Edit/EditSupplierProfileForm";
 import ProfileAds from "./ProfileAds";
 import AdForm from "@/components/annonces/AddForm";
 import { useProfile } from "../../app/services/hooks/useProfile";
+import { useEvaluations } from "../../app/services/hooks/useEvaluations";
 import { getUserId, getUserFromToken, isUUID, getUserRole, normalizeRole } from "../../app/services/lib/auth";
 import AboutSection from "./ProfileAbout";
 
@@ -32,7 +33,7 @@ export default function ProfileView({ slug }: ProfileViewProps) {
   const currentUserId = getUserId();
   const userFromToken = getUserFromToken();
 
-  // ⭐ Récupérer le rôle normalisé
+  // Récupérer le rôle normalisé
   const userRole = getUserRole();
 
   const getProfileId = (): string | undefined => {
@@ -65,7 +66,26 @@ export default function ProfileView({ slug }: ProfileViewProps) {
     updateProfile,
   } = useProfile(profileId);
 
-  const profileWithOwner = profile ? { ...profile, isOwner: isOwnProfile } : null;
+  // ⭐ Hook pour les évaluations
+  const { 
+    loading: evaluationsLoading, 
+    getReviewsForProfile,
+    averageRating,
+    totalReviews,
+    loadEvaluations
+  } = useEvaluations(profileId);
+
+  // ⭐ Combiner les données du profil avec les évaluations
+  const profileWithEvaluations = profile ? {
+    ...profile,
+    rating: averageRating > 0 ? averageRating : profile.rating,
+    reviews: getReviewsForProfile()
+  } : null;
+
+  const profileWithOwner = profileWithEvaluations ? { 
+    ...profileWithEvaluations, 
+    isOwner: isOwnProfile 
+  } : null;
 
   useEffect(() => {
     const newTab = searchParams?.get("tab") || "annonces";
@@ -160,7 +180,7 @@ export default function ProfileView({ slug }: ProfileViewProps) {
     }
   }, [profileName, profile, loading]);
 
-  if (loading) {
+  if (loading || evaluationsLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="animate-pulse space-y-4 w-full max-w-md px-4">
@@ -190,8 +210,7 @@ export default function ProfileView({ slug }: ProfileViewProps) {
 
   const isCollector = profile.role === "collecteur";
 
-  // ⭐ Déterminer le mode en fonction du rôle normalisé
-  // Si le rôle est fournisseur → "annonce", sinon → "demande"
+  // Déterminer le mode en fonction du rôle normalisé
   const adMode = userRole === "fournisseur" ? "annonce" : "demande";
 
   console.log("🔵 ProfileView - adMode calculé:", adMode);
@@ -236,8 +255,9 @@ export default function ProfileView({ slug }: ProfileViewProps) {
             {activeTab === "apropos" && <AboutSection profile={profile} />}
             {activeTab === "avis" && (
               <ProfileReviews
-                rating={profile.rating}
-                reviews={profile.reviews || []}
+                rating={profileWithEvaluations?.rating || profile.rating}
+                reviews={profileWithEvaluations?.reviews || []}
+                isLoading={evaluationsLoading}
               />
             )}
           </div>

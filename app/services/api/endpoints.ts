@@ -25,9 +25,17 @@ export const API_ENDPOINTS = {
   // User / Profile
   USER_GET: '/user/{user_id}',
   USER_ALL: '/user/all',
-  USER_TOP_PROVIDERS: '/user/top/providers',   // 🔥 Top 5 fournisseurs
-  USER_TOP_COLLECTORS: '/user/top/collectors', // 🔥 Top 5 collecteurs
+  USER_TOP_PROVIDERS: '/user/top/providers',
+  USER_TOP_COLLECTORS: '/user/top/collectors',
   USER_UPDATE_INDIVIDUAL: '/user/individual',
   USER_UPDATE_ENTREPRISE: '/user/entreprise',
   USER_SEARCH: '/user/name/{name}',
+
+  // ⭐ Evaluation
+  EVALUATION_CREATE: '/evaluation/create',
+  EVALUATION_UPDATE: '/evaluation/update',
+  EVALUATION_DELETE: '/evaluation/delete/{evaluation_id}',
+  EVALUATION_ALL: '/evaluation/all/{user_id}',
+  EVALUATION_TOP: '/evaluation/top/{user_id}',
+  EVALUATION_BOTTOM: '/evaluation/bottom/{user_id}',
 } as const;
