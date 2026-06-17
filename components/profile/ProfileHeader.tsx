@@ -22,6 +22,7 @@ interface ProfileHeaderProps {
     rating: number | string | null;
     bio: string;
     avatarUrl?: string;
+    photo?: string;  // ⭐ Ajouté
     bannerUrl?: string;
     isOwner?: boolean;
     legal_name?: string;
@@ -29,6 +30,10 @@ interface ProfileHeaderProps {
     first_name?: string;
     last_name?: string;
     user_type?: string;
+    // ⭐ Ajouter pour les données brutes du backend
+    email?: { value: string } | string;
+    score?: { value: number } | number;
+    description?: string;
   } | null;
   activeTab: string;
   onTabChange: (value: string) => void;
@@ -36,7 +41,7 @@ interface ProfileHeaderProps {
   isLoading?: boolean;
 }
 
-// 🔥 Formatage du rating
+// Formatage du rating
 const formatRating = (rating: number | string | null | undefined): string => {
   if (rating === null || rating === undefined) return '0.0';
   
@@ -54,7 +59,7 @@ const formatRating = (rating: number | string | null | undefined): string => {
   return clampedRating.toFixed(1);
 };
 
-// 🔥 Fonction pour rendre les étoiles
+// Fonction pour rendre les étoiles
 const renderStars = (rating: number | string | null | undefined) => {
   let numRating: number;
   if (rating === null || rating === undefined) {
@@ -153,34 +158,43 @@ export default function ProfileHeader({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  // 🔥 Récupérer le rôle depuis le token une seule fois avec useMemo
+  // Récupérer le rôle depuis le token
   const tokenRole = useMemo(() => {
     const role = getUserRole();
     console.log('🔍 ProfileHeader - rôle depuis le token:', role);
     return role;
-  }, []); // ✅ Dépendance vide pour ne s'exécuter qu'une fois
+  }, []);
 
+  // ⭐ DEBUG : Afficher toutes les données reçues
   useEffect(() => {
     if (user) {
-      console.log('📊 ProfileHeader - user:', user);
+      console.log('📊 ProfileHeader - user complet:', user);
+      console.log('📊 ProfileHeader - avatarUrl:', user.avatarUrl);
+      console.log('📊 ProfileHeader - photo:', user.photo);
       console.log('📊 ProfileHeader - rating:', user.rating);
-      console.log('📊 ProfileHeader - role depuis le token:', tokenRole);
     }
-  }, [user]); // ✅ Retirer tokenRole des dépendances
+  }, [user]);
 
   if (isLoading || !user) {
     return <ProfileHeaderSkeleton />;
   }
 
+  // ⭐ Récupérer le nom d'affichage
   const displayName = user.name || 'Utilisateur';
   const displayInitial = displayName.charAt(0).toUpperCase();
   
-  // 🔥 Utiliser le rôle du token ou celui du user
+  // ⭐ Récupérer la photo de profil (essayer plusieurs sources)
+  const profilePhoto = user.photo || user.avatarUrl || null;
+  
+  // ⭐ DEBUG : Afficher la photo trouvée
+  console.log('📸 ProfileHeader - profilePhoto trouvée:', profilePhoto);
+  
+  // Utiliser le rôle du token ou celui du user
   const userRole = tokenRole || user.role || 'fournisseur';
   const isProvider = userRole === 'fournisseur' || userRole === 'provider';
   const isCollector = userRole === 'collecteur' || userRole === 'collector';
 
-  // 🔥 Configuration du badge
+  // Configuration du badge
   const getBadgeConfig = () => {
     if (isProvider) {
       return {
@@ -232,6 +246,7 @@ export default function ProfileHeader({
 
     setIsUploading(true);
     try {
+      // TODO: Appeler l'API pour uploader la photo
       toast.success("Photo de profil mise à jour avec succès !");
     } catch (error) {
       toast.error("Erreur lors de la mise à jour de la photo");
@@ -261,13 +276,21 @@ export default function ProfileHeader({
             <div className="flex items-end gap-5">
               {/* Avatar */}
               <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-white bg-slate-200 shadow-sm flex-shrink-0 group">
-                {user.avatarUrl ? (
+                {/* ⭐ Vérification explicite */}
+                {profilePhoto ? (
                   <img 
-                    src={user.avatarUrl} 
+                    src={profilePhoto} 
                     alt={displayName} 
                     className="w-full h-full rounded-full object-cover" 
+                    onError={(e) => {
+                      console.error('❌ Erreur chargement image:', profilePhoto);
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
-                ) : (
+                ) : null}
+                
+                {/* ⭐ Afficher les initiales si pas de photo ou si la photo a échoué */}
+                {!profilePhoto && (
                   <div className="w-full h-full rounded-full bg-gradient-to-br from-[#0D631B] to-[#2D6A36] flex items-center justify-center">
                     <span className="text-white text-3xl font-bold">
                       {displayInitial}
@@ -312,7 +335,7 @@ export default function ProfileHeader({
                     {displayName}
                   </h1>
                   
-                  {/* 🔥 Badge dynamique */}
+                  {/* Badge dynamique */}
                   <span className={`inline-flex items-center px-3 py-1 rounded-full border text-[10px] sm:text-xs font-bold ${badgeConfig.className}`}>
                     {badgeConfig.icon}
                     {badgeConfig.label}

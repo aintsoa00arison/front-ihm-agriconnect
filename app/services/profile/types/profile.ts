@@ -7,6 +7,7 @@ export interface ProfileData {
   rating: number | null;
   bio: string;
   avatarUrl?: string;
+  photo?: string;
   bannerUrl?: string;
   email?: string;
   phone?: string[];
@@ -48,6 +49,8 @@ export interface UserResponse {
     value: string;
   };
   avatarUrl?: string;
+  // ⭐ Support de plusieurs formats pour la photo
+  photo?: string | { value: string } | { url: string } | null;
   bannerUrl?: string;
   // 🔥 Champs pour les fournisseurs entreprise
   legal_name?: string;
@@ -66,6 +69,28 @@ export interface UserResponse {
   company_description?: string;
   [key: string]: any;
 }
+
+// ⭐ Fonction helper pour extraire la photo
+const extractPhotoUrl = (photo: any): string | null => {
+  if (!photo) return null;
+  
+  // Si c'est une chaîne, la retourner directement
+  if (typeof photo === 'string') {
+    return photo;
+  }
+  
+  // Si c'est un objet avec value
+  if (typeof photo === 'object' && photo !== null) {
+    if ('value' in photo && typeof photo.value === 'string') {
+      return photo.value;
+    }
+    if ('url' in photo && typeof photo.url === 'string') {
+      return photo.url;
+    }
+  }
+  
+  return null;
+};
 
 export const transformUserResponse = (data: UserResponse): ProfileData => {
   console.log('🔄 transformUserResponse - Données reçues:', JSON.stringify(data, null, 2));
@@ -117,13 +142,19 @@ export const transformUserResponse = (data: UserResponse): ProfileData => {
   // 🔥 Extraire le CIN
   const cinNumber = data.cin_number?.value || data.rep_cin_number?.value || '';
   
+  // ⭐⭐⭐ EXTRAIRE LA PHOTO ⭐⭐⭐
+  const photoUrl = extractPhotoUrl(data.photo);
+  
+  console.log('📸 transformUserResponse - Photo extraite:', photoUrl);
+  
   return {
     id: data.id || '',
-    name: displayName, // 🔥 Nom affiché
+    name: displayName,
     role: userRole,
     rating: typeof ratingValue === 'number' ? ratingValue : parseFloat(String(ratingValue)) || 0,
     bio: description,
-    avatarUrl: data.avatarUrl || undefined,
+    avatarUrl: photoUrl || undefined,
+    photo: photoUrl || undefined,
     bannerUrl: data.bannerUrl || '/images/auth/champ.jpeg',
     email: email,
     phone: phones,
