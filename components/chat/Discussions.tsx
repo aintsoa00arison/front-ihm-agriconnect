@@ -19,10 +19,10 @@ function Discussions() {
             key={discussion.id}
             id={discussion.id}
             name={name}
-            lastMessage={""} // Le backend ne l'envoie pas actuellement dans ton DTO
-            lastMessageDate={new Date()} // Idem
+            lastMessage={discussion.last_message || ""}
+            lastMessageDate={new Date()}
             hasNewMessage={discussion.unread_count > 0}
-            isOnline={false} // Pas géré dans le DTO actuel, tu pourras l'ajouter plus tard
+            isOnline={discussion.is_online ?? false}
           />
         );
       })}

@@ -79,15 +79,15 @@ export default function LayoutContent({
         <div className="flex items-center gap-3 order-1">
           <MobileSidebarCollecteur userSlug={userSlug} userName={userName} />
           <Link href="/">
-            <h1 className="hover:text-primary text-label duration-300 transition-colors font-bold text-2xl flex gap-1 items-center">
+            <h1 className="hover:text-primary text-label duration-300 transition-colors font-black text-3xl flex gap-1 items-center">
               Tsena
             </h1>
           </Link>
         </div>
 
-        <div className="flex items-center gap-3 order-2 md:order-3">
+        {/* <div className="flex items-center gap-3 order-2 md:order-3">
           <NotificationMenu />
-        </div>
+        </div> */}
 
         {showSearchBar && (
           <div className="w-full md:w-auto md:flex-1 max-w-none md:max-w-md mx-0 md:mx-8 order-3 md:order-2 flex items-center gap-2">
@@ -108,7 +108,7 @@ export default function LayoutContent({
       </header>
 
       <div className="grow flex min-h-0 overflow-hidden">
-        <div className="hidden md:block h-full">
+        <div className="hidden lg:block h-full">
           <SidebarCollecteur userSlug={userSlug} userName={userName} />
         </div>
         <main ref={mainRef} className="grow overflow-y-auto h-full relative">

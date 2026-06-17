@@ -40,51 +40,53 @@ function Header() {
         {/* Nom de l'interlocuteur */}
         <h3 className="font-semibold">{name}</h3>
       </div>
-      <Drawer direction="right">
-        <DrawerTrigger>
-          <Button className="text-white font-semibold bg-secondary">
-            <Star /> Evaluer le profil
-          </Button>
-        </DrawerTrigger>
-        <DrawerContent className="border-l border-border rounded-none">
-          <DrawerHeader>
-            <DrawerTitle className="text-xl font-semibold">
-              Evaluer le profil
-            </DrawerTitle>
-          </DrawerHeader>
-          <div className="p-4 scrollbar-none overflow-y-auto">
-            <div className="flex flex-col items-center mb-8">
-              <Image
-                src="/images/default-avatar.jpg"
-                alt="Avatar de John Doe"
-                width={100}
-                height={100}
-                className="rounded-full"
-              />
-              <p className="text-center mt-2 text-xl font-bold">John Doe</p>
-              <p className="text-center text-primary font-semibold mb-3">
-                Fournisseur
-              </p>
-              <StarAffichage rating={3.2} />
-            </div>
-
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">Bio</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground font-semibold">
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Et
-                  impedit deleniti eaque dolore veritatis ipsam debitis minima
-                  iste rerum? Porro, natus! Consequatur qui vel maiores vitae
-                  reiciendis iste sunt ipsum.
+      {activeDiscussionId && (
+        <Drawer direction="right">
+          <DrawerTrigger asChild>
+            <Button className="text-white font-semibold bg-secondary">
+              <Star /> Evaluer le profil
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent className="border-l border-border rounded-none">
+            <DrawerHeader>
+              <DrawerTitle className="text-xl font-semibold">
+                Evaluer le profil
+              </DrawerTitle>
+            </DrawerHeader>
+            <div className="p-4 scrollbar-none overflow-y-auto">
+              <div className="flex flex-col items-center mb-8">
+                <Image
+                  src="/images/default-avatar.jpg"
+                  alt="Avatar de John Doe"
+                  width={100}
+                  height={100}
+                  className="rounded-full"
+                />
+                <p className="text-center mt-2 text-xl font-bold">John Doe</p>
+                <p className="text-center text-primary font-semibold mb-3">
+                  Fournisseur
                 </p>
-              </CardContent>
-            </Card>
-            <BasicRating />
-          </div>
-        </DrawerContent>
-      </Drawer>
+                <StarAffichage rating={3.2} />
+              </div>
+
+              <Card className="mb-8">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold">Bio</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground font-semibold">
+                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Et
+                    impedit deleniti eaque dolore veritatis ipsam debitis minima
+                    iste rerum? Porro, natus! Consequatur qui vel maiores vitae
+                    reiciendis iste sunt ipsum.
+                  </p>
+                </CardContent>
+              </Card>
+              <BasicRating />
+            </div>
+          </DrawerContent>
+        </Drawer>
+      )}
     </header>
   );
 }

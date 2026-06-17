@@ -14,6 +14,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { useUnreadCount } from "@/app/services/hooks/useUnreadCount";
 
 interface SidebarFournisseurProps {
   userSlug: string;
@@ -27,6 +28,7 @@ export default function MobileSidebarFournisseur({
   const pathname = usePathname();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const totalUnread = useUnreadCount();
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -40,7 +42,7 @@ export default function MobileSidebarFournisseur({
       label: "Messages",
       href: "/f/messages",
       icon: MessageCircle,
-      badgeCount: 3,
+      badgeCount: totalUnread,
     },
     {
       label: "Mon profil",
@@ -123,9 +125,9 @@ export default function MobileSidebarFournisseur({
                     >
                       {item.label}
                     </span>
-                    {item.badgeCount && item.badgeCount > 0 && (
+                    {(item.badgeCount ?? 0) > 0 && (
                       <span className="mr-2 flex size-5 text-xs items-center justify-center rounded-full bg-red-500 font-bold text-white shadow-sm">
-                        {item.badgeCount}
+                        <p>{item.badgeCount}</p>
                       </span>
                     )}
                     {isActive && (
