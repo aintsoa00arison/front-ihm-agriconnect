@@ -10,7 +10,7 @@ import ProfileReviews from "./ProfileReviews";
 import EditCollectorProfileForm from "./Edit/EditCollectorProfileForm";
 import EditSupplierProfileForm from "./Edit/EditSupplierProfileForm";
 import ProfileAds from "./ProfileAds";
-import VisiteAds from "../visite/VisiteAds";  // ⭐ AJOUTER L'IMPORT
+import VisiteAds from "../visite/VisiteAds";
 import AdForm from "@/components/annonces/AddForm";
 import { useProfile } from "../../app/services/hooks/useProfile";
 import { useEvaluations } from "../../app/services/hooks/useEvaluations";
@@ -67,7 +67,6 @@ export default function ProfileView({ slug }: ProfileViewProps) {
     updateProfile,
   } = useProfile(profileId);
 
-  // ⭐ Hook pour les évaluations
   const { 
     loading: evaluationsLoading, 
     getReviewsForProfile,
@@ -76,7 +75,6 @@ export default function ProfileView({ slug }: ProfileViewProps) {
     loadEvaluations
   } = useEvaluations(profileId);
 
-  // ⭐ Combiner les données du profil avec les évaluations
   const profileWithEvaluations = profile ? {
     ...profile,
     rating: averageRating > 0 ? averageRating : profile.rating,
@@ -98,13 +96,19 @@ export default function ProfileView({ slug }: ProfileViewProps) {
     router.push(`?tab=${value}`, { scroll: false });
   };
 
-  // ⭐ Fonction pour rediriger vers le profil avec l'ID (pour les profils visités)
   const handleViewProfile = (userId: string) => {
     if (userId) {
       const userRole = getUserRole();
       const basePath = userRole === 'fournisseur' || userRole === 'provider' ? '/f' : '/c';
       router.push(`${basePath}/profile/${userId}`);
     }
+  };
+
+  // 🔥 Récupérer le type de profil pour l'édition
+  const getProfileType = (): 'collecteur' | 'fournisseur' => {
+    if (profile?.role) return profile.role;
+    if (userRole === 'collecteur' || userRole === 'collector') return 'collecteur';
+    return 'fournisseur';
   };
 
   const handleProfileSave = async (data: any) => {
@@ -125,9 +129,22 @@ export default function ProfileView({ slug }: ProfileViewProps) {
       return Array.isArray(value) ? value : defaultValue;
     };
 
-    if (profile.role === "collecteur") {
-      result = await updateProfile(data);
+    // 🔥 Déterminer le type de profil à mettre à jour
+    const profileType = getProfileType();
+
+    if (profileType === "collecteur") {
+      // 🔥 Mise à jour pour collecteur
+      result = await updateIndividualProfile({
+        id: getSafeString(profile.id),
+        last_name: getSafeString(data.last_name || data.nom),
+        first_name: getSafeString(data.first_name || data.prenom),
+        phone: data.phone ? [getSafeString(data.phone)] : [],
+        address: getSafeString(data.address || data.localisation),
+        description: getSafeString(data.bio || data.description),
+        product_category: getSafeArray(data.productionTypes || data.productions),
+      });
     } else if (profile.type === "particulier") {
+      // 🔥 Mise à jour pour fournisseur particulier
       result = await updateIndividualProfile({
         id: getSafeString(profile.id),
         last_name: getSafeString(data.last_name || data.nom),
@@ -138,6 +155,7 @@ export default function ProfileView({ slug }: ProfileViewProps) {
         product_category: getSafeArray(data.productionTypes || data.productions),
       });
     } else {
+      // 🔥 Mise à jour pour fournisseur entreprise
       const getRepNames = (nomResponsable: string | undefined) => {
         const safeName = getSafeString(nomResponsable);
         if (!safeName || safeName.trim() === '') {
@@ -172,16 +190,13 @@ export default function ProfileView({ slug }: ProfileViewProps) {
 
     if (result?.success) {
       setIsEditing(false);
-      // Le toast est géré dans le formulaire
     } else {
       toast.error(result?.message || "Erreur lors de la mise à jour");
     }
   };
 
-  // Suppression du toast dans handleAdSave
   const handleAdSave = () => {
     setEditingAd(null);
-    // Le toast est géré dans AdForm
   };
 
   useEffect(() => {
@@ -218,17 +233,22 @@ export default function ProfileView({ slug }: ProfileViewProps) {
     );
   }
 
+  // 🔥 Déterminer le type de profil pour l'édition
   const isCollector = profile.role === "collecteur";
+  const profileType = getProfileType();
 
-  // Déterminer le mode en fonction du rôle normalisé
-  const adMode = userRole === "fournisseur" ? "annonce" : "demande";
+  // 🔥 Déterminer le mode d'annonce
+  const adMode = userRole === "fournisseur" || userRole === "provider" ? "annonce" : "demande";
 
-  console.log("🔵 ProfileView - adMode calculé:", adMode);
+  console.log("🔵 ProfileView - adMode:", adMode);
   console.log("🔵 ProfileView - userRole:", userRole);
+  console.log("🔵 ProfileView - profileType:", profileType);
+  console.log("🔵 ProfileView - isCollector:", isCollector);
 
   return (
     <div className="relative min-h-screen bg-white pb-12">
       {isEditing ? (
+        // 🔥 Afficher l'éditeur selon le type d'utilisateur
         isCollector ? (
           <EditCollectorProfileForm
             initialData={profile}
@@ -262,8 +282,6 @@ export default function ProfileView({ slug }: ProfileViewProps) {
 
           <div className="max-w-7xl mx-auto px-4">
             {activeTab === "annonces" && (
-              // ⭐ SI C'EST LE PROPRIÉTAIRE → ProfileAds (avec édition)
-              // ⭐ SINON → VisiteAds (sans édition, avec like)
               isOwnProfile ? (
                 <ProfileAds key="profile-ads" onEditAd={setEditingAd} />
               ) : (
