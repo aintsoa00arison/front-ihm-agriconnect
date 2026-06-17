@@ -7,15 +7,20 @@ import { Plus, Store, MessageCircle, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import LogoutModal from "./LogoutModal";
+import { useUnreadCount } from "@/app/services/hooks/useUnreadCount";
 
 interface SidebarFournisseurProps {
   userSlug: string;
   userName: string;
 }
 
-export default function SidebarFournisseur({ userSlug, userName }: SidebarFournisseurProps) {
+export default function SidebarFournisseur({
+  userSlug,
+  userName,
+}: SidebarFournisseurProps) {
   const pathname = usePathname();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const totalUnread = useUnreadCount();
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -25,7 +30,12 @@ export default function SidebarFournisseur({ userSlug, userName }: SidebarFourni
 
   const navItems = [
     { label: "Catalogue", href: "/f", icon: Store, exact: true },
-    { label: "Messages", href: "/f/messages", icon: MessageCircle, badgeCount: 3 },
+    {
+      label: "Messages",
+      href: "/f/messages",
+      icon: MessageCircle,
+      badgeCount: totalUnread,
+    },
     // 🔥 Utiliser "me" pour le profil de l'utilisateur connecté
     { label: "Mon profil", href: `/f/profile/me?tab=annonces`, icon: User },
   ];
@@ -76,9 +86,9 @@ export default function SidebarFournisseur({ userSlug, userName }: SidebarFourni
                   >
                     {item.label}
                   </span>
-                  {item.badgeCount && item.badgeCount > 0 && (
+                  {(item.badgeCount ?? 0) > 0 && (
                     <span className="mr-2 flex size-5 text-xs items-center justify-center rounded-full bg-red-500 font-bold text-white shadow-sm">
-                      {item.badgeCount}
+                      <p>{item.badgeCount}</p>
                     </span>
                   )}
                   {isActive && (
