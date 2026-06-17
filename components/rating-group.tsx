@@ -160,8 +160,8 @@ export default function BasicRating({ assessorId, assesseeId }: Props) {
           onChange={(e) => setReview(e.target.value)}
         />
       </CardContent>
-      <CardFooter className="justify-end gap-2 border-t border-border">
-        <Button size="lg" onClick={handleSubmit} disabled={isLoading}>
+      <CardFooter className=" gap-2 border-t border-border">
+        <Button size="lg" onClick={handleSubmit} disabled={isLoading} className="w-full">
           {isLoading ? "Envoi..." : "Publier l'avis"}
         </Button>
       </CardFooter>

@@ -53,23 +53,19 @@ function Header() {
                 Evaluer le profil
               </DrawerTitle>
             </DrawerHeader>
-            <div className="p-4 scrollbar-none overflow-y-auto">
+            <div className="p-4 scrollbar-none overflow-y-auto flex flex-col gap-4 justify-center items-center h-full ">
               <div className="flex flex-col items-center mb-8">
                 <Image
                   src="/images/default-avatar.jpg"
-                  alt="Avatar de John Doe"
+                  alt={"avatar de " + name}
                   width={100}
                   height={100}
                   className="rounded-full"
                 />
-                <p className="text-center mt-2 text-xl font-bold">John Doe</p>
-                <p className="text-center text-primary font-semibold mb-3">
-                  Fournisseur
-                </p>
-                <StarAffichage rating={3.2} />
+                <p className="text-center mt-2 text-xl font-bold">{name}</p>
               </div>
 
-              <Card className="mb-8">
+              {/* <Card className="mb-8">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold">Bio</CardTitle>
                 </CardHeader>
@@ -81,7 +77,7 @@ function Header() {
                     reiciendis iste sunt ipsum.
                   </p>
                 </CardContent>
-              </Card>
+              </Card> */}
               <BasicRating
                 assessorId={currentUserId ?? ""}
                 assesseeId={activeChat?.interlocutor_id ?? ""}

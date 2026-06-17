@@ -30,7 +30,6 @@ interface ProfileHeaderProps {
     first_name?: string;
     last_name?: string;
     user_type?: string;
-    // ⭐ Ajouter pour les données brutes du backend
     email?: { value: string } | string;
     score?: { value: number } | number;
     description?: string;
