@@ -45,12 +45,10 @@ export default function MessageBubble({
   return (
     <div className="flex items-end gap-2 max-w-[75%]">
       {showSender ? (
-        <Image
+        <img
           src={senderPhoto || "/images/default-avatar.jpg"}
           alt={senderName}
-          width={30}
-          height={30}
-          className="rounded-full shrink-0 mb-5 object-cover"
+          className="rounded-full shrink-0 mb-5 object-cover size-8"
         />
       ) : (
         <div className="w-7.5 shrink-0" />

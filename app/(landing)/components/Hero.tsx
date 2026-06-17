@@ -110,7 +110,7 @@ export default function Hero() {
                 className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white bg-gray-200 overflow-hidden shadow-sm"
               >
                 <Image
-                  src={`https://i.pravatar.cc/100?u=${i}`}
+                  src="/images/default-avatar.jpg"
                   alt="user"
                   className="w-full h-full object-cover"
                   width={40}
@@ -156,9 +156,9 @@ export default function Hero() {
                   className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white bg-gray-200 overflow-hidden shadow-sm"
                 >
                   <Image
-                    src={`https://i.pravatar.cc/100?u=${i}`}
+                    src="/images/default-avatar.jpg"
                     alt="user"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover "
                     width={40}
                     height={40}
                   />

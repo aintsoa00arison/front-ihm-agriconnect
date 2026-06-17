@@ -28,12 +28,10 @@ function Header() {
       <div className="flex items-center gap-3">
         {/* Avatar */}
         <div className="shrink-0 relative">
-          <Image
+          <img
             src={activeChat?.interlocutor_photo || "/images/default-avatar.jpg"}
             alt={name}
-            width={35}
-            height={35}
-            className="rounded-full object-cover"
+            className="rounded-full object-cover size-8"
           />
           <span className="absolute bottom-0 right-0 size-3 bg-green-500 border-2 border-white rounded-full" />
         </div>
@@ -55,12 +53,13 @@ function Header() {
             </DrawerHeader>
             <div className="p-4 scrollbar-none overflow-y-auto flex flex-col gap-4 justify-center items-center h-full ">
               <div className="flex flex-col items-center mb-8">
-                <Image
-                  src="/images/default-avatar.jpg"
-                  alt={"avatar de " + name}
-                  width={100}
-                  height={100}
-                  className="rounded-full"
+                <img
+                  src={
+                    activeChat?.interlocutor_photo ||
+                    "/images/default-avatar.jpg"
+                  }
+                  alt={name}
+                  className="rounded-full object-cover size-25 border-border border-2 shadow-sm"
                 />
                 <p className="text-center mt-2 text-xl font-bold">{name}</p>
               </div>
