@@ -127,6 +127,26 @@ export const authService = {
     }
   },
 
+
+authenticateWithInvitation: async (token: string): Promise<{ success: boolean; message: string; data?: any }> => {
+  try {
+    console.log('🔑 Authentification avec token d\'invitation:', token);
+    
+    const response = await apiClient.get(`/auth/invitation-auth?token=${token}`);
+    
+    return {
+      success: true,
+      message: "Authentification réussie",
+      data: response.data
+    };
+  } catch (error: any) {
+    console.error("❌ Erreur authentification invitation:", error);
+    return {
+      success: false,
+      message: error.response?.data?.detail || "Erreur d'authentification"
+    };
+  }
+},
   verifyCode: async (userId: string, code: string): Promise<{ success: boolean; message: string }> => {
     try {
       console.log("🔍 Vérification code - userId:", userId);

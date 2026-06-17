@@ -31,11 +31,17 @@ export const API_ENDPOINTS = {
   USER_UPDATE_ENTREPRISE: '/user/entreprise',
   USER_SEARCH: '/user/name/{name}',
 
-  // ⭐ Evaluation
+  // Evaluation
   EVALUATION_CREATE: '/evaluation/create',
   EVALUATION_UPDATE: '/evaluation/update',
   EVALUATION_DELETE: '/evaluation/delete/{evaluation_id}',
   EVALUATION_ALL: '/evaluation/all/{user_id}',
   EVALUATION_TOP: '/evaluation/top/{user_id}',
   EVALUATION_BOTTOM: '/evaluation/bottom/{user_id}',
+
+  // ⭐ Invitation
+  INVITATION_CREATE: '/invitation/create',
+  INVITATION_ACCEPT: '/invitation/accept/{user_id}',
+  INVITATION_REFUSE: '/invitation/refuse/{user_id}',
+  INVITATION_LIST: '/invitation/{user_id}',
 } as const;

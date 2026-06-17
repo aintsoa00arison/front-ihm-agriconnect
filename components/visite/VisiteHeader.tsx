@@ -1,13 +1,22 @@
 // app/profile/VisiteHeader.tsx
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
-import { Star, User, Store, Truck } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Star, User, Store, Truck, Eye, Check, X } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import {
   TooltipProvider,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { toast } from "sonner";
+import { useInvitations } from "../../app/services/hooks/useInvitations";
+import { getUserId } from "../../app/services/lib/auth";
 
 interface VisiteHeaderProps {
   user: {
@@ -28,9 +37,12 @@ interface VisiteHeaderProps {
   activeTab: string;
   onTabChange: (value: string) => void;
   isLoading?: boolean;
+  invitationId?: string | null;  // ⭐ AJOUTÉ
+  publicationId?: string | null; // ⭐ AJOUTÉ
+  onInvitationAction?: (action: 'accept' | 'refuse') => void; // ⭐ AJOUTÉ
 }
 
-// Formatage du rating
+// Formatage du rating (code existant...)
 const formatRating = (rating: number | string | null | undefined): string => {
   if (rating === null || rating === undefined) return '0.0';
   
@@ -48,7 +60,7 @@ const formatRating = (rating: number | string | null | undefined): string => {
   return clampedRating.toFixed(1);
 };
 
-// Fonction pour rendre les étoiles
+// Fonction pour rendre les étoiles (code existant...)
 const renderStars = (rating: number | string | null | undefined) => {
   let numRating: number;
   if (rating === null || rating === undefined) {
@@ -117,6 +129,7 @@ function VisiteHeaderSkeleton() {
               </div>
             </div>
           </div>
+          <div className="h-10 w-36 bg-slate-200 animate-pulse rounded-lg" />
         </div>
         <div className="border-b border-slate-100 pb-6 mb-0">
           <div className="space-y-2">
@@ -140,8 +153,38 @@ export default function VisiteHeader({
   user, 
   activeTab, 
   onTabChange,
-  isLoading = false 
+  isLoading = false,
+  invitationId = null,
+  publicationId = null,
+  onInvitationAction
 }: VisiteHeaderProps) {
+  const router = useRouter();
+  const currentUserId = getUserId();
+  const [isAccepting, setIsAccepting] = useState(false);
+  const [isRefusing, setIsRefusing] = useState(false);
+  const [invitationStatus, setInvitationStatus] = useState<'pending' | 'accepted' | 'refused' | null>(null);
+  
+  const { acceptInvitation, refuseInvitation } = useInvitations(currentUserId || undefined);
+
+  // ⭐ Vérifier si l'invitation est déjà traitée
+  useEffect(() => {
+    if (invitationId) {
+      // Vérifier le statut de l'invitation via l'API
+      const checkStatus = async () => {
+        try {
+          const response = await fetch(`/api/invitations/${invitationId}/status`);
+          const data = await response.json();
+          if (data.status) {
+            setInvitationStatus(data.status);
+          }
+        } catch (error) {
+          console.error('Erreur vérification statut:', error);
+        }
+      };
+      checkStatus();
+    }
+  }, [invitationId]);
+
   if (isLoading || !user) {
     return <VisiteHeaderSkeleton />;
   }
@@ -150,8 +193,8 @@ export default function VisiteHeader({
   const displayInitial = displayName.charAt(0).toUpperCase();
   const profilePhoto = user.photo || user.avatarUrl || null;
   
-  const isProvider = user.role === 'fournisseur' 
-  const isCollector = user.role === 'collecteur'  
+  const isProvider = user.role === 'fournisseur';
+  const isCollector = user.role === 'collecteur';
 
   // Configuration du badge
   const getBadgeConfig = () => {
@@ -188,6 +231,68 @@ export default function VisiteHeader({
       default: return label.toLowerCase();
     }
   };
+
+  // ⭐ Gestion de l'acceptation
+  const handleAccept = async () => {
+    if (!invitationId) {
+      toast.error("Aucune invitation trouvée");
+      return;
+    }
+
+    setIsAccepting(true);
+    try {
+      const result = await acceptInvitation(invitationId);
+      if (result.success) {
+        setInvitationStatus('accepted');
+        toast.success("✅ Invitation acceptée !");
+        if (onInvitationAction) onInvitationAction('accept');
+        // Rediriger vers la page de visite avec le token d'authentification
+        router.push(`/visite/profil/${user.name}?invitation_accepted=true`);
+      }
+    } catch (error) {
+      toast.error("Erreur lors de l'acceptation");
+    } finally {
+      setIsAccepting(false);
+    }
+  };
+
+  // ⭐ Gestion du refus
+  const handleRefuse = async () => {
+    if (!invitationId) {
+      toast.error("Aucune invitation trouvée");
+      return;
+    }
+
+    setIsRefusing(true);
+    try {
+      const result = await refuseInvitation(invitationId);
+      if (result.success) {
+        setInvitationStatus('refused');
+        toast.info("Invitation refusée");
+        if (onInvitationAction) onInvitationAction('refuse');
+      }
+    } catch (error) {
+      toast.error("Erreur lors du refus");
+    } finally {
+      setIsRefusing(false);
+    }
+  };
+
+  // ⭐ Voir la publication
+  const handleViewPublication = () => {
+    if (publicationId) {
+      router.push(`/publication/${publicationId}`);
+    } else {
+      toast.info("Publication non disponible");
+    }
+  };
+
+  // ⭐ Déterminer si les boutons doivent être affichés
+  const showInvitationButtons = invitationId && 
+    invitationStatus === 'pending' && 
+    currentUserId !== user.id;
+
+  const isAlreadyProcessed = invitationStatus === 'accepted' || invitationStatus === 'refused';
 
   return (
     <TooltipProvider>
@@ -253,6 +358,85 @@ export default function VisiteHeader({
                   </span>
                 </div>
               </div>
+            </div>
+
+            {/* ⭐ BOUTONS D'ACTION */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Bouton Voir Publication */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={handleViewPublication}
+                    variant="outline"
+                    className="h-9 px-4 text-xs font-bold border-primary/30 text-primary hover:bg-primary/10"
+                    disabled={!publicationId}
+                  >
+                    <Eye size={16} className="mr-1.5" />
+                    Voir publication
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Voir la publication concernée</p>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Bouton Accepter */}
+              {showInvitationButtons && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={handleAccept}
+                      disabled={isAccepting || isAlreadyProcessed}
+                      className="h-9 px-4 text-xs font-bold bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      {isAccepting ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                      ) : (
+                        <>
+                          <Check size={16} className="mr-1.5" />
+                          Accepter
+                        </>
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Accepter l'invitation</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+
+              {/* Bouton Refuser */}
+              {showInvitationButtons && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={handleRefuse}
+                      disabled={isRefusing || isAlreadyProcessed}
+                      variant="destructive"
+                      className="h-9 px-4 text-xs font-bold"
+                    >
+                      {isRefusing ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                      ) : (
+                        <>
+                          <X size={16} className="mr-1.5" />
+                          Refuser
+                        </>
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Refuser l'invitation</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+
+              {/* Message si déjà traité */}
+              {invitationId && isAlreadyProcessed && (
+                <span className="text-xs font-medium text-slate-400 bg-slate-100 px-3 py-1.5 rounded-full">
+                  {invitationStatus === 'accepted' ? '✅ Invitation acceptée' : '❌ Invitation refusée'}
+                </span>
+              )}
             </div>
           </div>
 
