@@ -13,7 +13,9 @@ function formatDate(date: Date) {
 }
 
 export default function MessageList() {
-  const { messages, discussions, activeDiscussionId, currentUserId } = useChat();
+  const { messages, discussions, activeDiscussionId, currentUserId } =
+    useChat();
+  const myId = currentUserId ?? "";
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const activeChat = discussions.find((d) => d.id === activeDiscussionId);
@@ -38,8 +40,6 @@ export default function MessageList() {
     {} as Record<string, typeof messages>,
   );
 
-  // Plus de early return sur user.id — on utilise "" comme fallback
-  const myId = currentUserId ?? "";
 
   return (
     <div

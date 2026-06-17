@@ -9,7 +9,6 @@ import React, {
 } from "react";
 import { useAuth } from "../hooks/useAuth";
 
-// Types basés sur les DTOs de ton Backend
 export type DiscussionSummary = {
   id: string;
   unread_count: number;
@@ -32,45 +31,26 @@ interface ChatContextType {
   discussions: DiscussionSummary[];
   messages: ChatMessage[];
   activeDiscussionId: string | null;
-  currentUserId: string | null; // ← ajoute
-  totalUnread: number;
+  currentUserId: string | null;
   selectDiscussion: (id: string) => void;
-  sendMessage: (content: string) => void;
   closeDiscussion: () => void;
+  sendMessage: (content: string) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
-  // const { user } = useAuth();
-  const searchParams = new URLSearchParams(window.location.search);
-  const testId = searchParams.get("uid");
-  const user = testId ? { id: testId } : null;
+  const { user } = useAuth();
   const [discussions, setDiscussions] = useState<DiscussionSummary[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [activeDiscussionId, setActiveDiscussionId] = useState<string | null>(
     null,
   );
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const totalUnread = discussions.reduce((sum, d) => sum + d.unread_count, 0);
   const ws = useRef<WebSocket | null>(null);
-  const closeDiscussion = () => {
-    setActiveDiscussionId(null);
-    setMessages([]);
-    if (ws.current?.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify({ action: "LEAVE_DISCUSSION" }));
-    }
-  };
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setCurrentUserId(params.get("uid"));
-  }, []);
 
   useEffect(() => {
     if (!user?.id) return;
 
-    // Pense à remplacer par ton URL d'API (ou utiliser une variable d'env)
     const socket = new WebSocket(`ws://localhost:8000/ws/chat/${user.id}`);
     ws.current = socket;
 
@@ -103,9 +83,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
           );
           break;
         case "NEW_MESSAGE":
-          // On ajoute le message si on est dans la bonne discussion, sinon le backend gère déjà l'unread_count via UPDATE_DISCUSSION_LIST
           setMessages((prev) => {
-            // Petite sécurité pour ne l'afficher que si la discussion est ouverte
             if (
               prev.length > 0 &&
               prev[0].discussion_id === data.discussion_id
@@ -118,9 +96,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    return () => {
-      socket.close();
-    };
+    return () => socket.close();
   }, [user?.id]);
 
   const selectDiscussion = (id: string) => {
@@ -129,6 +105,14 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       ws.current.send(
         JSON.stringify({ action: "ENTER_DISCUSSION", discussion_id: id }),
       );
+    }
+  };
+
+  const closeDiscussion = () => {
+    setActiveDiscussionId(null);
+    setMessages([]);
+    if (ws.current?.readyState === WebSocket.OPEN) {
+      ws.current.send(JSON.stringify({ action: "LEAVE_DISCUSSION" }));
     }
   };
 
@@ -154,11 +138,10 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         discussions,
         messages,
         activeDiscussionId,
-        currentUserId,
+        currentUserId: user?.id ?? null,
         selectDiscussion,
-        sendMessage,
-        totalUnread,
         closeDiscussion,
+        sendMessage,
       }}
     >
       {children}
